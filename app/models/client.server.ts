@@ -7,7 +7,7 @@ export async function getClients() {
 }
 
 export async function getClient(id: string) {
-  return prisma.client.findUnique({ where: { id } });
+  return prisma.client.findUnique({ where: { id: Number(id) } });
 }
 
 export async function createClient(client: Pick<Client, "address" | "name">) {
@@ -20,6 +20,6 @@ export async function editClient(
   return prisma.client.update({ data: client, where: { id: client.id } });
 }
 
-export async function deleteClient(id: number) {
-  return prisma.client.delete({ where: { id } });
+export async function deleteClient(id: string) {
+  return prisma.client.delete({ where: { id: Number(id) } });
 }

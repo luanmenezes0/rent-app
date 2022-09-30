@@ -47,7 +47,7 @@ export async function action({ request }: ActionArgs) {
     case "delete": {
       const id = formData.get("id") as string;
 
-      await deleteClient(Number(id));
+      await deleteClient(id);
       return null;
     }
 
