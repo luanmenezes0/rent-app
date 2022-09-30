@@ -40,6 +40,20 @@ async function seed() {
     },
   });
 
+  // const clients = await prisma.client.findMany({});
+
+  // const deleteClient = async (client: Client) => {
+  //   return await prisma.client.delete({
+  //     where: { id: client.id },
+  //   });
+  // };
+
+  // const deleteClients = async () => {
+  //   clients.map((user) => deleteClient(user));
+  // };
+
+  // deleteClients();
+
   console.log(`Database has been seeded. 🌱`);
 }
 

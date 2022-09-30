@@ -1,51 +1,69 @@
-import type { ActionArgs, LoaderFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Form, useLoaderData } from "@remix-run/react";
 import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import { useState } from "react";
 
-import AppNavbar from "~/components/Navbar";
-import { createClient, getClients } from "~/models/clients.server";
+import Header from "~/components/Header";
+import { createClient, deleteClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 
-export const loader: LoaderFunction = async () => {
+export async function loader({ request }: LoaderArgs) {
+  await requireUserId(request);
+
   return json({ clients: await getClients() });
-};
+}
 
 export async function action({ request }: ActionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
-  const name = formData.get("name");
-  const address = formData.get("address");
+  const action = formData.get("action");
 
-  if (typeof name !== "string" || name.length === 0) {
-    return json(
-      { errors: { title: "name is required", body: null } },
-      { status: 400 }
-    );
+  switch (action) {
+    case "create": {
+      const name = formData.get("name");
+      const address = formData.get("address");
+
+      if (typeof name !== "string" || name.length === 0) {
+        return json(
+          { errors: { title: "name is required", body: null } },
+          { status: 400 }
+        );
+      }
+
+      if (typeof address !== "string" || address.length === 0) {
+        return json(
+          { errors: { title: null, body: "address is required" } },
+          { status: 400 }
+        );
+      }
+
+      await createClient({ address, name });
+
+      return null;
+    }
+
+    case "delete": {
+      const id = formData.get("id") as string;
+
+      await deleteClient(Number(id));
+      return null;
+    }
+
+    default:
+      throw new Error("unknown action");
   }
-
-  if (typeof address !== "string" || address.length === 0) {
-    return json(
-      { errors: { title: null, body: "address is required" } },
-      { status: 400 }
-    );
-  }
-
-  await createClient({ address, name });
-
-  return null;
 }
 
-export default function Posts() {
+export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
 
   const [show, setShow] = useState(false);
 
   return (
     <>
-      <AppNavbar />
+      <Header />
       <main className="flex h-full flex-col gap-4 p-4">
         <h1 className="text-6xl font-bold">Clientes</h1>
 
@@ -73,10 +91,17 @@ export default function Posts() {
             </Form>
           </Modal.Body>
           <Modal.Footer>
-            <Button type="submit" form="client-form">
+            <Button
+              type="submit"
+              form="client-form"
+              name="action"
+              value="create"
+            >
               Criar
             </Button>
-            <Button color="gray">Cancelar</Button>
+            <Button onClick={() => setShow(false)} color="gray">
+              Cancelar
+            </Button>
           </Modal.Footer>
         </Modal>
         <Table striped={true}>
@@ -100,12 +125,15 @@ export default function Posts() {
                 <Table.Cell>{c.name}</Table.Cell>
                 <Table.Cell>{c.address}</Table.Cell>
                 <Table.Cell>
-                  <a
-                    href="/tables"
+                  <Form
+                    method="delete"
                     className="font-medium text-blue-600 hover:underline dark:text-blue-500"
                   >
-                    Edit
-                  </a>
+                    <input type="hidden" name="id" value={c.id} />
+                    <button name="action" value="delete">
+                      Deletar
+                    </button>
+                  </Form>
                 </Table.Cell>
               </Table.Row>
             ))}

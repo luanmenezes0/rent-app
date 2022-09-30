@@ -3,12 +3,15 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import { getPosts } from "~/models/post.server";
+import { requireUserId } from "~/session.server";
 
 type LoaderData = {
   posts: Awaited<ReturnType<typeof getPosts>>;
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  await requireUserId(request);
+  
   return json<LoaderData>({ posts: await getPosts() });
 };
 

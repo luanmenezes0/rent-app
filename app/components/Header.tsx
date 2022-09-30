@@ -2,7 +2,7 @@ import { Form } from "@remix-run/react";
 import { Avatar, Dropdown, Navbar } from "flowbite-react";
 import { useUser } from "~/utils";
 
-export default function AppNavbar() {
+export default function Header() {
   const user = useUser();
 
   return (
@@ -37,8 +37,10 @@ export default function AppNavbar() {
               </span>
             </Dropdown.Header>
             <Dropdown.Item>
-              <Form action="/logout" method="post">
-                <button type="submit">Sair</button>
+              <Form action="/logout" method="post" className="w-full text-left">
+                <button type="submit" className="w-full">
+                  Sair
+                </button>
               </Form>
             </Dropdown.Item>
           </Dropdown>
@@ -46,10 +48,10 @@ export default function AppNavbar() {
         </div>
         <Navbar.Collapse>
           <Navbar.Link href="/" active={true}>
-            Clients
+            Clientes
           </Navbar.Link>
-          <Navbar.Link href="/notes">Notes</Navbar.Link>
-          <Navbar.Link href="/posts">Posts</Navbar.Link>
+          <Navbar.Link href="/building-sites">Obras</Navbar.Link>
+          <Navbar.Link href="/posts">Remessas</Navbar.Link>
         </Navbar.Collapse>
       </Navbar>
     </header>

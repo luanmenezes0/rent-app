@@ -1,11 +1,10 @@
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import { Link, NavLink, Outlet, useLoaderData } from "@remix-run/react";
 
-import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
+import Header from "~/components/Header";
 import { getNoteListItems } from "~/models/note.server";
-import AppNavbar from "~/components/Navbar";
+import { requireUserId } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await requireUserId(request);
@@ -15,11 +14,10 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function NotesPage() {
   const data = useLoaderData<typeof loader>();
-  const user = useUser();
 
   return (
     <div className="flex h-full min-h-screen flex-col">
-      <AppNavbar />
+      <Header />
 
       <main className="flex h-full bg-white">
         <div className="h-full w-80 border-r bg-gray-50">

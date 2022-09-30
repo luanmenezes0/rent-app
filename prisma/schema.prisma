@@ -46,11 +46,10 @@ model Post {
   updatedAt DateTime @updatedAt
 }
 
-
 model Client {
-  id    String @id @default(cuid())
-  name String
-  address  String
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

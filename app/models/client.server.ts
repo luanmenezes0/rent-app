@@ -20,6 +20,6 @@ export async function editClient(
   return prisma.client.update({ data: client, where: { id: client.id } });
 }
 
-export async function deletePost(id: string) {
+export async function deleteClient(id: number) {
   return prisma.client.delete({ where: { id } });
 }
