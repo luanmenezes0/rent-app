@@ -51,6 +51,20 @@ model Client {
   name    String
   address String
 
+  buildingSites BuildingSite[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BuildingSite {
+  id      Int    @id @default(autoincrement())
+  name    String
+  address String
+
+  client   Client @relation(fields: [clientId], references: [id])
+  clientId Int
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }

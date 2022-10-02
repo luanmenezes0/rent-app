@@ -47,7 +47,7 @@ export default function Header() {
           <Navbar.Toggle />
         </div>
         <Navbar.Collapse>
-          <Navbar.Link href="/" active={true}>
+          <Navbar.Link href="/clients" active={true}>
             Clientes
           </Navbar.Link>
           <Navbar.Link href="/building-sites">Obras</Navbar.Link>
