@@ -147,6 +147,7 @@ export default function Clients() {
                   |
                   <button
                     className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    // @ts-ignore
                     onClick={() => setEdition({ show: true, client: c })}
                   >
                     Editar
