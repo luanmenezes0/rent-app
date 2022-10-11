@@ -42,7 +42,9 @@
     "marked": "^4.1.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "tiny-invariant": "^1.2.0"
+    "react-icons": "^4.4.0",
+    "tiny-invariant": "^1.2.0",
+    "zod": "^3.19.1"
   },
   "devDependencies": {
     "@faker-js/faker": "^7.5.0",

@@ -1,4 +1,4 @@
-import { Form } from "@remix-run/react";
+import { Form, NavLink } from "@remix-run/react";
 import { Avatar, Dropdown, Navbar } from "flowbite-react";
 import { useUser } from "~/utils";
 
@@ -25,13 +25,12 @@ export default function Header() {
             label={
               <Avatar
                 alt="User settings"
-                img="https://flowbite.com/docs/images/people/profile-picture-5.jpg"
-                rounded={true}
+                img="https://k2partnering.com/wp-content/uploads/2016/05/Person.jpg"
+                rounded
               />
             }
           >
             <Dropdown.Header>
-              <span className="block text-sm">{user.id}</span>
               <span className="block truncate text-sm font-medium">
                 {user.email}
               </span>
@@ -47,11 +46,38 @@ export default function Header() {
           <Navbar.Toggle />
         </div>
         <Navbar.Collapse>
-          <Navbar.Link href="/" active={true}>
+          <NavLink
+            to="/"
+            style={({ isActive }) =>
+              isActive ? { color: "blue" } : { color: "black" }
+            }
+          >
+            Início
+          </NavLink>
+          <NavLink
+            to="/clients"
+            style={({ isActive }) =>
+              isActive ? { color: "blue" } : { color: "black" }
+            }
+          >
             Clientes
-          </Navbar.Link>
-          <Navbar.Link href="/building-sites">Obras</Navbar.Link>
-          <Navbar.Link href="/posts">Remessas</Navbar.Link>
+          </NavLink>
+          <NavLink
+            to="/building-sites"
+            style={({ isActive }) =>
+              isActive ? { color: "blue" } : { color: "black" }
+            }
+          >
+            Obras
+          </NavLink>
+          <NavLink
+            to="/posts"
+            style={({ isActive }) =>
+              isActive ? { color: "blue" } : { color: "black" }
+            }
+          >
+            Remessas
+          </NavLink>
         </Navbar.Collapse>
       </Navbar>
     </header>
