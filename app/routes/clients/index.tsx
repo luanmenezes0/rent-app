@@ -1,12 +1,18 @@
+import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, Link, useLoaderData, useTransition } from "@remix-run/react";
+import { Link, useLoaderData, useTransition } from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { ClientModal } from "~/components/ClientModal";
 
 import Header from "~/components/Header";
-import { createClient, deleteClient, getClients } from "~/models/client.server";
+import {
+  createClient,
+  deleteClient,
+  editClient,
+  getClients,
+} from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {
@@ -45,6 +51,30 @@ export async function action({ request }: ActionArgs) {
       return null;
     }
 
+    case "edit": {
+      const name = formData.get("name");
+      const address = formData.get("address");
+      const id = formData.get("id");
+
+      if (typeof name !== "string" || name.length === 0) {
+        return json(
+          { errors: { title: "name is required", body: null } },
+          { status: 400 }
+        );
+      }
+
+      if (typeof address !== "string" || address.length === 0) {
+        return json(
+          { errors: { title: null, body: "address is required" } },
+          { status: 400 }
+        );
+      }
+
+      await editClient({ address, name, id: Number(id) });
+
+      return null;
+    }
+
     case "delete": {
       const id = formData.get("id") as string;
 
@@ -56,6 +86,7 @@ export async function action({ request }: ActionArgs) {
       throw new Error("unknown action");
   }
 }
+type ModalState = { show: boolean; client: null | Client };
 
 export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
@@ -63,19 +94,24 @@ export default function Clients() {
   const transition = useTransition();
 
   const [show, setShow] = useState(false);
+  const [edition, setEdition] = useState<ModalState>({
+    show: false,
+    client: null,
+  });
 
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
     if (!isAdding) {
       setShow(false);
+      setEdition({ show: false, client: null });
     }
   }, [isAdding]);
 
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-4 p-8">
+      <main className="flex h-full flex-col gap-6 p-8">
         <h1 className="text-6xl font-bold">Clientes</h1>
         <Button onClick={() => setShow(true)}>Criar Cliente</Button>
 
@@ -97,18 +133,24 @@ export default function Clients() {
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
                   <Link to={`/clients/${c.id}`}>{c.id}</Link>
                 </Table.Cell>
-                <Table.Cell>{c.name}</Table.Cell>
+                <Table.Cell>
+                  <Link to={`/clients/${c.id}`}>{c.name}</Link>
+                </Table.Cell>
                 <Table.Cell>{c.address}</Table.Cell>
                 <Table.Cell>
-                  <Form
-                    method="delete"
-                    className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+                  <Link
+                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    to={`/clients/${c.id}`}
                   >
-                    <input type="hidden" name="id" value={c.id} />
-                    <button name="_action" value="delete">
-                      Deletar
-                    </button>
-                  </Form>
+                    Ver detalhes
+                  </Link>
+                  |
+                  <button
+                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    onClick={() => setEdition({ show: true, client: c })}
+                  >
+                    Editar
+                  </button>
                 </Table.Cell>
               </Table.Row>
             ))}
@@ -116,6 +158,13 @@ export default function Clients() {
         </Table>
       </main>
       {show && <ClientModal onClose={() => setShow(false)} />}
+      {edition.show && edition.client && (
+        <ClientModal
+          editionMode
+          values={edition.client}
+          onClose={() => setEdition({ show: false, client: null })}
+        />
+      )}
     </>
   );
 }

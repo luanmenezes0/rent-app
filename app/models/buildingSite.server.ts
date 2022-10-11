@@ -1,8 +1,11 @@
 import type { BuildingSite } from "@prisma/client";
 import { prisma } from "~/db.server";
-export type { Post } from "@prisma/client";
 
-export async function getBuildingSites(clientId: string) {
+export async function getBuildingSites() {
+  return prisma.buildingSite.findMany();
+}
+
+export async function getBuildingSitesByClientId(clientId: string) {
   return prisma.buildingSite.findMany({ where: { clientId: Number(clientId) } });
 }
 
