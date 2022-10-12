@@ -1,13 +1,8 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Form,
-  Link,
-  useActionData,
-  useLoaderData,
-  useTransition,
-} from "@remix-run/react";
+import { Link, useLoaderData, useTransition } from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
+import { BuildingSiteModel, ClientModel } from "prisma/zod";
 import { useEffect, useState } from "react";
 import { BuildingSiteModal } from "~/components/BuildingSiteModal";
 
@@ -18,11 +13,6 @@ import {
   getBuildingSites,
 } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
-
-// const LoginFields = z.object({
-//   username: z.string().min(1),
-//   password: z.string().min(1),
-// });
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -83,10 +73,6 @@ export async function action({ request }: ActionArgs) {
 export default function BuildingSites() {
   const { buildingSites } = useLoaderData<typeof loader>();
 
-  const actionData = useActionData();
-
-  console.log(actionData);
-
   const transition = useTransition();
 
   const [show, setShow] = useState(false);
@@ -122,20 +108,17 @@ export default function BuildingSites() {
                 className="bg-white dark:border-gray-700 dark:bg-gray-800"
               >
                 <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  <Link to={`/buildingSites/${bs.id}`}>{bs.id}</Link>
+                  {bs.id}
                 </Table.Cell>
                 <Table.Cell>{bs.name}</Table.Cell>
                 <Table.Cell>{bs.address}</Table.Cell>
                 <Table.Cell>
-                  <Form
-                    method="delete"
-                    className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+                  <Link
+                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
+                    to={`/building-sites/${bs.id}`}
                   >
-                    <input type="hidden" name="id" value={bs.id} />
-                    <button name="_action" value="delete">
-                      Deletar
-                    </button>
-                  </Form>
+                    Ver detalhes
+                  </Link>
                 </Table.Cell>
               </Table.Row>
             ))}

@@ -6,7 +6,9 @@ export async function getBuildingSites() {
 }
 
 export async function getBuildingSitesByClientId(clientId: string) {
-  return prisma.buildingSite.findMany({ where: { clientId: Number(clientId) } });
+  return prisma.buildingSite.findMany({
+    where: { clientId: Number(clientId) },
+  });
 }
 
 export async function getBuildingSite(id: string) {
@@ -25,6 +27,19 @@ export async function editBuildingSite(
   return prisma.buildingSite.update({
     data: buildingSite,
     where: { id: buildingSite.id },
+  });
+}
+
+export async function updateCount({
+  buildingSiteId,
+  scaffoldingCount,
+}: {
+  buildingSiteId: number;
+  scaffoldingCount: number;
+}) {
+  return prisma.buildingSite.update({
+    data: { scaffoldingCount },
+    where: { id: buildingSiteId },
   });
 }
 

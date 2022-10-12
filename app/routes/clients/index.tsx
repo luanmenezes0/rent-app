@@ -1,7 +1,12 @@
 import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useTransition } from "@remix-run/react";
+import {
+  Link,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { ClientModal } from "~/components/ClientModal";
@@ -14,6 +19,18 @@ import {
   getClients,
 } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
+import type {
+  ClientFields,
+  ClientFieldsErrors,
+} from "~/validators/clientValidation";
+import { createClientSchema } from "~/validators/clientValidation";
+
+type ActionData = {
+  fields: ClientFields;
+  errors?: ClientFieldsErrors;
+};
+
+const badRequest = (data: ActionData) => json(data, { status: 400 });
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -27,28 +44,22 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const action = formData.get("_action");
 
+  const fields = Object.fromEntries(formData.entries());
+
   switch (action) {
     case "create": {
-      const name = formData.get("name");
-      const address = formData.get("address");
+      const result = createClientSchema.safeParse(fields);
 
-      if (typeof name !== "string" || name.length === 0) {
-        return json(
-          { errors: { title: "name is required", body: null } },
-          { status: 400 }
-        );
+      if (!result.success) {
+        return badRequest({ fields, errors: result.error.flatten() });
       }
 
-      if (typeof address !== "string" || address.length === 0) {
-        return json(
-          { errors: { title: null, body: "address is required" } },
-          { status: 400 }
-        );
-      }
+      await createClient({
+        address: result.data.address,
+        name: result.data.name,
+      });
 
-      await createClient({ address, name });
-
-      return null;
+      return json({ fields });
     }
 
     case "edit": {
@@ -91,6 +102,8 @@ type ModalState = { show: boolean; client: null | Client };
 export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
 
+  const actionData = useActionData<ActionData>();
+
   const transition = useTransition();
 
   const [show, setShow] = useState(false);
@@ -102,11 +115,11 @@ export default function Clients() {
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
-    if (!isAdding) {
+    if (!isAdding && !actionData?.errors) {
       setShow(false);
       setEdition({ show: false, client: null });
     }
-  }, [isAdding]);
+  }, [isAdding, actionData?.errors]);
 
   return (
     <>

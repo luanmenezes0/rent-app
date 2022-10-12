@@ -71,12 +71,20 @@ export default function Header() {
             Obras
           </NavLink>
           <NavLink
-            to="/posts"
+            to="/deliveries"
             style={({ isActive }) =>
               isActive ? { color: "blue" } : { color: "black" }
             }
           >
             Remessas
+          </NavLink>
+          <NavLink
+            to="/inventory"
+            style={({ isActive }) =>
+              isActive ? { color: "blue" } : { color: "black" }
+            }
+          >
+            Estoque
           </NavLink>
         </Navbar.Collapse>
       </Navbar>

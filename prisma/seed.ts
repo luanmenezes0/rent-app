@@ -24,19 +24,20 @@ async function seed() {
     },
   });
 
-  await prisma.note.create({
+  await prisma.delivery.create({
     data: {
-      title: "My first note",
-      body: "Hello, world!",
-      userId: user.id,
+      propsCount: 8,
+      propsDeliveryType: 1,
+      scaffoldingDeliveryType: 1,
+      buildingSiteId: 1,
+      scaffoldingCount: 16,
     },
   });
 
-  await prisma.note.create({
+  await prisma.rentable.create({
     data: {
-      title: "My second note",
-      body: "Hello, world!",
-      userId: user.id,
+      name: "Andaime",
+      count: 615,
     },
   });
 

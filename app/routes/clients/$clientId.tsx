@@ -90,7 +90,7 @@ export default function Client() {
                   className="bg-white dark:border-gray-700 dark:bg-gray-800"
                 >
                   <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    <Link to={`/buildingSites/${bs.id}`}>{bs.id}</Link>
+                    <Link to={`/building-sites/${bs.id}`}>{bs.id}</Link>
                   </Table.Cell>
                   <Table.Cell>{bs.name}</Table.Cell>
                   <Table.Cell>{bs.address}</Table.Cell>
