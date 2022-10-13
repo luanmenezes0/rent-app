@@ -26,27 +26,25 @@ export default function Deliveries() {
           {deliveries.map((d) => (
             <Card key={d.id}>
               <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {d.buildingSite.name} -{" "}
                 {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
               </h5>
               <p className="font-normal text-gray-700 dark:text-gray-400">
                 <div className="flex items-center gap-2">
-                  Andaimes: {d.scaffoldingCount}{" "}
-                  {d.scaffoldingDeliveryType === 1 ? (
-                    <HiOutlineArrowUp color="green" />
-                  ) : (
-                    <HiOutlineArrowDown color="red" />
-                  )}
-                </div>
-                <div className="flex items-center gap-2">
-                  Escoras: {d.propsCount}{" "}
-                  {d.propsDeliveryType === 1 ? (
+                  {d.rentable.name} ** {d.count}
+                  {d.deliveryType === 1 ? (
                     <HiOutlineArrowUp color="green" />
                   ) : (
                     <HiOutlineArrowDown color="red" />
                   )}
                 </div>
               </p>
-              <Link className="font-medium text-blue-600 dark:text-blue-500 hover:underline" to={`/building-sites/${d.buildingSiteId}`}>Ver Obra</Link>
+              <Link
+                className="font-medium text-blue-600 hover:underline dark:text-blue-500"
+                to={`/building-sites/${d.buildingSiteId}`}
+              >
+                Ver Obra
+              </Link>
             </Card>
           ))}
         </>

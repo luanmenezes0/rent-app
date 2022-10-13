@@ -24,23 +24,6 @@ async function seed() {
     },
   });
 
-  await prisma.delivery.create({
-    data: {
-      propsCount: 8,
-      propsDeliveryType: 1,
-      scaffoldingDeliveryType: 1,
-      buildingSiteId: 1,
-      scaffoldingCount: 16,
-    },
-  });
-
-  await prisma.rentable.create({
-    data: {
-      name: "Andaime",
-      count: 615,
-    },
-  });
-
   // const clients = await prisma.client.findMany({});
 
   // const deleteClient = async (client: Client) => {

@@ -7,10 +7,6 @@ generator client {
   provider = "prisma-client-js"
 }
 
-generator zod {
-  provider = "zod-prisma"
-}
-
 model User {
   id    String @id @default(cuid())
   email String @unique
@@ -69,35 +65,49 @@ model BuildingSite {
   client   Client @relation(fields: [clientId], references: [id])
   clientId Int
 
+  deliveries  Delivery[]
+  inventories Inventory[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  deliveries       Delivery[]
-  scaffoldingCount Int?  @default(0)
-  propsCount       Int?  @default(0)
 }
 
 model Delivery {
-  id Int @id @default(autoincrement())
+  id           Int @id @default(autoincrement())
+  count        Int
+  deliveryType Int
 
   buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
   buildingSiteId Int
 
-  scaffoldingCount        Int?  @default(0)
-  scaffoldingDeliveryType Int? 
-  propsCount              Int?
-  propsDeliveryType       Int?
+  rentable   Rentable @relation(fields: [rentableId], references: [id])
+  rentableId Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Rentable {
-  id      Int    @id @default(autoincrement())
-  name    String
-  count   Int?   @default(0)
+  id    Int    @id @default(autoincrement())
+  name  String
+  count Int    @default(0)
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  deliveries  Delivery[]
+  inventories Inventory[]
+}
+
+model Inventory {
+  id    Int @id @default(autoincrement())
+  count Int
+
+  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+
+  rentable   Rentable @relation(fields: [rentableId], references: [id])
+  rentableId Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
 }

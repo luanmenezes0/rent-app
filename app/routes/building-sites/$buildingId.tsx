@@ -1,6 +1,12 @@
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Form, useCatch, useLoaderData, useTransition } from "@remix-run/react";
+import {
+  Form,
+  useCatch,
+  useFetcher,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import dayjs from "dayjs";
 import { Button, Label, Modal, Select, Timeline } from "flowbite-react";
 import { useEffect, useState } from "react";
@@ -10,17 +16,11 @@ import Header from "~/components/Header";
 import { getBuildingSite } from "~/models/buildingSite.server";
 import { getClient } from "~/models/client.server";
 import {
-  createDelivery,
+  createDeliveries,
   getDeliveriesByBuildingId,
 } from "~/models/delivery.server";
+import type { Rentable } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
-
-export enum Rentables {
-  "Andaime" = 1,
-  "Escora",
-  "Betoneira",
-  "Rompedor",
-}
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -45,92 +45,66 @@ export async function action({ request }: ActionArgs) {
 
   const formData = await request.formData();
 
-  const {
-    buildingSiteId,
-    propsCount,
-    propsDeliveryType,
-    scaffoldingCount,
-    scaffoldingDeliveryType,
-    scaffolding,
-  } = Object.fromEntries(formData);
+  const rentableIds = formData.getAll("rentableId");
+  const buildingSiteId = formData.get("buildingSiteId") as string;
 
-  await createDelivery(
-    {
-      buildingSiteId: Number(buildingSiteId),
-      propsCount: Number(propsCount),
-      propsDeliveryType: Number(propsDeliveryType),
-      scaffoldingCount: Number(scaffoldingCount),
-      scaffoldingDeliveryType: Number(scaffoldingDeliveryType),
-    },
-    Number(scaffolding)
-  );
+  const deliveries = rentableIds.map((rentableId) => {
+    const count = formData.get(`${rentableId}_count`) as string;
+    const deliveryType = formData.get(`${rentableId}_delivery_type`) as string;
+
+    return { rentableId, count, deliveryType };
+  });
+
+  await createDeliveries(deliveries, buildingSiteId);
 
   return null;
 }
-
-function DeliveyModal({
-  onClose,
-  buildingSiteId,
-  scaffolding,
-}: {
+interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
-  scaffolding: number;
-}) {
+}
+
+function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
+  const fetcher = useFetcher<{ rentables: Rentable[] }>();
+
+  useEffect(() => {
+    if (fetcher.type === "init") {
+      fetcher.load("/inventory");
+    }
+  }, [fetcher]);
+
   return (
     <Modal show onClose={onClose} size="md">
       <Modal.Header>Nova Remessa</Modal.Header>
       <Modal.Body>
-        <Form
-          method="post"
-          id="buiding-site-form"
-          className="flex flex-col gap-4"
-        >
+        <Form method="post" id="delivery-form" className="flex flex-col gap-4">
           <input type="hidden" name="buildingSiteId" value={buildingSiteId} />
-          <input type="hidden" name="scaffolding" value={scaffolding} />
-          <div className="grid grid-cols-3 items-center gap-2">
-            <Label htmlFor="scaffoldingCount" value="Andaimes" />
-            <input
-              min={0}
-              type="number"
-              name="scaffoldingCount"
-              id="scaffoldingCount"
-              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder=""
-              defaultValue={0}
-              required
-            />
-            <Select name="scaffoldingDeliveryType">
-              <option value="1">Entrega</option>
-              <option value="2">Retirada</option>
-            </Select>
-          </div>
-          <div className="grid grid-cols-3 items-center gap-2">
-            <Label htmlFor="propsCount" value="Escoras" />
-            <input
-              min={0}
-              type="number"
-              name="propsCount"
-              id="propsCount"
-              className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-              placeholder=""
-              defaultValue={0}
-              required
-            />
-            <Select name="propsDeliveryType">
-              <option value="1">Entrega</option>
-              <option value="2">Retirada</option>
-            </Select>
-          </div>
+          {fetcher.data?.rentables.map((rentable) => (
+            <div key={rentable.id}>
+              <input type="hidden" name="rentableId" value={rentable.id} />
+              <div className="grid grid-cols-3 items-center gap-2">
+                <Label htmlFor={`${rentable.id}_count`} value={rentable.name} />
+                <input
+                  min={0}
+                  type="number"
+                  name={`${rentable.id}_count`}
+                  id={`${rentable.id}_count`}
+                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
+                  placeholder=""
+                  defaultValue={0}
+                  required
+                />
+                <Select name={`${rentable.id}_delivery_type`}>
+                  <option value="1">Entrega</option>
+                  <option value="2">Retirada</option>
+                </Select>
+              </div>
+            </div>
+          ))}
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button
-          type="submit"
-          form="buiding-site-form"
-          name="_action"
-          value="create"
-        >
+        <Button type="submit" form="delivery-form">
           Criar
         </Button>
         <Button onClick={onClose} color="gray">
@@ -186,16 +160,8 @@ export default function BuildingSite() {
                     {/* <Timeline.Title>{d.buildingSiteId}</Timeline.Title> */}
                     <Timeline.Body>
                       <div className="flex items-center gap-2">
-                        Andaimes: {d.scaffoldingCount}{" "}
-                        {d.scaffoldingDeliveryType === 1 ? (
-                          <HiOutlineArrowUp color="green" />
-                        ) : (
-                          <HiOutlineArrowDown color="red" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        Escoras: {d.propsCount}{" "}
-                        {d.propsDeliveryType === 1 ? (
+                        {d.rentableId}-{d.count}
+                        {d.deliveryType === 1 ? (
                           <HiOutlineArrowUp color="green" />
                         ) : (
                           <HiOutlineArrowDown color="red" />
@@ -211,7 +177,6 @@ export default function BuildingSite() {
       </main>
       {show && (
         <DeliveyModal
-          scaffolding={buildingSite.scaffoldingCount}
           onClose={() => setShow(false)}
           buildingSiteId={buildingSite.id}
         />

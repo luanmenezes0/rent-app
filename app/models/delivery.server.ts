@@ -1,9 +1,10 @@
 import type { Delivery } from "@prisma/client";
 import { prisma } from "~/db.server";
-import { updateCount } from "./buildingSite.server";
 
 export async function getDeliveries() {
-  return prisma.delivery.findMany();
+  return prisma.delivery.findMany({
+    include: { buildingSite: true, rentable: true },
+  });
 }
 
 export async function getDeliveriesByBuildingId(buildingSiteId: string) {
@@ -16,27 +17,31 @@ export async function getDelivery(id: string) {
   return prisma.delivery.findUnique({ where: { id: Number(id) } });
 }
 
-export async function createDelivery(
-  delivery: Omit<Delivery, "id" | "createdAt" | "updatedAt">,
-  scaffolding: number
+type DeliveryUnit = {
+  rentableId: FormDataEntryValue;
+  count: string;
+  deliveryType: string;
+};
+
+export async function createDeliveries(
+  deliveries: DeliveryUnit[],
+  buildingSiteId: string
 ) {
-  await prisma.delivery.create({
-    data: delivery,
-  });
+  deliveries.forEach(async (delivery) => {
+    const rentableId = Number(delivery.rentableId);
+    const count = Number(delivery.count);
+    const deliveryType = Number(delivery.deliveryType);
 
-  let scaffoldingCount = scaffolding;
-
-  if (delivery.scaffoldingCount && delivery.scaffoldingDeliveryType === 1) {
-    scaffoldingCount = scaffoldingCount + delivery.scaffoldingCount;
-  }
-
-  if (delivery.scaffoldingCount && delivery.scaffoldingDeliveryType === 2) {
-    scaffoldingCount = scaffoldingCount - delivery.scaffoldingCount;
-  }
-
-  return updateCount({
-    buildingSiteId: delivery.buildingSiteId,
-    scaffoldingCount: scaffoldingCount,
+    if (count > 0) {
+      await prisma.delivery.create({
+        data: {
+          buildingSiteId: Number(buildingSiteId),
+          rentableId,
+          count,
+          deliveryType,
+        },
+      });
+    }
   });
 }
 
@@ -49,4 +54,9 @@ export async function editDelivery(delivery: Delivery) {
 
 export async function deleteDelivery(id: string) {
   return prisma.delivery.delete({ where: { id: Number(id) } });
+}
+
+export enum DeliveryType {
+  IN = 1,
+  OUT = 2,
 }
