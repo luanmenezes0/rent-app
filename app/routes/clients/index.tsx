@@ -23,8 +23,8 @@ import type {
   ClientFields,
   ClientFieldsErrors,
 } from "~/validators/clientValidation";
-import { createClientSchema } from "~/validators/clientValidation";
-
+import { clientSchema } from "~/validators/clientValidation";
+ 
 type ActionData = {
   fields: ClientFields;
   errors?: ClientFieldsErrors;
@@ -48,7 +48,7 @@ export async function action({ request }: ActionArgs) {
 
   switch (action) {
     case "create": {
-      const result = createClientSchema.safeParse(fields);
+      const result = clientSchema.safeParse(fields);
 
       if (!result.success) {
         return badRequest({ fields, errors: result.error.flatten() });
@@ -57,33 +57,33 @@ export async function action({ request }: ActionArgs) {
       await createClient({
         address: result.data.address,
         name: result.data.name,
+        phoneNumber: result.data.phoneNumber,
+        isLegalEntity: result.data.isLegalEntity === "true",
+        registrationNumber: result.data.registrationNumber ?? null,
       });
 
       return json({ fields });
     }
 
     case "edit": {
-      const name = formData.get("name");
-      const address = formData.get("address");
       const id = formData.get("id");
 
-      if (typeof name !== "string" || name.length === 0) {
-        return json(
-          { errors: { title: "name is required", body: null } },
-          { status: 400 }
-        );
+      const result = clientSchema.safeParse(fields);
+
+      if (!result.success) {
+        return badRequest({ fields, errors: result.error.flatten() });
       }
 
-      if (typeof address !== "string" || address.length === 0) {
-        return json(
-          { errors: { title: null, body: "address is required" } },
-          { status: 400 }
-        );
-      }
+      await editClient({
+        address: result.data.address,
+        name: result.data.name,
+        phoneNumber: result.data.phoneNumber,
+        isLegalEntity: result.data.isLegalEntity === "true",
+        registrationNumber: result.data.registrationNumber ?? null,
+        id: Number(id),
+      });
 
-      await editClient({ address, name, id: Number(id) });
-
-      return null;
+      return json({ fields });
     }
 
     case "delete": {

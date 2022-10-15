@@ -47,9 +47,12 @@ model Post {
 }
 
 model Client {
-  id      Int    @id @default(autoincrement())
-  name    String
-  address String
+  id                 Int     @id @default(autoincrement())
+  name               String
+  address            String
+  phoneNumber        String
+  isLegalEntity      Boolean @default(false)
+  registrationNumber String?
 
   buildingSites BuildingSite[]
 
