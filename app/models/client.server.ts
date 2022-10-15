@@ -6,7 +6,10 @@ export async function getClients() {
 }
 
 export async function getClient(id: string) {
-  return prisma.client.findUnique({ where: { id: Number(id) } });
+  return prisma.client.findUnique({
+    where: { id: Number(id) },
+    include: { buildingSites: true },
+  });
 }
 
 export async function createClient(
