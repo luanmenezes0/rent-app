@@ -1,17 +1,11 @@
+import type { Client } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
 
 interface ClientModalProps {
   onClose: () => void;
   editionMode?: boolean;
-  values?: {
-    id: number;
-    address: string;
-    name: string;
-    phoneNumber: string;
-    registrationNumber: string;
-    isLegalEntity: boolean;
-  };
+  values?: Omit<Client, "createdAt" | "updatedAt">;
 }
 
 export function ClientModal({
@@ -38,13 +32,13 @@ export function ClientModal({
             <TextInput
               id="name"
               name="name"
-              required
+              // required
               defaultValue={values?.name}
               style={hasError("name")}
             />
-            {actionData?.errors?.fieldErrors?.name && (
+            {actionData?.fieldErrors?.name && (
               <span className="text-xs italic text-red-600">
-                {actionData?.errors?.fieldErrors?.name[0]}
+                {actionData?.fieldErrors?.name}
               </span>
             )}
           </div>
@@ -122,7 +116,7 @@ export function ClientModal({
             <TextInput
               id="registrationNumber"
               name="registrationNumber"
-              defaultValue={values?.registrationNumber}
+              defaultValue={values?.registrationNumber ?? ""}
               style={hasError("registrationNumber")}
               minLength={11}
             />

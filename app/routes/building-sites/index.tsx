@@ -2,7 +2,6 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData, useTransition } from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
-import { BuildingSiteModel, ClientModel } from "prisma/zod";
 import { useEffect, useState } from "react";
 import { BuildingSiteModal } from "~/components/BuildingSiteModal";
 

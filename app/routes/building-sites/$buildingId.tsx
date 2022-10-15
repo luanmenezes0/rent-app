@@ -2,6 +2,7 @@ import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Form,
+  useActionData,
   useCatch,
   useFetcher,
   useLoaderData,
@@ -11,16 +12,18 @@ import dayjs from "dayjs";
 import { Button, Label, Modal, Select, Timeline } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
+import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+import BuildingSiteModal2 from "~/components/BuildingSiteModal2";
 import Header from "~/components/Header";
-import { getBuildingSite } from "~/models/buildingSite.server";
-import { getClient } from "~/models/client.server";
 import {
-  createDeliveries,
-  getDeliveriesByBuildingId,
-} from "~/models/delivery.server";
+  editBuildingSite,
+  getBuildingSite,
+} from "~/models/buildingSite.server";
+import { createDeliveries } from "~/models/delivery.server";
 import type { Rentable } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
+import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -33,31 +36,50 @@ export async function loader({ request, params }: LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const deliveries = await getDeliveriesByBuildingId(params.buildingId);
-
-  const client = await getClient(buildingSite.clientId);
-
-  return json({ buildingSite, deliveries, client });
+  return json({ buildingSite });
 }
 
 export async function action({ request }: ActionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
+  const action = formData.get("_action");
+  switch (action) {
+    case "edit-bs": {
+      const result = await buildingSiteValidator.validate(formData);
 
-  const rentableIds = formData.getAll("rentableId");
-  const buildingSiteId = formData.get("buildingSiteId") as string;
+      if (result.error) {
+        return validationError(result.error);
+      }
 
-  const deliveries = rentableIds.map((rentableId) => {
-    const count = formData.get(`${rentableId}_count`) as string;
-    const deliveryType = formData.get(`${rentableId}_delivery_type`) as string;
+      await editBuildingSite({
+        address: result.data.address,
+        name: result.data.name,
+        id: Number(result.data.id),
+      });
+    }
 
-    return { rentableId, count, deliveryType };
-  });
+    case "create-delivery": {
+      const rentableIds = formData.getAll("rentableId");
+      const buildingSiteId = formData.get("buildingSiteId") as string;
 
-  await createDeliveries(deliveries, buildingSiteId);
+      const deliveries = rentableIds.map((rentableId) => {
+        const count = formData.get(`${rentableId}_count`) as string;
+        const deliveryType = formData.get(
+          `${rentableId}_delivery_type`
+        ) as string;
 
-  return null;
+        return { rentableId, count, deliveryType };
+      });
+
+      await createDeliveries(deliveries, buildingSiteId);
+
+      return null;
+    }
+
+    default:
+      throw new Error("Invalid action");
+  }
 }
 interface DeliveryModalProps {
   onClose: () => void;
@@ -104,7 +126,12 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
         </Form>
       </Modal.Body>
       <Modal.Footer>
-        <Button type="submit" form="delivery-form">
+        <Button
+          name="_action"
+          value="create-delivery"
+          type="submit"
+          form="delivery-form"
+        >
           Criar
         </Button>
         <Button onClick={onClose} color="gray">
@@ -116,19 +143,23 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
 }
 
 export default function BuildingSite() {
-  const { buildingSite, deliveries, client } = useLoaderData<typeof loader>();
+  const { buildingSite } = useLoaderData<typeof loader>();
 
   const transition = useTransition();
+  const actionData = useActionData();
+
 
   const [show, setShow] = useState(false);
+  const [showBuildingModal, setShowBuildingModal] = useState(false);
 
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
-    if (!isAdding) {
+    if (!isAdding && !actionData?.fieldErrors) {
       setShow(false);
+      setShowBuildingModal(false);
     }
-  }, [isAdding]);
+  }, [isAdding, actionData]);
 
   return (
     <>
@@ -137,12 +168,17 @@ export default function BuildingSite() {
         <h2 className="text-2xl font-bold">{buildingSite.name}</h2>
         <div className="flex justify-between">
           <div>
-            <p>{client?.name}</p>
-            <p className="py-4">{buildingSite.address}</p>
-            <p>{buildingSite.scaffoldingCount} Andaimes</p>
-            <p>{buildingSite.propsCount} Escoras</p>
-            <div></div>
+            <dl>
+              <dt className="font-bold">Endereço</dt>
+              <dd>{buildingSite.address}</dd>
+
+              <dt className="font-bold">Cliente</dt>
+              <dd>{buildingSite.client.name}</dd>
+            </dl>
             <Button onClick={() => setShow(true)}>Adicionar Remessa</Button>
+            <Button onClick={() => setShowBuildingModal(true)}>
+              Editar Obra
+            </Button>
           </div>
           <div className="px-8 py-4">
             <h3 className="text-black-400 p-4 text-left text-xl font-bold">
@@ -150,7 +186,7 @@ export default function BuildingSite() {
             </h3>
 
             <Timeline>
-              {deliveries.map((d) => (
+              {buildingSite.deliveries.map((d) => (
                 <Timeline.Item key={d.id}>
                   <Timeline.Point color="red" />
                   <Timeline.Content>
@@ -181,6 +217,14 @@ export default function BuildingSite() {
           buildingSiteId={buildingSite.id}
         />
       )}
+      {showBuildingModal && (
+        <BuildingSiteModal2
+          editionMode
+          client={buildingSite.client}
+          values={buildingSite}
+          onClose={() => setShowBuildingModal(false)}
+        />
+      )}
     </>
   );
 }
@@ -195,7 +239,7 @@ export function CatchBoundary() {
   const caught = useCatch();
 
   if (caught.status === 404) {
-    return <div>Cliente não encontrado</div>;
+    return <div>Obra não encontrada</div>;
   }
 
   throw new Error(`Unexpected caught response with status: ${caught.status}`);

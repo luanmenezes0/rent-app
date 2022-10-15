@@ -9,6 +9,7 @@ import {
 } from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
+import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
 
 import Header from "~/components/Header";
@@ -19,18 +20,7 @@ import {
   getClients,
 } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
-import type {
-  ClientFields,
-  ClientFieldsErrors,
-} from "~/validators/clientValidation";
-import { clientSchema } from "~/validators/clientValidation";
- 
-type ActionData = {
-  fields: ClientFields;
-  errors?: ClientFieldsErrors;
-};
-
-const badRequest = (data: ActionData) => json(data, { status: 400 });
+import { clientValidator } from "~/validators/clientValidation";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -44,14 +34,12 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const action = formData.get("_action");
 
-  const fields = Object.fromEntries(formData.entries());
-
   switch (action) {
     case "create": {
-      const result = clientSchema.safeParse(fields);
+      const result = await clientValidator.validate(formData);
 
-      if (!result.success) {
-        return badRequest({ fields, errors: result.error.flatten() });
+      if (result.error) {
+        return validationError(result.error);
       }
 
       await createClient({
@@ -62,16 +50,14 @@ export async function action({ request }: ActionArgs) {
         registrationNumber: result.data.registrationNumber ?? null,
       });
 
-      return json({ fields });
+      return null;
     }
 
     case "edit": {
-      const id = formData.get("id");
+      const result = await clientValidator.validate(formData);
 
-      const result = clientSchema.safeParse(fields);
-
-      if (!result.success) {
-        return badRequest({ fields, errors: result.error.flatten() });
+      if (result.error) {
+        return validationError(result.error);
       }
 
       await editClient({
@@ -80,10 +66,10 @@ export async function action({ request }: ActionArgs) {
         phoneNumber: result.data.phoneNumber,
         isLegalEntity: result.data.isLegalEntity === "true",
         registrationNumber: result.data.registrationNumber ?? null,
-        id: Number(id),
+        id: Number(result.data.id),
       });
 
-      return json({ fields });
+      return null;
     }
 
     case "delete": {
@@ -97,13 +83,13 @@ export async function action({ request }: ActionArgs) {
       throw new Error("unknown action");
   }
 }
+
 type ModalState = { show: boolean; client: null | Client };
 
 export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
 
-  const actionData = useActionData<ActionData>();
-
+  const actionData = useActionData();
   const transition = useTransition();
 
   const [show, setShow] = useState(false);
@@ -115,11 +101,11 @@ export default function Clients() {
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
-    if (!isAdding && !actionData?.errors) {
+    if (!isAdding && !actionData?.fieldErrors) {
       setShow(false);
       setEdition({ show: false, client: null });
     }
-  }, [isAdding, actionData?.errors]);
+  }, [isAdding, actionData]);
 
   return (
     <>

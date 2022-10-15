@@ -40,7 +40,7 @@ export async function action({ request, params }: ActionArgs) {
   const action = formData.get("_action");
 
   switch (action) {
-    case "create": {
+    case "create-bs": {
       const result = await buildingSiteValidator.validate(formData);
 
       if (result.error) {

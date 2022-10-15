@@ -1,13 +1,7 @@
+import { withZod } from "@remix-validated-form/with-zod";
 import * as z from "zod";
 
-type InferSafeParseErrors<T extends z.ZodType<any, any, any>, U = string> = {
-  formErrors: U[];
-  fieldErrors: {
-    [P in keyof z.infer<T>]?: U[];
-  };
-};
-
-export const clientSchema = z.object({
+export const ClientSchema = z.object({
   id: z.string().optional(),
   name: z.string().min(1, "O Nome é obrigatório"),
   address: z.string().min(1, "O Endereço é obrigatório"),
@@ -16,7 +10,4 @@ export const clientSchema = z.object({
   registrationNumber: z.string().optional(),
 });
 
-export type ClientFields = z.infer<typeof clientSchema>;
-export type ClientFieldsErrors = InferSafeParseErrors<
-  typeof clientSchema
->;
+export const clientValidator = withZod(ClientSchema);
