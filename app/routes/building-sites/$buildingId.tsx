@@ -14,7 +14,7 @@ import { useEffect, useState } from "react";
 import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
-import BuildingSiteModal2 from "~/components/BuildingSiteModal2";
+import BuildingSiteModal from "~/components/BuildingSiteModal";
 import Header from "~/components/Header";
 import {
   editBuildingSite,
@@ -148,7 +148,6 @@ export default function BuildingSite() {
   const transition = useTransition();
   const actionData = useActionData();
 
-
   const [show, setShow] = useState(false);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
@@ -218,7 +217,7 @@ export default function BuildingSite() {
         />
       )}
       {showBuildingModal && (
-        <BuildingSiteModal2
+        <BuildingSiteModal
           editionMode
           client={buildingSite.client}
           values={buildingSite}

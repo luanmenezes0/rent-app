@@ -1,6 +1,7 @@
 import type { Client } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
+import FormFieldError from "./FormFieldError";
 
 interface ClientModalProps {
   onClose: () => void;
@@ -8,17 +9,13 @@ interface ClientModalProps {
   values?: Omit<Client, "createdAt" | "updatedAt">;
 }
 
-export function ClientModal({
-  onClose,
-  editionMode,
-  values,
-}: ClientModalProps) {
-  const actionData = useActionData();
+export function ClientModal(props: ClientModalProps) {
+  const { onClose, editionMode, values } = props;
 
-  function hasError(field: string) {
-    return actionData?.errors?.fieldErrors?.[field]
-      ? { border: "2px solid red" }
-      : {};
+  const actionData = useActionData<{ fieldErrors: Partial<Client> }>();
+
+  function hasError(field: keyof Client) {
+    return actionData?.fieldErrors?.[field] ? { border: "2px solid red" } : {};
   }
 
   return (
@@ -32,14 +29,12 @@ export function ClientModal({
             <TextInput
               id="name"
               name="name"
-              // required
+              required
               defaultValue={values?.name}
               style={hasError("name")}
             />
             {actionData?.fieldErrors?.name && (
-              <span className="text-xs italic text-red-600">
-                {actionData?.fieldErrors?.name}
-              </span>
+              <FormFieldError>{actionData?.fieldErrors?.name}</FormFieldError>
             )}
           </div>
           <div>
@@ -51,10 +46,10 @@ export function ClientModal({
               defaultValue={values?.address}
               style={hasError("address")}
             />
-            {actionData?.errors?.fieldErrors?.address && (
-              <span className="text-xs italic text-red-600">
-                {actionData?.errors?.fieldErrors?.address[0]}
-              </span>
+            {actionData?.fieldErrors?.address && (
+              <FormFieldError>
+                {actionData?.fieldErrors?.address}
+              </FormFieldError>
             )}
           </div>
           <div>
@@ -67,10 +62,10 @@ export function ClientModal({
               required
               style={hasError("phoneNumber")}
             />
-            {actionData?.errors?.fieldErrors?.phoneNumber && (
-              <span className="text-xs italic text-red-600">
-                {actionData?.errors?.fieldErrors?.phoneNumber[0]}
-              </span>
+            {actionData?.fieldErrors?.phoneNumber && (
+              <FormFieldError>
+                {actionData?.fieldErrors?.phoneNumber}
+              </FormFieldError>
             )}
           </div>
           <fieldset>
@@ -120,10 +115,10 @@ export function ClientModal({
               style={hasError("registrationNumber")}
               minLength={11}
             />
-            {actionData?.errors?.fieldErrors?.registrationNumber && (
-              <span className="text-xs italic text-red-600">
-                {actionData?.errors?.fieldErrors?.registrationNumber[0]}
-              </span>
+            {actionData?.fieldErrors?.registrationNumber && (
+              <FormFieldError>
+                {actionData?.fieldErrors?.registrationNumber}
+              </FormFieldError>
             )}
           </div>
         </Form>

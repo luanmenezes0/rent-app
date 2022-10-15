@@ -11,7 +11,7 @@ import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
-import BuildingSiteModal2 from "~/components/BuildingSiteModal2";
+import BuildingSiteModal from "~/components/BuildingSiteModal";
 import Header from "~/components/Header";
 import { createBuildingSite } from "~/models/buildingSite.server";
 import { getClient } from "~/models/client.server";
@@ -141,7 +141,7 @@ export default function Client() {
         <hr className="my-4" />
       </main>
       {show && (
-        <BuildingSiteModal2 client={client} onClose={() => setShow(false)} />
+        <BuildingSiteModal client={client} onClose={() => setShow(false)} />
       )}
     </>
   );
