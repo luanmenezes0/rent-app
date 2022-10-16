@@ -44,6 +44,7 @@ export async function action({ request }: ActionArgs) {
 
   const formData = await request.formData();
   const action = formData.get("_action");
+
   switch (action) {
     case "edit-bs": {
       const result = await buildingSiteValidator.validate(formData);
@@ -60,19 +61,21 @@ export async function action({ request }: ActionArgs) {
     }
 
     case "create-delivery": {
-      const rentableIds = formData.getAll("rentableId");
+      const rentableIds = formData.getAll("rentableId") as string[];
       const buildingSiteId = formData.get("buildingSiteId") as string;
 
-      const deliveries = rentableIds.map((rentableId) => {
-        const count = formData.get(`${rentableId}_count`) as string;
-        const deliveryType = formData.get(
-          `${rentableId}_delivery_type`
-        ) as string;
+      const units = rentableIds.map((id) => {
+        const count = formData.get(`${id}_count`) as string;
+        const deliveryType = formData.get(`${id}_delivery_type`) as string;
 
-        return { rentableId, count, deliveryType };
+        return {
+          rentableId: Number(id),
+          count: Number(count),
+          deliveryType: Number(deliveryType),
+        };
       });
 
-      await createDeliveries(deliveries, buildingSiteId);
+      await createDeliveries(units, buildingSiteId);
 
       return null;
     }
@@ -195,12 +198,21 @@ export default function BuildingSite() {
                     {/* <Timeline.Title>{d.buildingSiteId}</Timeline.Title> */}
                     <Timeline.Body>
                       <div className="flex items-center gap-2">
-                        {d.rentableId}-{d.count}
-                        {d.deliveryType === 1 ? (
-                          <HiOutlineArrowUp color="green" />
-                        ) : (
-                          <HiOutlineArrowDown color="red" />
-                        )}
+                        {d.units.map((u) => (
+                          <p
+                            key={u.id}
+                            className="font-normal text-gray-700 dark:text-gray-400"
+                          >
+                            <div className="flex items-center gap-2">
+                              {u.rentable.name} - {u.count}
+                              {u.deliveryType === 1 ? (
+                                <HiOutlineArrowUp color="green" />
+                              ) : (
+                                <HiOutlineArrowDown color="red" />
+                              )}
+                            </div>
+                          </p>
+                        ))}
                       </div>
                     </Timeline.Body>
                   </Timeline.Content>

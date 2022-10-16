@@ -56,7 +56,7 @@ model Client {
   address            String
   phoneNumber        String
   isLegalEntity      Boolean @default(false)
-  registrationNumber String?
+  registrationNumber String? @unique
 
   buildingSites BuildingSite[]
 
@@ -80,29 +80,34 @@ model BuildingSite {
 }
 
 model Delivery {
-  id           Int @id @default(autoincrement())
+  id             Int            @id @default(autoincrement())
+  buildingSite   BuildingSite   @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+  units          DeliveryUnit[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model DeliveryUnit {
+  id           Int       @id @default(autoincrement())
   count        Int
   deliveryType Int
-
-  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
-  buildingSiteId Int
-
-  rentable   Rentable @relation(fields: [rentableId], references: [id])
-  rentableId Int
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  rentable     Rentable  @relation(fields: [rentableId], references: [id])
+  rentableId   Int
+  Delivery     Delivery? @relation(fields: [deliveryId], references: [id])
+  deliveryId   Int?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 }
 
 model Rentable {
-  id    Int    @id @default(autoincrement())
-  name  String
-  count Int    @default(0)
-
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  deliveries  Delivery[]
-  inventories Inventory[]
+  id            Int            @id @default(autoincrement())
+  name          String
+  count         Int            @default(0)
+  inventories   Inventory[]
+  deliveryUnits DeliveryUnit[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
 }
 
 model Inventory {

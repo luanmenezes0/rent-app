@@ -14,7 +14,11 @@ export async function getBuildingSitesByClientId(clientId: string) {
 export async function getBuildingSite(id: string) {
   return prisma.buildingSite.findUnique({
     where: { id: Number(id) },
-    include: { client: true, deliveries: true, inventories: true },
+    include: {
+      client: true,
+      deliveries: { include: { units: { include: { rentable: true } } } },
+      inventories: true,
+    },
   });
 }
 

@@ -29,16 +29,22 @@ export default function Deliveries() {
                 {d.buildingSite.name} -{" "}
                 {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
               </h5>
-              <p className="font-normal text-gray-700 dark:text-gray-400">
-                <div className="flex items-center gap-2">
-                  {d.rentable.name} ** {d.count}
-                  {d.deliveryType === 1 ? (
-                    <HiOutlineArrowUp color="green" />
-                  ) : (
-                    <HiOutlineArrowDown color="red" />
-                  )}
-                </div>
-              </p>
+              {d.units.map((u) => (
+                <p
+                  key={u.id}
+                  className="font-normal text-gray-700 dark:text-gray-400"
+                >
+                  <div className="flex items-center gap-2">
+                    {u.rentable.name} - {u.count}
+                    {u.deliveryType === 1 ? (
+                      <HiOutlineArrowUp color="green" />
+                    ) : (
+                      <HiOutlineArrowDown color="red" />
+                    )}
+                  </div>
+                </p>
+              ))}
+
               <Link
                 className="font-medium text-blue-600 hover:underline dark:text-blue-500"
                 to={`/building-sites/${d.buildingSiteId}`}
