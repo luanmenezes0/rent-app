@@ -57,7 +57,7 @@ export function ClientModal(props: ClientModalProps) {
             <TextInput
               id="phoneNumber"
               name="phoneNumber"
-              defaultValue={values?.phoneNumber}
+              defaultValue={values?.phoneNumber ?? ''}
               minLength={10}
               required
               style={hasError("phoneNumber")}
