@@ -48,7 +48,7 @@ export async function action({ request }: ActionArgs) {
           name: result.data.name,
           phoneNumber: result.data.phoneNumber,
           isLegalEntity: result.data.isLegalEntity === "true",
-          registrationNumber: result.data.registrationNumber ?? null,
+          registrationNumber: result.data.registrationNumber,
         });
 
         return null;

@@ -18,7 +18,6 @@ export async function loader({ request }: LoaderArgs) {
 
 export default function Index() {
   const { inventory, rentables } = useLoaderData<typeof loader>();
-  console.log(rentables);
   return (
     <>
       <Header />

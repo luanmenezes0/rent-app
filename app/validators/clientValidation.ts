@@ -7,7 +7,7 @@ export const ClientSchema = z.object({
   address: z.string().min(1, "O Endereço é obrigatório"),
   phoneNumber: z.string().min(1, "O Telefone é obrigatório"),
   isLegalEntity: z.string(),
-  registrationNumber: z.string().optional(),
+  registrationNumber: z.string().min(1, "O CPF/CNPJ é obrigatório"),
 });
 
 export const clientValidator = withZod(ClientSchema);
