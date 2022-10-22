@@ -1,9 +1,15 @@
 import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData, useTransition } from "@remix-run/react";
+import {
+  Link,
+  useActionData,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
+import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
 
 import Header from "~/components/Header";
@@ -14,6 +20,7 @@ import {
   getClients,
 } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
+import { clientValidator } from "~/validators/clientValidation";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -29,48 +36,49 @@ export async function action({ request }: ActionArgs) {
 
   switch (action) {
     case "create": {
-      const name = formData.get("name");
-      const address = formData.get("address");
+      const result = await clientValidator.validate(formData);
 
-      if (typeof name !== "string" || name.length === 0) {
-        return json(
-          { errors: { title: "name is required", body: null } },
-          { status: 400 }
-        );
+      if (result.error) {
+        return validationError(result.error);
       }
 
-      if (typeof address !== "string" || address.length === 0) {
-        return json(
-          { errors: { title: null, body: "address is required" } },
-          { status: 400 }
-        );
+      try {
+        await createClient({
+          address: result.data.address,
+          name: result.data.name,
+          phoneNumber: result.data.phoneNumber,
+          isLegalEntity: result.data.isLegalEntity === "true",
+          registrationNumber: result.data.registrationNumber,
+        });
+
+        return null;
+      } catch (e: any) {
+        if (e.meta?.target?.includes("registrationNumber")) {
+          return validationError({
+            fieldErrors: {
+              registrationNumber:
+                "Já existe um cliente cadastrado com este CPF ou CNPJ.",
+            },
+          });
+        }
       }
-
-      await createClient({ address, name });
-
-      return null;
     }
 
     case "edit": {
-      const name = formData.get("name");
-      const address = formData.get("address");
-      const id = formData.get("id");
+      const result = await clientValidator.validate(formData);
 
-      if (typeof name !== "string" || name.length === 0) {
-        return json(
-          { errors: { title: "name is required", body: null } },
-          { status: 400 }
-        );
+      if (result.error) {
+        return validationError(result.error);
       }
 
-      if (typeof address !== "string" || address.length === 0) {
-        return json(
-          { errors: { title: null, body: "address is required" } },
-          { status: 400 }
-        );
-      }
-
-      await editClient({ address, name, id: Number(id) });
+      await editClient({
+        address: result.data.address,
+        name: result.data.name,
+        phoneNumber: result.data.phoneNumber,
+        isLegalEntity: result.data.isLegalEntity === "true",
+        registrationNumber: result.data.registrationNumber ?? null,
+        id: Number(result.data.id),
+      });
 
       return null;
     }
@@ -86,11 +94,13 @@ export async function action({ request }: ActionArgs) {
       throw new Error("unknown action");
   }
 }
+
 type ModalState = { show: boolean; client: null | Client };
 
 export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
 
+  const actionData = useActionData();
   const transition = useTransition();
 
   const [show, setShow] = useState(false);
@@ -102,11 +112,11 @@ export default function Clients() {
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
-    if (!isAdding) {
+    if (!isAdding && !actionData?.fieldErrors) {
       setShow(false);
       setEdition({ show: false, client: null });
     }
-  }, [isAdding]);
+  }, [isAdding, actionData]);
 
   return (
     <>

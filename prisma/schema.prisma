@@ -7,6 +7,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator zod {
+  provider = "zod-prisma"
+}
+
 model User {
   id    String @id @default(cuid())
   email String @unique
@@ -47,12 +51,13 @@ model Post {
 }
 
 model Client {
-  id      Int    @id @default(autoincrement())
-  name    String
-  address String
-
+  id                 Int     @id @default(autoincrement())
+  name               String
+  address            String
+  phoneNumber        String
+  isLegalEntity      Boolean @default(false)
+  registrationNumber String @unique
   buildingSites BuildingSite[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
@@ -64,6 +69,57 @@ model BuildingSite {
 
   client   Client @relation(fields: [clientId], references: [id])
   clientId Int
+
+  deliveries     Delivery[]
+  inventories    Inventory[]
+  deliveriesUnit DeliveryUnit[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Delivery {
+  id             Int            @id @default(autoincrement())
+  buildingSite   BuildingSite   @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+  units          DeliveryUnit[]
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+}
+
+model DeliveryUnit {
+  id             Int          @id @default(autoincrement())
+  count          Int
+  deliveryType   Int
+  rentable       Rentable     @relation(fields: [rentableId], references: [id])
+  rentableId     Int
+  Delivery       Delivery?    @relation(fields: [deliveryId], references: [id])
+  deliveryId     Int?
+  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Rentable {
+  id            Int            @id @default(autoincrement())
+  name          String
+  count         Int            @default(0)
+  inventories   Inventory[]
+  deliveryUnits DeliveryUnit[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Inventory {
+  id    Int @id @default(autoincrement())
+  count Int
+
+  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+
+  rentable   Rentable @relation(fields: [rentableId], references: [id])
+  rentableId Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

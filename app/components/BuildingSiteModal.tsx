@@ -1,60 +1,62 @@
-import type { Client } from "@prisma/client";
-import { Form, useFetcher } from "@remix-run/react";
+import type { BuildingSite } from "@prisma/client";
+import { Form, useActionData } from "@remix-run/react";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
-import { useEffect } from "react";
+import FormFieldError from "./FormFieldError";
 
-function ClientsListSelect() {
-  const fetcher = useFetcher<Client[]>();
+type Props = {
+  onClose: () => void;
+  client: { id: number; address: string };
+  editionMode?: boolean;
+  values?: Omit<BuildingSite, "createdAt" | "updatedAt">;
+};
 
-  useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load("/clientslist");
-    }
-  }, [fetcher]);
+export default function BuildingSiteModal(props: Props) {
+  const { onClose, client, editionMode = false, values } = props;
 
-  return (
-    <select
-      id="client"
-      name="clientId"
-      className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-    >
-      <option selected>Selecione um cliente</option>
-      {fetcher.data?.map((c) => (
-        <option key={c.id} value={c.id}>
-          {c.name}
-        </option>
-      ))}
-    </select>
-  );
-}
+  const actionData = useActionData<{ fieldErrors: Partial<BuildingSite> }>();
 
-export function BuildingSiteModal({ onClose }: { onClose: () => void }) {
+  function hasError(field: keyof BuildingSite) {
+    return actionData?.fieldErrors?.[field] ? { border: "2px solid red" } : {};
+  }
+
   return (
     <Modal show onClose={onClose}>
-      <Modal.Header>Nova Obra</Modal.Header>
+      <Modal.Header>{editionMode ? "Editar" : "Nova"} Obra</Modal.Header>
       <Modal.Body>
         <Form
           method="post"
           id="buiding-site-form"
           className="flex flex-col gap-4"
         >
+          <input type="hidden" name="clientId" value={client.id} />
+          <input type="hidden" name="id" value={values?.id} />
           <div>
-            <div className="mb-2 block">
-              <Label htmlFor="client" value="Cliente" />
-            </div>
-            <ClientsListSelect />
+            <Label htmlFor="name" value="Nome" />
+            <TextInput
+              id="name"
+              name="name"
+              required
+              defaultValue={values?.name}
+              style={hasError("name")}
+            />
+            {actionData?.fieldErrors?.name && (
+              <FormFieldError>{actionData?.fieldErrors?.name}</FormFieldError>
+            )}
           </div>
           <div>
-            <div className="mb-2 block">
-              <Label htmlFor="name" value="Nome" />
-            </div>
-            <TextInput id="name" name="name" required />
-          </div>
-          <div>
-            <div className="mb-2 block">
-              <Label htmlFor="address" value="Endereço" />
-            </div>
-            <TextInput id="address" name="address" required />
+            <Label htmlFor="address" value="Endereço" />
+            <TextInput
+              id="address"
+              name="address"
+              defaultValue={editionMode ? values?.address : client.address}
+              required
+              style={hasError("address")}
+            />
+            {actionData?.fieldErrors?.address && (
+              <FormFieldError>
+                {actionData?.fieldErrors?.address}
+              </FormFieldError>
+            )}
           </div>
         </Form>
       </Modal.Body>
@@ -63,9 +65,9 @@ export function BuildingSiteModal({ onClose }: { onClose: () => void }) {
           type="submit"
           form="buiding-site-form"
           name="_action"
-          value="create"
+          value={editionMode ? "edit-bs" : "create-bs"}
         >
-          Criar
+          {editionMode ? "Editar" : "Criar"}
         </Button>
         <Button onClick={onClose} color="gray">
           Cancelar

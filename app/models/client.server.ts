@@ -6,15 +6,20 @@ export async function getClients() {
 }
 
 export async function getClient(id: string) {
-  return prisma.client.findUnique({ where: { id: Number(id) } });
+  return prisma.client.findUnique({
+    where: { id: Number(id) },
+    include: { buildingSites: true },
+  });
 }
 
-export async function createClient(client: Pick<Client, "address" | "name">) {
+export async function createClient(
+  client: Omit<Client, "id" | "createdAt" | "updatedAt">
+) {
   return prisma.client.create({ data: client });
 }
 
 export async function editClient(
-  client: Pick<Client, "address" | "name" | "id">
+  client: Omit<Client, "createdAt" | "updatedAt">
 ) {
   return prisma.client.update({ data: client, where: { id: client.id } });
 }
