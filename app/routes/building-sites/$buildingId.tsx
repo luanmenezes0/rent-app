@@ -19,9 +19,11 @@ import Header from "~/components/Header";
 import {
   editBuildingSite,
   getBuildingSite,
-  getBuildingSiteInventory,
 } from "~/models/buildingSite.server";
-import { createDeliveries } from "~/models/delivery.server";
+import {
+  createDeliveries,
+  getBuildingSiteInventory,
+} from "~/models/delivery.server";
 import type { Rentable } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
@@ -37,9 +39,9 @@ export async function loader({ request, params }: LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  const delivery = await getBuildingSiteInventory(params.buildingId);
-
-  return json({ buildingSite, delivery });
+  const inventory = await getBuildingSiteInventory(params.buildingId);
+  
+  return json({ buildingSite, inventory });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -67,16 +69,19 @@ export async function action({ request }: ActionArgs) {
       const rentableIds = formData.getAll("rentableId") as string[];
       const buildingSiteId = formData.get("buildingSiteId") as string;
 
-      const units = rentableIds.map((id) => {
-        const count = formData.get(`${id}_count`) as string;
-        const deliveryType = formData.get(`${id}_delivery_type`) as string;
+      const units = rentableIds
+        .map((id) => {
+          const count = formData.get(`${id}_count`) as string;
+          const deliveryType = formData.get(`${id}_delivery_type`) as string;
 
-        return {
-          rentableId: Number(id),
-          count: Number(count),
-          deliveryType: Number(deliveryType),
-        };
-      });
+          return {
+            rentableId: Number(id),
+            count: Number(deliveryType) === 1 ? Number(count) : -Number(count),
+            deliveryType: Number(deliveryType),
+            buildingSiteId: Number(buildingSiteId),
+          };
+        })
+        .filter((u) => u.count !== 0);
 
       await createDeliveries(units, buildingSiteId);
 
@@ -149,8 +154,8 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
 }
 
 export default function BuildingSite() {
-  const { buildingSite, delivery } = useLoaderData<typeof loader>();
-  console.log(delivery);
+  const { buildingSite, inventory } = useLoaderData<typeof loader>();
+
   const transition = useTransition();
   const actionData = useActionData();
 
@@ -184,6 +189,12 @@ export default function BuildingSite() {
             <Button onClick={() => setShowBuildingModal(true)}>
               Editar Obra
             </Button>
+            {inventory.map((rentable) => (
+              <div key={rentable.rentableId}>
+                <h3>{rentable.rentableId}</h3>
+                <div>{rentable.count}</div>
+              </div>
+            ))}
           </div>
           <div className="px-8 py-4">
             <h3 className="text-black-400 p-4 text-left text-xl font-bold">
