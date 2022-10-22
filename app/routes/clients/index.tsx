@@ -42,15 +42,26 @@ export async function action({ request }: ActionArgs) {
         return validationError(result.error);
       }
 
-      await createClient({
-        address: result.data.address,
-        name: result.data.name,
-        phoneNumber: result.data.phoneNumber,
-        isLegalEntity: result.data.isLegalEntity === "true",
-        registrationNumber: result.data.registrationNumber ?? null,
-      });
+      try {
+        await createClient({
+          address: result.data.address,
+          name: result.data.name,
+          phoneNumber: result.data.phoneNumber,
+          isLegalEntity: result.data.isLegalEntity === "true",
+          registrationNumber: result.data.registrationNumber ?? null,
+        });
 
-      return null;
+        return null;
+      } catch (e: any) {
+        if (e.meta?.target?.includes("registrationNumber")) {
+          return validationError({
+            fieldErrors: {
+              registrationNumber:
+                "Já existe um cliente cadastrado com este CPF ou CNPJ.",
+            },
+          });
+        }
+      }
     }
 
     case "edit": {

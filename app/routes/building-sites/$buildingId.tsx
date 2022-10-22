@@ -19,6 +19,7 @@ import Header from "~/components/Header";
 import {
   editBuildingSite,
   getBuildingSite,
+  getBuildingSiteInventory,
 } from "~/models/buildingSite.server";
 import { createDeliveries } from "~/models/delivery.server";
 import type { Rentable } from "~/models/inventory.server.";
@@ -36,7 +37,9 @@ export async function loader({ request, params }: LoaderArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return json({ buildingSite });
+  const delivery = await getBuildingSiteInventory(params.buildingId);
+
+  return json({ buildingSite, delivery });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -146,8 +149,8 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
 }
 
 export default function BuildingSite() {
-  const { buildingSite } = useLoaderData<typeof loader>();
-
+  const { buildingSite, delivery } = useLoaderData<typeof loader>();
+  console.log(delivery);
   const transition = useTransition();
   const actionData = useActionData();
 

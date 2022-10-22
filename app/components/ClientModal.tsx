@@ -130,7 +130,7 @@ export function ClientModal(props: ClientModalProps) {
           name="_action"
           value={editionMode ? "edit" : "create"}
         >
-          {editionMode ? "Editar" : "Criar"}
+          Salvar
         </Button>
         <Button onClick={onClose} color="gray">
           Cancelar
