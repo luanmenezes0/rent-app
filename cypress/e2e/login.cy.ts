@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 
-describe("smoke tests", () => {
+describe("Login", () => {
   afterEach(() => {
     cy.cleanupUser();
   });
@@ -15,14 +15,10 @@ describe("smoke tests", () => {
 
     cy.visitAndCheck("/");
 
-    cy.findByRole("link", { name: /sign up/i }).click();
+    cy.findByRole("link", { name: /cadastre-se/i }).click();
 
     cy.findByRole("textbox", { name: /email/i }).type(loginForm.email);
     cy.findByLabelText(/password/i).type(loginForm.password);
     cy.findByRole("button", { name: /create account/i }).click();
-
-    // cy.findByRole("link", { name: /notes/i }).click();
-    // cy.findByRole("button", { name: /logout/i }).click();
-    // cy.findByRole("link", { name: /log in/i });
   });
 });
