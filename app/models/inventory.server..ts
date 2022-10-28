@@ -6,13 +6,13 @@ export async function getRentables() {
   return prisma.rentable.findMany();
 }
 
-export async function createRentable(rentable: Pick<Rentable, "name">) {
+export async function createRentable(
+  rentable: Pick<Rentable, "name" | "count">
+) {
   return prisma.rentable.create({ data: rentable });
 }
 
-export async function editRentable(
-  rentable: Pick<Rentable, "name" | "id" | "count">
-) {
+export async function editRentable(rentable: Pick<Rentable, "id" | "count">) {
   return prisma.rentable.update({ data: rentable, where: { id: rentable.id } });
 }
 

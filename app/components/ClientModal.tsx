@@ -57,9 +57,10 @@ export function ClientModal(props: ClientModalProps) {
             <TextInput
               id="phoneNumber"
               name="phoneNumber"
-              defaultValue={values?.phoneNumber ?? ''}
+              defaultValue={values?.phoneNumber ?? ""}
               minLength={10}
               required
+              type="tel"
               style={hasError("phoneNumber")}
             />
             {actionData?.fieldErrors?.phoneNumber && (
@@ -124,6 +125,9 @@ export function ClientModal(props: ClientModalProps) {
         </Form>
       </Modal.Body>
       <Modal.Footer>
+        <Button onClick={onClose} color="gray">
+          Cancelar
+        </Button>
         <Button
           type="submit"
           form="client-form"
@@ -131,9 +135,6 @@ export function ClientModal(props: ClientModalProps) {
           value={editionMode ? "edit" : "create"}
         >
           Salvar
-        </Button>
-        <Button onClick={onClose} color="gray">
-          Cancelar
         </Button>
       </Modal.Footer>
     </Modal>
