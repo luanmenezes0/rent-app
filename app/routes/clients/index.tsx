@@ -1,3 +1,4 @@
+import { Button } from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -7,7 +8,7 @@ import {
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
-import { Button, Table } from "flowbite-react";
+import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
@@ -124,6 +125,8 @@ export default function Clients() {
       <main className="flex h-full flex-col gap-6 p-8">
         <h1 className="text-6xl font-bold">Clientes</h1>
         <Button onClick={() => setShow(true)}>Criar Cliente</Button>
+
+       
 
         <Table striped>
           <Table.Head>

@@ -1,10 +1,17 @@
+import {
+  Button,
+  Container,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  VStack,
+} from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
 
-import { Button, Label, TextInput } from "flowbite-react";
 import { validationError } from "remix-validated-form";
-import FormFieldError from "~/components/FormFieldError";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect } from "~/utils";
@@ -55,15 +62,15 @@ export default function LoginPage() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
-      <div className="mx-auto w-full max-w-md px-8">
-        <Form method="post" className="space-y-6">
-          <div>
-            <Label htmlFor="email" value="E-mail" />
-            <TextInput
+    <Container alignSelf="center">
+      <Form method="post">
+        <VStack w="96" spacing="4">
+          <FormControl>
+            <FormLabel htmlFor="email">E-mail</FormLabel>
+            <Input
               id="email"
               required
-              autoFocus={true}
+              autoFocus
               name="email"
               type="email"
               autoComplete="email"
@@ -71,12 +78,14 @@ export default function LoginPage() {
               aria-describedby="email-error"
             />
             {actionData?.fieldErrors?.email && (
-              <FormFieldError>{actionData.fieldErrors.email}</FormFieldError>
+              <FormErrorMessage>
+                {actionData.fieldErrors.email}
+              </FormErrorMessage>
             )}
-          </div>
-          <div>
-            <Label htmlFor="password" value="Senha" />
-            <TextInput
+          </FormControl>
+          <FormControl>
+            <FormLabel htmlFor="password">Senha</FormLabel>
+            <Input
               id="password"
               name="password"
               type="password"
@@ -87,28 +96,28 @@ export default function LoginPage() {
               aria-describedby="password-error"
             />
             {actionData?.fieldErrors?.password && (
-              <FormFieldError>{actionData.fieldErrors.password}</FormFieldError>
+              <FormErrorMessage>
+                {actionData.fieldErrors.password}
+              </FormErrorMessage>
             )}
-          </div>
+          </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <Button type="submit">Entrar</Button>
-
-          <div className="flex items-center justify-center">
-            <div className="text-center text-sm text-gray-500">
-              Ainda não tem uma conta?{" "}
-              <Link
-                className="text-blue-500 underline"
-                to={{
-                  pathname: "/join",
-                  search: searchParams.toString(),
-                }}
-              >
-                Cadastre-se
-              </Link>
-            </div>
+          <Button w="96" type="submit">
+            Entrar
+          </Button>
+          <div>
+            Ainda não tem uma conta?{" "}
+            <Link
+              to={{
+                pathname: "/join",
+                search: searchParams.toString(),
+              }}
+            >
+              Cadastre-se
+            </Link>
           </div>
-        </Form>
-      </div>
-    </div>
+        </VStack>
+      </Form>
+    </Container>
   );
 }
