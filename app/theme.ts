@@ -24,7 +24,7 @@ const theme = {
         display: "flex",
         flexDirection: "column",
       },
-      a: {
+      'nav a': {
         color: "white",
       },
       "a.active": {

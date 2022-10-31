@@ -1,4 +1,7 @@
 import {
+  Alert,
+  AlertDescription,
+  AlertIcon,
   Button,
   Container,
   FormControl,
@@ -13,9 +16,13 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  NumberInput,
   Select,
+  Stat,
+  StatArrow,
+  StatLabel,
+  StatNumber,
   Text,
+  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
@@ -28,6 +35,7 @@ import {
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
+import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
@@ -100,6 +108,14 @@ export async function action({ request }: ActionArgs) {
         })
         .filter((u) => u.count !== 0);
 
+      if (!units.length) {
+        return validationError({
+          fieldErrors: {
+            count: "É necessário informar a quantidade de pelo menos um item",
+          },
+        });
+      }
+
       await createDeliveries(units, buildingSiteId);
 
       return null;
@@ -116,6 +132,8 @@ interface DeliveryModalProps {
 
 function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
   const fetcher = useFetcher<{ rentables: Rentable[] }>();
+
+  const actionData = useActionData();
 
   useEffect(() => {
     if (fetcher.type === "init") {
@@ -137,6 +155,14 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                 name="buildingSiteId"
                 value={buildingSiteId}
               />
+              {actionData?.fieldErrors?.count && (
+                <Alert status="error" borderRadius="16">
+                  <AlertIcon />
+                  <AlertDescription>
+                    {actionData?.fieldErrors?.count}
+                  </AlertDescription>
+                </Alert>
+              )}
               {fetcher.data?.rentables.map((rentable) => (
                 <FormControl
                   display="grid"
@@ -240,53 +266,39 @@ export default function BuildingSite() {
           </div>
         </VStack>
 
-        <div className="flex justify-between">
-          <div>
-            {inventory.map((rentable) => (
-              <div key={rentable.rentableId}>
-                <h3>{rentable.rentableId}</h3>
-                <div>{rentable.count}</div>
-              </div>
-            ))}
-          </div>
-          <div className="px-8 py-4">
-            <h3 className="text-black-400 p-4 text-left text-xl font-bold">
-              Remessas
-            </h3>
-
-            {/*   <Timeline>
-              {buildingSite.deliveries.map((d) => (
-                <Timeline.Item key={d.id}>
-                  <Timeline.Point color="red" />
-                  <Timeline.Content>
-                    <Timeline.Time>
-                      {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-                    </Timeline.Time>
-                    <Timeline.Body>
-                      <div className="flex items-center gap-2">
-                        {d.units.map((u) => (
-                          <div
-                            key={u.id}
-                            className="font-normal text-gray-700 dark:text-gray-400"
-                          >
-                            <div className="flex items-center gap-2">
-                              {u.rentable.name} - {u.count}
-                              {u.deliveryType === 1 ? (
-                                <HiOutlineArrowUp color="green" />
-                              ) : (
-                                <HiOutlineArrowDown color="red" />
-                              )}
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </Timeline.Body>
-                  </Timeline.Content>
-                </Timeline.Item>
-              ))}
-            </Timeline> */}
-          </div>
+        <div>
+          {inventory.map((rentable) => (
+            <div key={rentable.rentableId}>
+              <h3>{rentable.rentableId}</h3>
+              <div>{rentable.count}</div>
+            </div>
+          ))}
         </div>
+        <VStack align="stretch" px="4">
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Remessas
+          </Heading>
+
+          {buildingSite.deliveries.map((d) => (
+            <Stat key={d.id} p="6" border="1px" borderRadius="16">
+              <StatLabel>
+                {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
+              </StatLabel>
+              {d.units.map((u) => (
+                <StatNumber key={u.id}>
+                  {u.rentable.name} - {Math.abs(u.count)}{" "}
+                  <StatArrow
+                    type={u.deliveryType === 1 ? "increase" : "decrease"}
+                  />
+                </StatNumber>
+              ))}
+            </Stat>
+          ))}
+        </VStack>
       </Container>
       {show && (
         <DeliveyModal

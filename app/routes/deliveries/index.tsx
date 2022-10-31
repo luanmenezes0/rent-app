@@ -1,9 +1,16 @@
+import {
+  Container,
+  Heading,
+  Link,
+  Stat,
+  StatArrow,
+  StatLabel,
+  StatNumber,
+} from "@chakra-ui/react";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link as RemixLink, useLoaderData } from "@remix-run/react";
 import type { LoaderArgs } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
-import { Card } from "flowbite-react";
-import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
 import Header from "~/components/Header";
 import { getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
@@ -20,41 +27,31 @@ export default function Deliveries() {
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-4 p-8">
-        <h1 className="text-6xl font-bold">Remessas</h1>
-        <>
-          {deliveries.map((d) => (
-            <Card key={d.id}>
-              <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                {d.buildingSite.name} -{" "}
-                {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-              </h5>
-              {d.units.map((u) => (
-                <p
-                  key={u.id}
-                  className="font-normal text-gray-700 dark:text-gray-400"
-                >
-                  <div className="flex items-center gap-2">
-                    {u.rentable.name} - {u.count}
-                    {u.deliveryType === 1 ? (
-                      <HiOutlineArrowUp color="green" />
-                    ) : (
-                      <HiOutlineArrowDown color="red" />
-                    )}
-                  </div>
-                </p>
-              ))}
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <Heading as="h1" size="xl">
+          Remessas
+        </Heading>
 
-              <Link
-                className="font-medium text-blue-600 hover:underline dark:text-blue-500"
-                to={`/building-sites/${d.buildingSiteId}`}
-              >
-                Ver Obra
-              </Link>
-            </Card>
-          ))}
-        </>
-      </main>
+        {deliveries.map((d) => (
+          <Stat key={d.id} p="6" border="1px" borderRadius="16">
+            <StatLabel>
+              {d.buildingSite.name} -{" "}
+              {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
+            </StatLabel>
+            {d.units.map((u) => (
+              <StatNumber key={u.id}>
+                {u.rentable.name} - {Math.abs(u.count)}{" "}
+                <StatArrow
+                  type={u.deliveryType === 1 ? "increase" : "decrease"}
+                />
+              </StatNumber>
+            ))}
+            <Link as={RemixLink} to={`/building-sites/${d.buildingSiteId}`}>
+              Ver Obra
+            </Link>
+          </Stat>
+        ))}
+      </Container>
     </>
   );
 }
