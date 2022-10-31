@@ -1,8 +1,32 @@
+import { CheckIcon } from "@chakra-ui/icons";
+import {
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  Heading,
+  HStack,
+  IconButton,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from "@chakra-ui/react";
 import { Form, useLoaderData, useTransition } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
-import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { HiCheck } from "react-icons/hi";
 import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
 import {
@@ -60,33 +84,38 @@ export async function action({ request }: ActionArgs) {
 
 function RentableModal({ onClose }: { onClose: () => void }) {
   return (
-    <Modal show onClose={onClose} size="md">
-      <Modal.Header>Adicionar item de estoque</Modal.Header>
-      <Modal.Body>
-        <Form method="post" className="space-y-4" id="rentable-form">
-          <div>
-            <Label htmlFor="name" value="Nome" />
-            <TextInput id="name" required name="name" />
-          </div>
-          <div>
-            <Label htmlFor="count" value="Quantidade" />
-            <TextInput id="count" required name="count" type="number" />
-          </div>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button onClick={onClose} color="gray">
-          Cancelar
-        </Button>
-        <Button
-          type="submit"
-          form="rentable-form"
-          name="_action"
-          value="create"
-        >
-          Salvar
-        </Button>
-      </Modal.Footer>
+    <Modal size="md" isOpen onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Adicionar item de estoque</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Form method="post" id="rentable-form">
+            <FormControl>
+              <FormLabel htmlFor="name">Nome</FormLabel>
+              <Input id="name" required name="name" />
+            </FormControl>
+            <FormControl>
+              <FormLabel htmlFor="count">Quantidade</FormLabel>
+              <Input id="count" required name="count" type="number" />
+            </FormControl>
+          </Form>
+        </ModalBody>
+
+        <ModalFooter gap="2">
+          <Button onClick={onClose} variant="outline">
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="rentable-form"
+            name="_action"
+            value="create"
+          >
+            Salvar
+          </Button>
+        </ModalFooter>
+      </ModalContent>
     </Modal>
   );
 }
@@ -118,76 +147,72 @@ export default function Index() {
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-4 p-8">
-        <h1 className="text-6xl font-bold">Estoque</h1>
-        <button
-          type="button"
-          onClick={() => showModal(true)}
-          className="w-fit rounded-lg bg-blue-700 px-5 py-2.5 text-sm font-medium text-white hover:bg-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-        >
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <Heading as="h1" size="2xl">
+          Estoque
+        </Heading>
+        <Button maxW="fit-content" onClick={() => showModal(true)}>
           Criar novo item
-        </button>
-        <div className="w-max">
-          <Table>
-            <Table.Head>
-              <Table.HeadCell>Id</Table.HeadCell>
-              <Table.HeadCell>Nome</Table.HeadCell>
-              <Table.HeadCell>Quantidade</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Edit</span>
-              </Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
+        </Button>
+        <TableContainer>
+          <Table size="sm">
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Quantidade</Th>
+                <Th>
+                  <VisuallyHidden>Edit</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {rentables.map((rentable) => (
-                <Table.Row
-                  key={rentable.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                    {rentable.id}
-                  </Table.Cell>
-                  <Table.Cell> {rentable.name}</Table.Cell>
-                  <Table.Cell>
+                <Tr key={rentable.id}>
+                  <Td>{rentable.id}</Td>
+                  <Td> {rentable.name}</Td>
+                  <Td>
                     {edit === rentable.id ? (
-                      <Form
-                        method="put"
-                        className="flex items-center gap-2"
-                        onSubmit={() => setEdit(null)}
-                      >
-                        <input type="hidden" name="id" value={rentable.id} />
-                        <TextInput
-                          type="number"
-                          defaultValue={rentable.count}
-                          name="count"
-                        />
-                        <button
-                          name="_action"
-                          value="edit"
-                          className="group flex h-8 w-8 items-center justify-center rounded-full border border-transparent bg-green-700 p-0.5 text-center font-medium text-white hover:bg-green-800 focus:z-10 focus:ring-4 focus:ring-green-300 disabled:hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-700 dark:focus:ring-green-800 dark:disabled:hover:bg-green-600"
-                        >
-                          <HiCheck className="text-xs" />
-                        </button>
+                      <Form method="put" onSubmit={() => setEdit(null)}>
+                        <HStack justify="start">
+                          <input type="hidden" name="id" value={rentable.id} />
+                          <input type="hidden" name="_action" value="edit" />
+                          <Input
+                            type="number"
+                            defaultValue={rentable.count}
+                            name="count"
+                            maxW="150px"
+                          />
+                          <IconButton
+                            type="submit"
+                            name="_action"
+                            value="edit"
+                            aria-label="Editar"
+                            icon={<CheckIcon />}
+                            rounded="full"
+                          />
+                        </HStack>
                       </Form>
                     ) : (
                       rentable.count
                     )}
-                  </Table.Cell>
-                  <Table.Cell>
+                  </Td>
+                  <Td>
                     <Button
-                      color="grey"
+                      variant="ghost"
                       size="sm"
                       onClick={() => setEdit(rentable.id)}
                     >
                       Editar
                     </Button>
-                  </Table.Cell>
-                </Table.Row>
+                  </Td>
+                </Tr>
               ))}
-            </Table.Body>
+            </Tbody>
           </Table>
-        </div>
+        </TableContainer>
         {isModalOpen && <RentableModal onClose={() => showModal(false)} />}
-      </main>
+      </Container>
     </>
   );
 }

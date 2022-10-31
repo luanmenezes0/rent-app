@@ -2,6 +2,7 @@ import {
   Container,
   Heading,
   Table,
+  TableContainer,
   Tbody,
   Td,
   Th,
@@ -39,31 +40,32 @@ export default function BuildingSites() {
         <Heading as="h1" size="2xl">
           Obras
         </Heading>
-
-        <Table>
-          <Thead>
-            <Tr>
-              <Th>Id</Th>
-              <Th>Nome</Th>
-              <Th>Endereço</Th>
-              <Th>
-                <VisuallyHidden>Ações</VisuallyHidden>
-              </Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {buildingSites.map((bs) => (
-              <Tr key={bs.id}>
-                <Td>{bs.id}</Td>
-                <Td>{bs.name}</Td>
-                <Td>{bs.address}</Td>
-                <Td>
-                  <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
-                </Td>
+        <TableContainer>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Endereço</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
               </Tr>
-            ))}
-          </Tbody>
-        </Table>
+            </Thead>
+            <Tbody>
+              {buildingSites.map((bs) => (
+                <Tr key={bs.id}>
+                  <Td>{bs.id}</Td>
+                  <Td>{bs.name}</Td>
+                  <Td>{bs.address}</Td>
+                  <Td>
+                    <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
       </Container>
     </>
   );

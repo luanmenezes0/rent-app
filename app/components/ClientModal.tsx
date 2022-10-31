@@ -103,7 +103,7 @@ export function ClientModal(props: ClientModalProps) {
               <FormControl
                 isInvalid={Boolean(actionData?.fieldErrors?.registrationNumber)}
               >
-                <FormLabel htmlFor="registrationNumber">CPF/CNPJ</FormLabel>
+                <FormLabel htmlFor="registrationNumber">CNPJ/CPF</FormLabel>
                 <Input
                   id="registrationNumber"
                   name="registrationNumber"

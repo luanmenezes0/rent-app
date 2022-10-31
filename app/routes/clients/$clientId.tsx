@@ -4,6 +4,7 @@ import {
   Heading,
   Table,
   TableCaption,
+  TableContainer,
   Tbody,
   Td,
   Text,
@@ -135,7 +136,7 @@ export default function Client() {
         <Button maxW="fit-content" onClick={() => setShow(true)}>
           Adicionar Obra
         </Button>
-        <div>
+        <TableContainer>
           <Table>
             <TableCaption>Obras</TableCaption>
             <Thead>
@@ -163,7 +164,7 @@ export default function Client() {
               ))}
             </Tbody>
           </Table>
-        </div>
+        </TableContainer>
       </Container>
       {show && (
         <BuildingSiteModal client={client} onClose={() => setShow(false)} />

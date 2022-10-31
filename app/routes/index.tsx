@@ -15,7 +15,11 @@ export async function loader({ request }: LoaderArgs) {
   return json({ rentables });
 }
 
-function Card({ rentable }: { rentable: Rentable }) {
+function Card({
+  rentable,
+}: {
+  rentable: Omit<Rentable, "createdAt" | "updatedAt">;
+}) {
   const fetcher = useFetcher<{ inventory: number | null }>();
 
   useEffect(() => {

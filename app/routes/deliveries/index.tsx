@@ -28,7 +28,7 @@ export default function Deliveries() {
     <>
       <Header />
       <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
-        <Heading as="h1" size="xl">
+        <Heading as="h1" size="2xl">
           Remessas
         </Heading>
 

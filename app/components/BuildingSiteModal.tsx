@@ -2,6 +2,7 @@ import {
   Button,
   FormControl,
   FormErrorMessage,
+  FormLabel,
   Input,
   Modal,
   ModalBody,
@@ -10,11 +11,10 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  VStack,
+  VStack
 } from "@chakra-ui/react";
 import type { BuildingSite } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
-import { Label } from "flowbite-react";
 
 type Props = {
   onClose: () => void;
@@ -44,7 +44,7 @@ export default function BuildingSiteModal(props: Props) {
               <input type="hidden" name="clientId" value={client.id} />
               <input type="hidden" name="id" value={values?.id} />
               <FormControl isInvalid={Boolean(actionData?.fieldErrors?.name)}>
-                <Label htmlFor="name" value="Nome" />
+                <FormLabel htmlFor="name">Nome</FormLabel>
                 <Input
                   id="name"
                   name="name"
@@ -60,7 +60,7 @@ export default function BuildingSiteModal(props: Props) {
               <FormControl
                 isInvalid={Boolean(actionData?.fieldErrors?.address)}
               >
-                <Label htmlFor="address" value="Endereço" />
+                <FormLabel htmlFor="address">Endereço</FormLabel>
                 <Input
                   id="address"
                   name="address"
