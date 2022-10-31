@@ -1,3 +1,23 @@
+import {
+  Button,
+  Container,
+  FormControl,
+  FormLabel,
+  Heading,
+  HStack,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  NumberInput,
+  Select,
+  Text,
+  VStack,
+} from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -8,10 +28,7 @@ import {
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
-import dayjs from "dayjs";
-import { Button, Label, Modal, Select, Timeline } from "flowbite-react";
 import { useEffect, useState } from "react";
-import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
@@ -40,7 +57,7 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 
   const inventory = await getBuildingSiteInventory(params.buildingId);
-  
+
   return json({ buildingSite, inventory });
 }
 
@@ -107,48 +124,62 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
   }, [fetcher]);
 
   return (
-    <Modal show onClose={onClose} size="md">
-      <Modal.Header>Nova Remessa</Modal.Header>
-      <Modal.Body>
-        <Form method="post" id="delivery-form" className="flex flex-col gap-4">
-          <input type="hidden" name="buildingSiteId" value={buildingSiteId} />
-          {fetcher.data?.rentables.map((rentable) => (
-            <div key={rentable.id}>
-              <input type="hidden" name="rentableId" value={rentable.id} />
-              <div className="grid grid-cols-3 items-center gap-2">
-                <Label htmlFor={`${rentable.id}_count`} value={rentable.name} />
-                <input
-                  min={0}
-                  type="number"
-                  name={`${rentable.id}_count`}
-                  id={`${rentable.id}_count`}
-                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                  placeholder=""
-                  defaultValue={0}
-                  required
-                />
-                <Select name={`${rentable.id}_delivery_type`}>
-                  <option value="1">Entrega</option>
-                  <option value="2">Retirada</option>
-                </Select>
-              </div>
-            </div>
-          ))}
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          name="_action"
-          value="create-delivery"
-          type="submit"
-          form="delivery-form"
-        >
-          Criar
-        </Button>
-        <Button onClick={onClose} color="gray">
-          Cancelar
-        </Button>
-      </Modal.Footer>
+    <Modal size="md" isOpen onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>Nova Remessa</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Form method="post" id="delivery-form">
+            <VStack>
+              <input
+                type="hidden"
+                name="buildingSiteId"
+                value={buildingSiteId}
+              />
+              {fetcher.data?.rentables.map((rentable) => (
+                <FormControl
+                  display="grid"
+                  gridTemplateColumns="repeat(3, 1fr)"
+                  gap={4}
+                  key={rentable.id}
+                >
+                  <input type="hidden" name="rentableId" value={rentable.id} />
+                  <FormLabel htmlFor={`${rentable.id}_count`}>
+                    {rentable.name}
+                  </FormLabel>
+                  <Input
+                    min={0}
+                    type="number"
+                    name={`${rentable.id}_count`}
+                    id={`${rentable.id}_count`}
+                    placeholder=""
+                    defaultValue={0}
+                    required
+                  />
+                  <Select name={`${rentable.id}_delivery_type`}>
+                    <option value="1">Entrega</option>
+                    <option value="2">Retirada</option>
+                  </Select>
+                </FormControl>
+              ))}
+            </VStack>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={onClose} variant="outline" mx={2}>
+            Cancelar
+          </Button>
+          <Button
+            name="_action"
+            value="create-delivery"
+            type="submit"
+            form="delivery-form"
+          >
+            Criar
+          </Button>
+        </ModalFooter>
+      </ModalContent>
     </Modal>
   );
 }
@@ -174,21 +205,43 @@ export default function BuildingSite() {
   return (
     <>
       <Header />
-      <main className="h-full p-8">
-        <h2 className="text-2xl font-bold">{buildingSite.name}</h2>
-        <div className="flex justify-between">
-          <div>
-            <dl>
-              <dt className="font-bold">Endereço</dt>
-              <dd>{buildingSite.address}</dd>
-
-              <dt className="font-bold">Cliente</dt>
-              <dd>{buildingSite.client.name}</dd>
-            </dl>
-            <Button onClick={() => setShow(true)}>Adicionar Remessa</Button>
-            <Button onClick={() => setShowBuildingModal(true)}>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <VStack>
+          <Text>Detalhes da Obra</Text>
+          <Heading as="h1" size="xl">
+            {buildingSite.name}
+          </Heading>
+          <HStack py={6}>
+            <Button variant="outline" onClick={() => setShow(true)}>
+              Adicionar Remessa
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowBuildingModal(true)}
+            >
               Editar Obra
             </Button>
+          </HStack>
+        </VStack>
+
+        <VStack as="dl" align="flex-start">
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Endereço
+            </Text>
+            <dd>{buildingSite.address}</dd>
+          </div>
+
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Cliente
+            </Text>
+            <dd>{buildingSite.client.name}</dd>
+          </div>
+        </VStack>
+
+        <div className="flex justify-between">
+          <div>
             {inventory.map((rentable) => (
               <div key={rentable.rentableId}>
                 <h3>{rentable.rentableId}</h3>
@@ -201,7 +254,7 @@ export default function BuildingSite() {
               Remessas
             </h3>
 
-            <Timeline>
+            {/*   <Timeline>
               {buildingSite.deliveries.map((d) => (
                 <Timeline.Item key={d.id}>
                   <Timeline.Point color="red" />
@@ -209,11 +262,10 @@ export default function BuildingSite() {
                     <Timeline.Time>
                       {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
                     </Timeline.Time>
-                    {/* <Timeline.Title>{d.buildingSiteId}</Timeline.Title> */}
                     <Timeline.Body>
                       <div className="flex items-center gap-2">
                         {d.units.map((u) => (
-                          <p
+                          <div
                             key={u.id}
                             className="font-normal text-gray-700 dark:text-gray-400"
                           >
@@ -225,17 +277,17 @@ export default function BuildingSite() {
                                 <HiOutlineArrowDown color="red" />
                               )}
                             </div>
-                          </p>
+                          </div>
                         ))}
                       </div>
                     </Timeline.Body>
                   </Timeline.Content>
                 </Timeline.Item>
               ))}
-            </Timeline>
+            </Timeline> */}
           </div>
         </div>
-      </main>
+      </Container>
       {show && (
         <DeliveyModal
           onClose={() => setShow(false)}

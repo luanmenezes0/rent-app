@@ -111,7 +111,10 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
-type ModalState = { show: boolean; client: null | Client };
+type ModalState = {
+  show: boolean;
+  client: null | Omit<Client, "createdAt" | "updatedAt">;
+};
 
 export default function Clients() {
   const { clients } = useLoaderData<typeof loader>();
