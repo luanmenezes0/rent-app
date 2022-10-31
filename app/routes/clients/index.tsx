@@ -1,14 +1,29 @@
-import { Button } from "@chakra-ui/react";
+import {
+  Button,
+  Center,
+  Container,
+  Divider,
+  Heading,
+  HStack,
+  Link,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
-  Link,
+  Link as RemixLink,
   useActionData,
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
-import { Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
@@ -122,55 +137,61 @@ export default function Clients() {
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-6 p-8">
-        <h1 className="text-6xl font-bold">Clientes</h1>
-        <Button onClick={() => setShow(true)}>Criar Cliente</Button>
-
-       
-
-        <Table striped>
-          <Table.Head>
-            <Table.HeadCell>Id</Table.HeadCell>
-            <Table.HeadCell>Nome</Table.HeadCell>
-            <Table.HeadCell>Endereço</Table.HeadCell>
-            <Table.HeadCell>
-              <span className="sr-only">Ações</span>
-            </Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {clients.map((c) => (
-              <Table.Row
-                key={c.id}
-                className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              >
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  <Link to={`/clients/${c.id}`}>{c.id}</Link>
-                </Table.Cell>
-                <Table.Cell>
-                  <Link to={`/clients/${c.id}`}>{c.name}</Link>
-                </Table.Cell>
-                <Table.Cell>{c.address}</Table.Cell>
-                <Table.Cell>
-                  <Link
-                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
-                    to={`/clients/${c.id}`}
-                  >
-                    Ver detalhes
-                  </Link>
-                  |
-                  <button
-                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
-                    // @ts-ignore
-                    onClick={() => setEdition({ show: true, client: c })}
-                  >
-                    Editar
-                  </button>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </main>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <Heading as="h1" size="2xl">
+          Clientes
+        </Heading>
+        <Button maxW="fit-content" onClick={() => setShow(true)}>
+          Criar Cliente
+        </Button>
+        <TableContainer>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Endereço</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {clients.map((c) => (
+                <Tr key={c.id}>
+                  <Td>
+                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                      {c.id}
+                    </Link>
+                  </Td>
+                  <Td>
+                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                      {c.name}
+                    </Link>
+                  </Td>
+                  <Td>{c.address}</Td>
+                  <Td>
+                    <HStack>
+                      <Link as={RemixLink} to={`/clients/${c.id}`} px="4">
+                        Ver detalhes
+                      </Link>
+                      <Center height="30px">
+                        <Divider orientation="vertical" />
+                      </Center>
+                      <Button
+                        variant="ghost"
+                        onClick={() => setEdition({ show: true, client: c })}
+                      >
+                        Editar
+                      </Button>
+                    </HStack>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+      </Container>
       {show && <ClientModal onClose={() => setShow(false)} />}
       {edition.show && edition.client && (
         <ClientModal

@@ -1,10 +1,11 @@
 import {
   Button,
-  Container,
+  Flex,
   FormControl,
   FormErrorMessage,
   FormLabel,
   Input,
+  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
@@ -62,9 +63,20 @@ export default function LoginPage() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <Container alignSelf="center">
+    <Flex
+      h="full"
+      justifyContent="center"
+      alignItems="center"
+      bgColor={useColorModeValue("green.50", "green.900")}
+    >
       <Form method="post">
-        <VStack w="96" spacing="4">
+        <VStack
+          spacing="4"
+          maxW="container.md"
+          p="6"
+          bgColor={useColorModeValue("white", "gray.800")}
+          borderRadius="lg"
+        >
           <FormControl>
             <FormLabel htmlFor="email">E-mail</FormLabel>
             <Input
@@ -102,7 +114,7 @@ export default function LoginPage() {
             )}
           </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <Button w="96" type="submit">
+          <Button w="full" type="submit">
             Entrar
           </Button>
           <div>
@@ -118,6 +130,6 @@ export default function LoginPage() {
           </div>
         </VStack>
       </Form>
-    </Container>
+    </Flex>
   );
 }

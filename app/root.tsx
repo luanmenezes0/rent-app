@@ -1,5 +1,6 @@
 import { Box, ChakraProvider, Heading } from "@chakra-ui/react";
-import { json, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type { LoaderArgs, MetaFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
 import {
   Links,
   LiveReload,
@@ -7,10 +8,15 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch
+  useCatch,
 } from "@remix-run/react";
+import styles from "~/styles/index.css";
 import { getUser } from "./session.server";
 import theme from "./theme";
+
+export const links = () => {
+  return [{ rel: "stylesheet", href: styles }];
+};
 
 export const meta: MetaFunction = () => ({
   charset: "utf-8",
