@@ -67,7 +67,7 @@ export default function LoginPage() {
       h="full"
       justifyContent="center"
       alignItems="center"
-      bgColor={useColorModeValue("green.50", "green.900")}
+      bgColor={useColorModeValue("gray.100", "gray.700")}
     >
       <Form method="post">
         <VStack
@@ -77,7 +77,7 @@ export default function LoginPage() {
           bgColor={useColorModeValue("white", "gray.800")}
           borderRadius="lg"
         >
-          <FormControl>
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.email)}>
             <FormLabel htmlFor="email">E-mail</FormLabel>
             <Input
               id="email"
@@ -86,32 +86,20 @@ export default function LoginPage() {
               name="email"
               type="email"
               autoComplete="email"
-              aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
-              aria-describedby="email-error"
             />
-            {actionData?.fieldErrors?.email && (
-              <FormErrorMessage>
-                {actionData.fieldErrors.email}
-              </FormErrorMessage>
-            )}
+            <FormErrorMessage>{actionData?.fieldErrors.email}</FormErrorMessage>
           </FormControl>
-          <FormControl>
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.password)}>
             <FormLabel htmlFor="password">Senha</FormLabel>
             <Input
               id="password"
               name="password"
               type="password"
               autoComplete="current-password"
-              aria-invalid={
-                actionData?.fieldErrors?.password ? true : undefined
-              }
-              aria-describedby="password-error"
             />
-            {actionData?.fieldErrors?.password && (
-              <FormErrorMessage>
-                {actionData.fieldErrors.password}
-              </FormErrorMessage>
-            )}
+            <FormErrorMessage>
+              {actionData?.fieldErrors.password}
+            </FormErrorMessage>
           </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <Button w="full" type="submit">

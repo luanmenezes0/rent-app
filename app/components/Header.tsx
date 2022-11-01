@@ -1,10 +1,10 @@
 import {
   Avatar,
+  Box,
   Button,
   chakra,
   Flex,
   HStack,
-  Image,
   Link,
   Menu,
   MenuButton,
@@ -35,7 +35,7 @@ export default function Header() {
         bgColor={useColorModeValue("gray.700", "gray.700")}
       >
         <NavLink to="/">
-          <Image src="https://flowbite.com/docs/images/logo.svg" h="50px" />
+          <Box h="50px" />
         </NavLink>
         <HStack as="nav" spacing="8" color="white">
           <Link as={NavLink} to="/">

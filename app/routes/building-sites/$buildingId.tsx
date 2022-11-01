@@ -4,11 +4,13 @@ import {
   AlertIcon,
   Button,
   Container,
+  Divider,
   FormControl,
   FormLabel,
   Heading,
   HStack,
   Input,
+  Link,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -34,6 +36,7 @@ import {
   useFetcher,
   useLoaderData,
   useTransition,
+  Link as RemixLink,
 } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -50,6 +53,7 @@ import {
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
 import type { Rentable } from "~/models/inventory.server.";
+import { getRentables } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
@@ -66,7 +70,9 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const inventory = await getBuildingSiteInventory(params.buildingId);
 
-  return json({ buildingSite, inventory });
+  const rentables = await getRentables();
+
+  return json({ buildingSite, inventory, rentables });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -171,7 +177,7 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                   key={rentable.id}
                 >
                   <input type="hidden" name="rentableId" value={rentable.id} />
-                  <FormLabel htmlFor={`${rentable.id}_count`}>
+                  <FormLabel htmlFor={`${rentable.id}_count`} alignSelf="center">
                     {rentable.name}
                   </FormLabel>
                   <Input
@@ -211,7 +217,7 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
 }
 
 export default function BuildingSite() {
-  const { buildingSite, inventory } = useLoaderData<typeof loader>();
+  const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
   const transition = useTransition();
   const actionData = useActionData();
@@ -227,6 +233,8 @@ export default function BuildingSite() {
       setShowBuildingModal(false);
     }
   }, [isAdding, actionData]);
+
+  const cardColor = useColorModeValue("gray.100", "gray.700");
 
   return (
     <>
@@ -262,19 +270,38 @@ export default function BuildingSite() {
             <Text fontWeight="bold" as="dt">
               Cliente
             </Text>
-            <dd>{buildingSite.client.name}</dd>
+            <Link to={`/clients/${buildingSite.client.id}`} as={RemixLink}>
+              <dd>{buildingSite.client.name}</dd>
+            </Link>
           </div>
         </VStack>
-
-        <div>
-          {inventory.map((rentable) => (
-            <div key={rentable.rentableId}>
-              <h3>{rentable.rentableId}</h3>
-              <div>{rentable.count}</div>
-            </div>
-          ))}
-        </div>
-        <VStack align="stretch" px="4">
+        <Divider />
+        <VStack align="stretch" as="section">
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Materiais
+          </Heading>
+          <HStack>
+            {inventory.map((rentable) => (
+              <Stat
+                key={rentable.rentableId}
+                bgColor={cardColor}
+                padding="4"
+                borderRadius="16"
+              >
+                <StatLabel>
+                  {rentables.find((i) => i.id === rentable.rentableId)?.name}
+                </StatLabel>
+                <StatNumber>{rentable.count}</StatNumber>
+              </Stat>
+            ))}
+          </HStack>
+        </VStack>
+        <Divider />
+        <VStack align="stretch" as="section">
           <Heading
             as="h2"
             size="lg"
