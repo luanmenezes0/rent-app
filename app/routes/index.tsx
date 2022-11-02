@@ -1,7 +1,9 @@
+import { Container, Heading, VStack, Wrap } from "@chakra-ui/react";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
+import { RadialChart } from "react-vis";
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server.";
 import { getRentables } from "~/models/inventory.server.";
@@ -28,12 +30,26 @@ function Card({
     }
   }, [fetcher, rentable.id]);
 
+  const a = ((fetcher.data?.inventory ?? 0) / rentable.count) * 100;
+  const b = rentable.count - (fetcher.data?.inventory ?? 0) / rentable.count;
+
   return (
-    <article className="flex flex-col gap-4 bg-red-500">
-      <div>NOME: {rentable.name}</div>
-      <div>TOTAL: {rentable.count}</div>
+    <VStack as="article" minW="200">
+      <Heading as="h2" size="md">
+        {rentable.name}
+      </Heading>
       <div>ALUGADO: {fetcher.data?.inventory}</div>
-    </article>
+      <div>TOTAL: {rentable.count}</div>
+      <RadialChart
+        showLabels
+        data={[
+          { angle: a, label: "Alugado" },
+          { angle: b, label: "Em estoque" },
+        ]}
+        width={200}
+        height={200}
+      />
+    </VStack>
   );
 }
 
@@ -43,11 +59,16 @@ export default function Index() {
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-4 p-8">
-        {rentables.map((item) => (
-          <Card key={item.id} rentable={item} />
-        ))}
-      </main>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="20">
+        <Heading as="h1" size="2xl">
+          Dashboard
+        </Heading>
+        <Wrap spacing={8}>
+          {rentables.map((item) => (
+            <Card key={item.id} rentable={item} />
+          ))}
+        </Wrap>
+      </Container>
     </>
   );
 }

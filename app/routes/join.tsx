@@ -7,6 +7,7 @@ import { getUserId, createUserSession } from "~/session.server";
 
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
+import { Flex, useColorModeValue, VStack } from "@chakra-ui/react";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -86,9 +87,20 @@ export default function Join() {
   }, [actionData]);
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
-      <div className="mx-auto w-full max-w-md px-8">
-        <Form method="post" className="space-y-6">
+    <Flex
+      h="full"
+      justifyContent="center"
+      alignItems="center"
+      bgColor={useColorModeValue("gray.100", "gray.700")}
+    >
+      <Form method="post" style={{ width: "380px" }}>
+        <VStack
+          spacing="4"
+          maxW="container.md"
+          p="6"
+          bgColor={useColorModeValue("white", "gray.800")}
+          borderRadius="lg"
+        >
           <div>
             <label
               htmlFor="email"
@@ -164,8 +176,8 @@ export default function Join() {
               </Link>
             </div>
           </div>
-        </Form>
-      </div>
-    </div>
+        </VStack>
+      </Form>
+    </Flex>
   );
 }

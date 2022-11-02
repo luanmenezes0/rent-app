@@ -10,7 +10,7 @@ import {
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import { Form, useActionData, useSearchParams } from "@remix-run/react";
 
 import { validationError } from "remix-validated-form";
 import { verifyLogin } from "~/models/user.server";
@@ -69,7 +69,7 @@ export default function LoginPage() {
       alignItems="center"
       bgColor={useColorModeValue("gray.100", "gray.700")}
     >
-      <Form method="post">
+      <Form method="post" style={{ width: "380px" }}>
         <VStack
           spacing="4"
           maxW="container.md"
@@ -105,17 +105,6 @@ export default function LoginPage() {
           <Button w="full" type="submit">
             Entrar
           </Button>
-          <div>
-            Ainda não tem uma conta?{" "}
-            <Link
-              to={{
-                pathname: "/join",
-                search: searchParams.toString(),
-              }}
-            >
-              Cadastre-se
-            </Link>
-          </div>
         </VStack>
       </Form>
     </Flex>
