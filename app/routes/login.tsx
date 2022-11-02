@@ -1,10 +1,18 @@
+import {
+  Button,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  useColorModeValue,
+  VStack,
+} from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import { Form, useActionData, useSearchParams } from "@remix-run/react";
 
-import { Button, Label, TextInput } from "flowbite-react";
 import { validationError } from "remix-validated-form";
-import FormFieldError from "~/components/FormFieldError";
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect } from "~/utils";
@@ -55,60 +63,50 @@ export default function LoginPage() {
   const actionData = useActionData<typeof action>();
 
   return (
-    <div className="flex min-h-full flex-col justify-center">
-      <div className="mx-auto w-full max-w-md px-8">
-        <Form method="post" className="space-y-6">
-          <div>
-            <Label htmlFor="email" value="E-mail" />
-            <TextInput
+    <Flex
+      h="full"
+      justifyContent="center"
+      alignItems="center"
+      bgColor={useColorModeValue("gray.100", "gray.700")}
+    >
+      <Form method="post" style={{ width: "380px" }}>
+        <VStack
+          spacing="4"
+          maxW="container.md"
+          p="6"
+          bgColor={useColorModeValue("white", "gray.800")}
+          borderRadius="lg"
+        >
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.email)}>
+            <FormLabel htmlFor="email">E-mail</FormLabel>
+            <Input
               id="email"
               required
-              autoFocus={true}
+              autoFocus
               name="email"
               type="email"
               autoComplete="email"
-              aria-invalid={actionData?.fieldErrors?.email ? true : undefined}
-              aria-describedby="email-error"
             />
-            {actionData?.fieldErrors?.email && (
-              <FormFieldError>{actionData.fieldErrors.email}</FormFieldError>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="password" value="Senha" />
-            <TextInput
+            <FormErrorMessage>{actionData?.fieldErrors.email}</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.password)}>
+            <FormLabel htmlFor="password">Senha</FormLabel>
+            <Input
               id="password"
               name="password"
               type="password"
               autoComplete="current-password"
-              aria-invalid={
-                actionData?.fieldErrors?.password ? true : undefined
-              }
-              aria-describedby="password-error"
             />
-            {actionData?.fieldErrors?.password && (
-              <FormFieldError>{actionData.fieldErrors.password}</FormFieldError>
-            )}
-          </div>
+            <FormErrorMessage>
+              {actionData?.fieldErrors.password}
+            </FormErrorMessage>
+          </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <Button type="submit">Entrar</Button>
-
-          <div className="flex items-center justify-center">
-            <div className="text-center text-sm text-gray-500">
-              Ainda não tem uma conta?{" "}
-              <Link
-                className="text-blue-500 underline"
-                to={{
-                  pathname: "/join",
-                  search: searchParams.toString(),
-                }}
-              >
-                Cadastre-se
-              </Link>
-            </div>
-          </div>
-        </Form>
-      </div>
-    </div>
+          <Button w="full" type="submit">
+            Entrar
+          </Button>
+        </VStack>
+      </Form>
+    </Flex>
   );
 }

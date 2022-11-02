@@ -1,7 +1,20 @@
+import {
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  VStack
+} from "@chakra-ui/react";
 import type { BuildingSite } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
-import { Button, Label, Modal, TextInput } from "flowbite-react";
-import FormFieldError from "./FormFieldError";
 
 type Props = {
   onClose: () => void;
@@ -15,64 +28,68 @@ export default function BuildingSiteModal(props: Props) {
 
   const actionData = useActionData<{ fieldErrors: Partial<BuildingSite> }>();
 
-  function hasError(field: keyof BuildingSite) {
-    return actionData?.fieldErrors?.[field] ? { border: "2px solid red" } : {};
-  }
-
   return (
-    <Modal show onClose={onClose}>
-      <Modal.Header>{editionMode ? "Editar" : "Nova"} Obra</Modal.Header>
-      <Modal.Body>
-        <Form
-          method="post"
-          id="buiding-site-form"
-          className="flex flex-col gap-4"
-        >
-          <input type="hidden" name="clientId" value={client.id} />
-          <input type="hidden" name="id" value={values?.id} />
-          <div>
-            <Label htmlFor="name" value="Nome" />
-            <TextInput
-              id="name"
-              name="name"
-              required
-              defaultValue={values?.name}
-              style={hasError("name")}
-            />
-            {actionData?.fieldErrors?.name && (
-              <FormFieldError>{actionData?.fieldErrors?.name}</FormFieldError>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="address" value="Endereço" />
-            <TextInput
-              id="address"
-              name="address"
-              defaultValue={editionMode ? values?.address : client.address}
-              required
-              style={hasError("address")}
-            />
-            {actionData?.fieldErrors?.address && (
-              <FormFieldError>
-                {actionData?.fieldErrors?.address}
-              </FormFieldError>
-            )}
-          </div>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          type="submit"
-          form="buiding-site-form"
-          name="_action"
-          value={editionMode ? "edit-bs" : "create-bs"}
-        >
-          {editionMode ? "Editar" : "Criar"}
-        </Button>
-        <Button onClick={onClose} color="gray">
-          Cancelar
-        </Button>
-      </Modal.Footer>
+    <Modal size="xl" isOpen onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>{editionMode ? "Editar" : "Nova"} Obra</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <Form
+            method="post"
+            id="buiding-site-form"
+            className="flex flex-col gap-4"
+          >
+            <VStack spacing={2}>
+              <input type="hidden" name="clientId" value={client.id} />
+              <input type="hidden" name="id" value={values?.id} />
+              <FormControl isInvalid={Boolean(actionData?.fieldErrors?.name)}>
+                <FormLabel htmlFor="name">Nome</FormLabel>
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  defaultValue={values?.name}
+                />
+                {actionData?.fieldErrors?.name && (
+                  <FormErrorMessage>
+                    {actionData?.fieldErrors?.name}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
+              <FormControl
+                isInvalid={Boolean(actionData?.fieldErrors?.address)}
+              >
+                <FormLabel htmlFor="address">Endereço</FormLabel>
+                <Input
+                  id="address"
+                  name="address"
+                  defaultValue={editionMode ? values?.address : client.address}
+                  required
+                />
+                {actionData?.fieldErrors?.address && (
+                  <FormErrorMessage>
+                    {actionData?.fieldErrors?.address}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
+            </VStack>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={onClose} variant="ghost" mx="4">
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="buiding-site-form"
+            name="_action"
+            value={editionMode ? "edit-bs" : "create-bs"}
+          >
+            Salvar
+          </Button>
+        </ModalFooter>
+      </ModalContent>
     </Modal>
   );
 }

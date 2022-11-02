@@ -1,3 +1,19 @@
+import {
+  Button,
+  Container,
+  Heading,
+  Table,
+  TableCaption,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+  VStack,
+} from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -7,7 +23,6 @@ import {
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
-import { Button, Table } from "flowbite-react";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
@@ -79,67 +94,78 @@ export default function Client() {
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-2 p-8">
-        <h2 className="text-2xl font-bold">{client.name}</h2>
-        <dl>
-          <dt className="font-bold">Endereço</dt>
-          <dd>{client.address}</dd>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <VStack>
+          <Text>Detalhes do Cliente</Text>
+          <Heading as="h1" size="xl">
+            {client.name}
+          </Heading>
+        </VStack>
 
-          <dt className="font-bold">Telefone</dt>
-          <dd>{client.phoneNumber}</dd>
+        <VStack as="dl" align="flex-start">
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Endereço
+            </Text>
+            <dd>{client.address}</dd>
+          </div>
+
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Telefone
+            </Text>
+            <dd>{client.phoneNumber}</dd>
+          </div>
 
           {client.isLegalEntity ? (
-            <>
-              <dt className="font-bold">CNPJ</dt>
+            <div>
+              <Text fontWeight="bold" as="dt">
+                CNPJ
+              </Text>
               <dd>{client.registrationNumber || "-"}</dd>
-            </>
+            </div>
           ) : (
-            <>
-              <dt className="font-bold">CPF</dt>
+            <div>
+              <Text fontWeight="bold" as="dt">
+                CPF
+              </Text>
               <dd>{client.registrationNumber || "-"}</dd>
-            </>
+            </div>
           )}
-        </dl>
-        <Button onClick={() => setShow(true)}>Adicionar Obra</Button>
-        <div>
-          <Table striped>
-            <caption>
-              <h3 className="p-2 text-left text-xl font-bold">Obras</h3>
-            </caption>
-            <Table.Head>
-              <Table.HeadCell>Id</Table.HeadCell>
-              <Table.HeadCell>Nome</Table.HeadCell>
-              <Table.HeadCell>Endereço</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Ações</span>
-              </Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
+        </VStack>
+        <Button maxW="fit-content" onClick={() => setShow(true)}>
+          Adicionar Obra
+        </Button>
+        <TableContainer>
+          <Table>
+            <TableCaption>Obras</TableCaption>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Endereço</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {client.buildingSites.map((bs) => (
-                <Table.Row
-                  key={bs.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                <Tr key={bs.id}>
+                  <Td>
                     <Link to={`/building-sites/${bs.id}`}>{bs.id}</Link>
-                  </Table.Cell>
-                  <Table.Cell>{bs.name}</Table.Cell>
-                  <Table.Cell>{bs.address}</Table.Cell>
-                  <Table.Cell>
-                    <Link
-                      className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
-                      to={`/building-sites/${bs.id}`}
-                    >
-                      Ver detalhes
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
+                  </Td>
+                  <Td>{bs.name}</Td>
+                  <Td>{bs.address}</Td>
+                  <Td>
+                    <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                  </Td>
+                </Tr>
               ))}
-            </Table.Body>
+            </Tbody>
           </Table>
-        </div>
-        <hr className="my-4" />
-      </main>
+        </TableContainer>
+      </Container>
       {show && (
         <BuildingSiteModal client={client} onClose={() => setShow(false)} />
       )}

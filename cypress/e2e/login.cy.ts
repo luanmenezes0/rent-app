@@ -13,9 +13,9 @@ describe("Login", () => {
 
     cy.then(() => ({ email: loginForm.email })).as("user");
 
-    cy.visitAndCheck("/");
+    cy.visitAndCheck("/join");
 
-    cy.findByRole("link", { name: /cadastre-se/i }).click();
+    // cy.findByRole("link", { name: /cadastre-se/i }).click();
 
     cy.findByRole("textbox", { name: /email/i }).type(loginForm.email);
     cy.findByLabelText(/password/i).type(loginForm.password);
