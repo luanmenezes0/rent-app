@@ -177,7 +177,10 @@ function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                   key={rentable.id}
                 >
                   <input type="hidden" name="rentableId" value={rentable.id} />
-                  <FormLabel htmlFor={`${rentable.id}_count`} alignSelf="center">
+                  <FormLabel
+                    htmlFor={`${rentable.id}_count`}
+                    alignSelf="center"
+                  >
                     {rentable.name}
                   </FormLabel>
                   <Input
