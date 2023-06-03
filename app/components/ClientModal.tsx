@@ -89,8 +89,11 @@ export function ClientModal(props: ClientModalProps) {
 
                     if (res.ok && form) {
                       form.elements.name.value = data["RAZAO SOCIAL"];
-                      form.address.value = data.LOGRADOURO;
+                      form.address.value = `${data['TIPO LOGRADOURO']} ${data.LOGRADOURO}, ${data.NUMERO}`;
                       form.phoneNumber.value = data.TELEFONE;
+                      form.neighborhood.value = data.BAIRRO;
+                      form.city.value = data.MUNICIPIO;
+                      form.state.value = data.UF;
                     }
                   }
                 }}
@@ -133,24 +136,76 @@ export function ClientModal(props: ClientModalProps) {
                   </FormErrorMessage>
                 )}
               </FormControl>
-              <FormControl
-                isInvalid={Boolean(actionData?.fieldErrors?.phoneNumber)}
-              >
-                <FormLabel htmlFor="phoneNumber">Telefone</FormLabel>
-                <Input
-                  id="phoneNumber"
-                  name="phoneNumber"
-                  defaultValue={values?.phoneNumber ?? ""}
-                  minLength={10}
-                  required
-                  type="tel"
-                />
-                {actionData?.fieldErrors?.phoneNumber && (
-                  <FormErrorMessage>
-                    {actionData?.fieldErrors?.phoneNumber}
-                  </FormErrorMessage>
-                )}
-              </FormControl>
+              <HStack>
+                <FormControl
+                  isInvalid={Boolean(actionData?.fieldErrors?.neighborhood)}
+                >
+                  <FormLabel htmlFor="address">Bairro</FormLabel>
+                  <Input
+                    id="neighborhood"
+                    name="neighborhood"
+                    required
+                    defaultValue={values?.neighborhood}
+                  />
+                  {actionData?.fieldErrors?.neighborhood && (
+                    <FormErrorMessage>
+                      {actionData?.fieldErrors?.neighborhood}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
+
+                <FormControl isInvalid={Boolean(actionData?.fieldErrors?.city)}>
+                  <FormLabel htmlFor="address">Cidade</FormLabel>
+                  <Input
+                    id="city"
+                    name="city"
+                    required
+                    defaultValue={values?.city}
+                  />
+                  {actionData?.fieldErrors?.city && (
+                    <FormErrorMessage>
+                      {actionData?.fieldErrors?.city}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
+              </HStack>
+              <HStack>
+                <FormControl
+                  isInvalid={Boolean(actionData?.fieldErrors?.phoneNumber)}
+                >
+                  <FormLabel htmlFor="phoneNumber">Telefone</FormLabel>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    defaultValue={values?.phoneNumber ?? ""}
+                    minLength={10}
+                    required
+                    type="tel"
+                  />
+                  {actionData?.fieldErrors?.phoneNumber && (
+                    <FormErrorMessage>
+                      {actionData?.fieldErrors?.phoneNumber}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
+
+                <FormControl
+                  isInvalid={Boolean(actionData?.fieldErrors?.state)}
+                >
+                  <FormLabel htmlFor="state">UF</FormLabel>
+                  <Input
+                    id="state"
+                    name="state"
+                    defaultValue={values?.state ?? ""}
+                    required
+                  />
+                  {actionData?.fieldErrors?.state && (
+                    <FormErrorMessage>
+                      {actionData?.fieldErrors?.state}
+                    </FormErrorMessage>
+                  )}
+                </FormControl>
+              </HStack>
             </VStack>
           </Form>
         </ModalBody>

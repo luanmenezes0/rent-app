@@ -1,24 +1,10 @@
 import {
-  Alert,
-  AlertDescription,
-  AlertIcon,
   Button,
   Container,
   Divider,
-  FormControl,
-  FormLabel,
   Heading,
   HStack,
-  Input,
   Link,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Select,
   Stat,
   StatArrow,
   StatLabel,
@@ -30,13 +16,11 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
-  Form,
+  Link as RemixLink,
   useActionData,
   useCatch,
-  useFetcher,
   useLoaderData,
   useTransition,
-  Link as RemixLink,
 } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
@@ -52,10 +36,10 @@ import {
   createDeliveries,
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
-import type { Rentable } from "~/models/inventory.server.";
 import { getRentables } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
+import { DeliveyModal } from "../../components/DeliveyModal";
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -81,6 +65,9 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const action = formData.get("_action");
 
+  console.log(action);
+  console.log(Object.fromEntries(formData.entries()));
+
   switch (action) {
     case "edit-bs": {
       const result = await buildingSiteValidator.validate(formData);
@@ -94,11 +81,14 @@ export async function action({ request }: ActionArgs) {
         name: result.data.name,
         id: Number(result.data.id),
       });
+
+      return null;
     }
 
     case "create-delivery": {
       const rentableIds = formData.getAll("rentableId") as string[];
       const buildingSiteId = formData.get("buildingSiteId") as string;
+      const date = formData.get("date") as string;
 
       const units = rentableIds
         .map((id) => {
@@ -130,93 +120,6 @@ export async function action({ request }: ActionArgs) {
     default:
       throw new Error("Invalid action");
   }
-}
-interface DeliveryModalProps {
-  onClose: () => void;
-  buildingSiteId: number;
-}
-
-function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
-  const fetcher = useFetcher<{ rentables: Rentable[] }>();
-
-  const actionData = useActionData();
-
-  useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load("/inventory");
-    }
-  }, [fetcher]);
-
-  return (
-    <Modal size="md" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Nova Remessa</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Form method="post" id="delivery-form">
-            <VStack>
-              <input
-                type="hidden"
-                name="buildingSiteId"
-                value={buildingSiteId}
-              />
-              {actionData?.fieldErrors?.count && (
-                <Alert status="error" borderRadius="16">
-                  <AlertIcon />
-                  <AlertDescription>
-                    {actionData?.fieldErrors?.count}
-                  </AlertDescription>
-                </Alert>
-              )}
-              {fetcher.data?.rentables.map((rentable) => (
-                <FormControl
-                  display="grid"
-                  gridTemplateColumns="repeat(3, 1fr)"
-                  gap={4}
-                  key={rentable.id}
-                >
-                  <input type="hidden" name="rentableId" value={rentable.id} />
-                  <FormLabel
-                    htmlFor={`${rentable.id}_count`}
-                    alignSelf="center"
-                  >
-                    {rentable.name}
-                  </FormLabel>
-                  <Input
-                    min={0}
-                    type="number"
-                    name={`${rentable.id}_count`}
-                    id={`${rentable.id}_count`}
-                    placeholder=""
-                    defaultValue={0}
-                    required
-                  />
-                  <Select name={`${rentable.id}_delivery_type`}>
-                    <option value="1">Entrega</option>
-                    <option value="2">Retirada</option>
-                  </Select>
-                </FormControl>
-              ))}
-            </VStack>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose} variant="outline" mx={2}>
-            Cancelar
-          </Button>
-          <Button
-            name="_action"
-            value="create-delivery"
-            type="submit"
-            form="delivery-form"
-          >
-            Criar
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
-  );
 }
 
 export default function BuildingSite() {
@@ -319,7 +222,7 @@ export default function BuildingSite() {
                 {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
               </StatLabel>
               {d.units.map((u) => (
-                <StatNumber key={u.id}>
+                <StatNumber fontSize="16" key={u.id}>
                   {u.rentable.name} - {Math.abs(u.count)}{" "}
                   <StatArrow
                     type={u.deliveryType === 1 ? "increase" : "decrease"}

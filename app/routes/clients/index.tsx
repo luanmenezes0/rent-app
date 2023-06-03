@@ -65,6 +65,11 @@ export async function action({ request }: ActionArgs) {
           phoneNumber: result.data.phoneNumber,
           isLegalEntity: result.data.isLegalEntity === "true",
           registrationNumber: result.data.registrationNumber,
+          city: result.data.city,
+          state: result.data.state,
+          neighborhood: result.data.neighborhood,
+          email: result.data.email ?? null,
+          streetCode: result.data.streetCode ?? null,
         });
 
         return null;
@@ -94,6 +99,11 @@ export async function action({ request }: ActionArgs) {
         isLegalEntity: result.data.isLegalEntity === "true",
         registrationNumber: result.data.registrationNumber ?? null,
         id: Number(result.data.id),
+        city: result.data.city,
+        state: result.data.state,
+        neighborhood: result.data.neighborhood,
+        email: result.data.email ?? null,
+        streetCode: result.data.streetCode ?? null,
       });
 
       return null;
@@ -148,7 +158,7 @@ export default function Clients() {
           Criar Cliente
         </Button>
         <TableContainer>
-          <Table>
+          <Table size="sm">
             <Thead>
               <Tr>
                 <Th>Id</Th>
