@@ -23,21 +23,35 @@ export async function createDeliveries(
     DeliveryUnit,
     "count" | "rentableId" | "deliveryType" | "buildingSiteId"
   >[],
-  buildingSiteId: string
+  buildingSiteId: string,
+  date: Date
 ) {
   await prisma.delivery.create({
     data: {
       buildingSiteId: Number(buildingSiteId),
       units: { create: units },
+      date,
     },
   });
 }
 
-export async function editDelivery(delivery: Delivery) {
-  return prisma.delivery.update({
-    data: delivery,
-    where: { id: delivery.id },
+export async function editDelivery(
+  delivery: Partial<Delivery>,
+  units: Pick<DeliveryUnit, "count" | "deliveryType" | "id">[]
+) {
+  const map = units.map((u) => {
+    return prisma.deliveryUnit.update({
+      where: { id: u.id },
+      data: { count: u.count, deliveryType: u.deliveryType },
+    });
   });
+
+  prisma.delivery.update({
+    where: { id: delivery.id },
+    data: delivery,
+  });
+
+  return Promise.all(map);
 }
 
 export async function deleteDelivery(id: string) {

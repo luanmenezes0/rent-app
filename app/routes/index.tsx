@@ -30,15 +30,17 @@ function Card({
     }
   }, [fetcher, rentable.id]);
 
-  const a = ((fetcher.data?.inventory ?? 0) / rentable.count) * 100;
-  const b = rentable.count - (fetcher.data?.inventory ?? 0) / rentable.count;
+  const totalRented = fetcher.data?.inventory ?? 0;
+
+  const a = totalRented / rentable.count;
+  const b = (rentable.count - totalRented) / rentable.count;
 
   return (
     <VStack as="article" minW="200">
       <Heading as="h2" size="md">
         {rentable.name}
       </Heading>
-      <div>ALUGADO: {fetcher.data?.inventory}</div>
+      <div>ALUGADO: {totalRented}</div>
       <div>TOTAL: {rentable.count}</div>
       <RadialChart
         showLabels
@@ -48,6 +50,7 @@ function Card({
         ]}
         width={200}
         height={200}
+        labelsStyle={{ fontSize: 11 }}
       />
     </VStack>
   );
