@@ -34,6 +34,7 @@ import {
 } from "~/models/buildingSite.server";
 import {
   createDeliveries,
+  editDelivery,
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server.";
@@ -64,9 +65,6 @@ export async function action({ request }: ActionArgs) {
 
   const formData = await request.formData();
   const action = formData.get("_action");
-
-  console.log(action);
-  console.log(Object.fromEntries(formData.entries()));
 
   switch (action) {
     case "edit-bs": {
@@ -112,7 +110,47 @@ export async function action({ request }: ActionArgs) {
         });
       }
 
-      await createDeliveries(units, buildingSiteId);
+      await createDeliveries(units, buildingSiteId, dayjs(date).toDate());
+
+      return null;
+    }
+
+    case "edit-delivery": {
+      const rentableIds = formData.getAll("rentableId") as string[];
+      const buildingSiteId = formData.get("buildingSiteId") as string;
+      const date = formData.get("date") as string;
+      const id = formData.get("id") as string;
+
+      const units = rentableIds
+        .map((id) => {
+          const count = formData.get(`${id}_count`) as string;
+          const deliveryType = formData.get(`${id}_delivery_type`) as string;
+
+          return {
+            id: Number(id),
+            count: Number(deliveryType) === 1 ? Number(count) : -Number(count),
+            deliveryType: Number(deliveryType),
+            buildingSiteId: Number(buildingSiteId),
+          };
+        })
+        .filter((u) => u.count !== 0);
+
+      if (!units.length) {
+        return validationError({
+          fieldErrors: {
+            count: "É necessário informar a quantidade de pelo menos um item",
+          },
+        });
+      }
+
+      await editDelivery(
+        {
+          buildingSiteId: Number(buildingSiteId),
+          id: Number(id),
+          date: dayjs(date).toDate(),
+        },
+        units
+      );
 
       return null;
     }
@@ -122,20 +160,23 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
+const initialState = { show: false, editing: false, data: null };
+type State = { show: boolean; editing: boolean; data: any };
+
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
   const transition = useTransition();
   const actionData = useActionData();
 
-  const [show, setShow] = useState(false);
+  const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
   const isAdding = transition.state === "submitting";
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
-      setShow(false);
+      setDeliveryModal(initialState);
       setShowBuildingModal(false);
     }
   }, [isAdding, actionData]);
@@ -152,7 +193,10 @@ export default function BuildingSite() {
             {buildingSite.name}
           </Heading>
           <HStack py={6}>
-            <Button variant="outline" onClick={() => setShow(true)}>
+            <Button
+              variant="outline"
+              onClick={() => setDeliveryModal({ ...initialState, show: true })}
+            >
               Adicionar Remessa
             </Button>
             <Button
@@ -218,9 +262,7 @@ export default function BuildingSite() {
 
           {buildingSite.deliveries.map((d) => (
             <Stat key={d.id} p="6" border="1px" borderRadius="16">
-              <StatLabel>
-                {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-              </StatLabel>
+              <StatLabel>{dayjs(d.date).format("DD/MM/YYYY HH:mm")}</StatLabel>
               {d.units.map((u) => (
                 <StatNumber fontSize="16" key={u.id}>
                   {u.rentable.name} - {Math.abs(u.count)}{" "}
@@ -229,14 +271,26 @@ export default function BuildingSite() {
                   />
                 </StatNumber>
               ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() =>
+                  setDeliveryModal({ show: true, editing: true, data: d })
+                }
+              >
+                Editar
+              </Button>
             </Stat>
           ))}
         </VStack>
       </Container>
-      {show && (
+      {deliveryModal.show && (
         <DeliveyModal
-          onClose={() => setShow(false)}
+          onClose={() => setDeliveryModal(initialState)}
           buildingSiteId={buildingSite.id}
+          editionMode={deliveryModal.editing}
+          rentables={rentables}
+          values={deliveryModal.data}
         />
       )}
       {showBuildingModal && (

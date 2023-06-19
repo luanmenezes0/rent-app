@@ -18,12 +18,22 @@ import {
   Select,
   VStack,
 } from "@chakra-ui/react";
-import { Form, useActionData, useFetcher } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import type { Delivery, DeliveryUnit } from "@prisma/client";
+import { Form, useActionData } from "@remix-run/react";
+import dayjs from "dayjs";
+import { useState } from "react";
 import type { Rentable } from "~/models/inventory.server.";
 
-function SelectArea({ rentableId }: { rentableId: number }) {
-  const [type, setType] = useState<"delivery" | "withdrawal">("delivery");
+function SelectArea({
+  rentableId,
+  initialType,
+}: {
+  rentableId: number;
+  initialType?: "delivery" | "withdrawal";
+}) {
+  const [type, setType] = useState<"delivery" | "withdrawal">(
+    initialType || "delivery"
+  );
 
   return (
     <>
@@ -33,6 +43,7 @@ function SelectArea({ rentableId }: { rentableId: number }) {
         onChange={(e) =>
           setType(e.target.value === "1" ? "delivery" : "withdrawal")
         }
+        value={type === "delivery" ? "1" : "2"}
       >
         <option value="1">Entrega</option>
         <option value="2">Retirada</option>
@@ -49,27 +60,51 @@ function SelectArea({ rentableId }: { rentableId: number }) {
 interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
+  editionMode?: boolean;
+  values?: Delivery & { units: Array<DeliveryUnit & { rentable: Rentable }> };
+  rentables: Omit<Rentable, "createdAt" | "updatedAt">[];
 }
 
-export function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
-  const fetcher = useFetcher<{ rentables: Rentable[] }>();
-
+export function DeliveyModal({
+  onClose,
+  buildingSiteId,
+  editionMode,
+  values,
+  rentables,
+}: DeliveryModalProps) {
   const actionData = useActionData();
 
-  useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load("/inventory");
-    }
-  }, [fetcher]);
+  let mappedRentables = [];
+
+  if (editionMode && values) {
+    mappedRentables = values.units.map((item) => ({
+      id: item.id,
+      type: item.deliveryType,
+      name: item.rentable.name,
+      count: Math.abs(item.count),
+    }));
+  } else {
+    mappedRentables = rentables.map((rentable) => ({
+      id: rentable.id,
+      name: rentable.name,
+      count: 0,
+      type: 1,
+    }));
+  }
+
+  const initialDateValue = values
+    ? dayjs(values.createdAt).format("YYYY-MM-DDTHH:mm")
+    : dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (
     <Modal size="md" isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Nova Remessa</ModalHeader>
+        <ModalHeader>{editionMode ? "Editar" : "Nova"} Remessa</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="delivery-form">
+          <Form method="post" id="delivery-form" key={values?.id}>
+            <input type="hidden" name="id" value={values?.id} />
             <VStack>
               <FormControl>
                 <FormLabel htmlFor="notes">Data</FormLabel>
@@ -77,6 +112,7 @@ export function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                   name="date"
                   placeholder="Select Date and Time"
                   size="md"
+                  defaultValue={initialDateValue}
                   type="datetime-local"
                 />
               </FormControl>
@@ -93,7 +129,7 @@ export function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                   </AlertDescription>
                 </Alert>
               )}
-              {fetcher.data?.rentables.map((rentable) => (
+              {mappedRentables.map((rentable) => (
                 <FormControl
                   display="grid"
                   gridTemplateColumns="1fr 85px 1fr"
@@ -113,11 +149,16 @@ export function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
                     name={`${rentable.id}_count`}
                     id={`${rentable.id}_count`}
                     placeholder=""
-                    defaultValue={0}
+                    defaultValue={rentable.count}
                     required
                   />
                   <HStack>
-                    <SelectArea rentableId={rentable.id} />
+                    <SelectArea
+                      rentableId={rentable.id}
+                      initialType={
+                        rentable.type === 1 ? "delivery" : "withdrawal"
+                      }
+                    />
                   </HStack>
                 </FormControl>
               ))}
@@ -130,11 +171,11 @@ export function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
           </Button>
           <Button
             name="_action"
-            value="create-delivery"
+            value={editionMode ? "edit-delivery" : "create-delivery"}
             type="submit"
             form="delivery-form"
           >
-            Criar
+            Salvar
           </Button>
         </ModalFooter>
       </ModalContent>

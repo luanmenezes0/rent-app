@@ -85,11 +85,9 @@ export function ClientModal(props: ClientModalProps) {
 
                     const data = await res.json();
 
-                    console.log(data);
-
                     if (res.ok && form) {
                       form.elements.name.value = data["RAZAO SOCIAL"];
-                      form.address.value = `${data['TIPO LOGRADOURO']} ${data.LOGRADOURO}, ${data.NUMERO}`;
+                      form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
                       form.phoneNumber.value = data.TELEFONE;
                       form.neighborhood.value = data.BAIRRO;
                       form.city.value = data.MUNICIPIO;
