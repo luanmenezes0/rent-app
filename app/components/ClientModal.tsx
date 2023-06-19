@@ -41,7 +41,7 @@ export function ClientModal(props: ClientModalProps) {
         <ModalHeader>{editionMode ? "Editar" : "Criar"} Cliente</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="client-form" onChange={(e) => {}}>
+          <Form method="post" id="client-form">
             <FormControl as="fieldset">
               <FormLabel as="legend">Pessoa Jurídica</FormLabel>
               <RadioGroup
@@ -86,7 +86,8 @@ export function ClientModal(props: ClientModalProps) {
                     const data = await res.json();
 
                     if (res.ok && form) {
-                      form.elements.name.value = data["RAZAO SOCIAL"];
+                      const name = form.elements.namedItem("name") as HTMLInputElement | null;
+                      if (name) name.value = data["RAZAO SOCIAL"];
                       form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
                       form.phoneNumber.value = data.TELEFONE;
                       form.neighborhood.value = data.BAIRRO;
@@ -138,7 +139,7 @@ export function ClientModal(props: ClientModalProps) {
                 <FormControl
                   isInvalid={Boolean(actionData?.fieldErrors?.neighborhood)}
                 >
-                  <FormLabel htmlFor="address">Bairro</FormLabel>
+                  <FormLabel htmlFor="neighborhood">Bairro</FormLabel>
                   <Input
                     id="neighborhood"
                     name="neighborhood"
@@ -153,7 +154,7 @@ export function ClientModal(props: ClientModalProps) {
                 </FormControl>
 
                 <FormControl isInvalid={Boolean(actionData?.fieldErrors?.city)}>
-                  <FormLabel htmlFor="address">Cidade</FormLabel>
+                  <FormLabel htmlFor="city">Cidade</FormLabel>
                   <Input
                     id="city"
                     name="city"
