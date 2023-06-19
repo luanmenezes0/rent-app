@@ -159,7 +159,7 @@ export function ClientModal(props: ClientModalProps) {
                     id="city"
                     name="city"
                     required
-                    defaultValue={values?.city}
+                    defaultValue={values?.city ?? ''}
                   />
                   {actionData?.fieldErrors?.city && (
                     <FormErrorMessage>
