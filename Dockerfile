@@ -32,7 +32,7 @@ WORKDIR /myapp
 COPY --from=deps /myapp/node_modules /myapp/node_modules
 
 ADD prisma .
-RUN npx prisma generate
+RUN npx prisma migrate reset --force && npx prisma db push
 
 ADD . .
 RUN npm run build
