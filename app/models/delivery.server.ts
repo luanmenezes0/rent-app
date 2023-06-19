@@ -49,7 +49,6 @@ export async function editDelivery(
   prisma.delivery.update({
     where: { id: delivery.id },
     data: delivery,
-    // include: { units: true },
   });
 
   return Promise.all(map);

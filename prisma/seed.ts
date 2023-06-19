@@ -38,10 +38,6 @@ async function seed() {
 
   // deleteClients();
 
-  await prisma.delivery.updateMany({
-    where: { createdAt: undefined },
-    data: { createdAt: new Date() },
-  });
   console.log(`Database has been seeded. 🌱`);
 }
 

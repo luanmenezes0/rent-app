@@ -50,7 +50,7 @@ model Client {
   id                 Int            @id @default(autoincrement())
   name               String
   address            String
-  city               String
+  city               String?
   neighborhood       String
   state              String
   email              String?
