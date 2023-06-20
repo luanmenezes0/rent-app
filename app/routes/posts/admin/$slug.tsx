@@ -41,7 +41,7 @@ export const action: ActionFunction = async ({ request }) => {
 
   const formData = await request.formData();
 
-  let action = formData.get("action");
+  const action = formData.get("action");
 
   switch (action) {
     case "update": {

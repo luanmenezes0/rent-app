@@ -71,8 +71,6 @@ export async function action({ request }: ActionArgs) {
           email: result.data.email ?? null,
           streetCode: result.data.streetCode ?? null,
         });
-
-        return null;
       } catch (e: any) {
         if (e.meta?.target?.includes("registrationNumber")) {
           return validationError({
@@ -83,6 +81,8 @@ export async function action({ request }: ActionArgs) {
           });
         }
       }
+
+      return null;
     }
 
     case "edit": {
