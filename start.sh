@@ -7,5 +7,4 @@
 
 set -ex
 npx prisma migrate deploy
-npm run prisma:push
 npm run start
