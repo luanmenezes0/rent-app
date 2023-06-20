@@ -1,18 +1,5 @@
 import { extendTheme, withDefaultColorScheme } from "@chakra-ui/react";
 
-// 2. Objects can be created inside the extendTheme function or elsewhere and imported
-// const colors = {
-//   primaryFontColor: {
-//     lightMode: baseTheme.colors.gray["700"],
-//     darkMode: baseTheme.colors.gray["200"],
-//   },
-//   secondaryFontColor: {
-//     lightMode: baseTheme.colors.gray["600"],
-//     darkMode: baseTheme.colors.gray["400"],
-//   },
-//   plainOldBlue: "blue",
-// };
-
 const theme = {
   styles: {
     global: {
