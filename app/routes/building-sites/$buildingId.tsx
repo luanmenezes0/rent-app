@@ -149,7 +149,7 @@ export async function action({ request }: ActionArgs) {
           id: Number(id),
           date: dayjs(date).toDate(),
         },
-        units
+        units,
       );
 
       return null;

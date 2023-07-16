@@ -32,13 +32,13 @@ export async function getBuildingSite(id: string) {
 }
 
 export async function createBuildingSite(
-  buildingSite: Pick<BuildingSite, "address" | "name" | "clientId">
+  buildingSite: Pick<BuildingSite, "address" | "name" | "clientId">,
 ) {
   return prisma.buildingSite.create({ data: buildingSite });
 }
 
 export async function editBuildingSite(
-  buildingSite: Pick<BuildingSite, "address" | "name" | "id">
+  buildingSite: Pick<BuildingSite, "address" | "name" | "id">,
 ) {
   return prisma.buildingSite.update({
     data: buildingSite,

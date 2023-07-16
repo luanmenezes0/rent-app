@@ -1,18 +1,22 @@
+import { CloseIcon, HamburgerIcon } from "@chakra-ui/icons";
 import {
   Avatar,
   Box,
   Button,
-  chakra,
   Flex,
   HStack,
+  IconButton,
   Link,
   Menu,
   MenuButton,
   MenuDivider,
   MenuItem,
   MenuList,
+  VStack,
+  chakra,
   useColorMode,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Form, NavLink } from "@remix-run/react";
 import { useUser } from "~/utils";
@@ -20,9 +24,13 @@ import { useUser } from "~/utils";
 export default function Header() {
   const user = useUser();
 
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
   const { colorMode, toggleColorMode } = useColorMode();
 
   const darkMode = colorMode === "dark";
+
+  const navColor = useColorModeValue("gray.700", "gray.700");
 
   return (
     <chakra.header id="header">
@@ -32,12 +40,24 @@ export default function Header() {
         py="5"
         align="center"
         justify="space-between"
-        bgColor={useColorModeValue("gray.700", "gray.700")}
+        bgColor={navColor}
       >
+        <IconButton
+          size={"md"}
+          icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
+          aria-label={"Open Menu"}
+          display={{ md: "none" }}
+          onClick={isOpen ? onClose : onOpen}
+        />
         <NavLink to="/">
           <Box h="50px" />
         </NavLink>
-        <HStack as="nav" spacing="8" color="white">
+        <HStack
+          as="nav"
+          spacing="8"
+          color="white"
+          display={{ base: "none", md: "block" }}
+        >
           <Link as={NavLink} to="/">
             Início
           </Link>
@@ -108,6 +128,27 @@ export default function Header() {
           </Menu>
         </HStack>
       </Flex>
+      {isOpen ? (
+        <Box pb={4} display={{ md: "none" }} bgColor={navColor} color="white">
+          <VStack as={"nav"} gap={4} py={4}>
+            <Link as={NavLink} to="/">
+              Início
+            </Link>
+            <Link as={NavLink} to="/clients">
+              Clientes
+            </Link>
+            <Link as={NavLink} to="/building-sites">
+              Obras
+            </Link>
+            <Link as={NavLink} to="/deliveries">
+              Remessas
+            </Link>
+            <Link as={NavLink} to="/inventory">
+              Estoque
+            </Link>
+          </VStack>
+        </Box>
+      ) : null}
     </chakra.header>
   );
 }

@@ -7,7 +7,7 @@ export async function getRentables() {
 }
 
 export async function createRentable(
-  rentable: Pick<Rentable, "name" | "count">
+  rentable: Pick<Rentable, "name" | "count">,
 ) {
   return prisma.rentable.create({ data: rentable });
 }
@@ -18,7 +18,7 @@ export async function editRentable(rentable: Pick<Rentable, "id" | "count">) {
 
 export async function createInventory(
   buildingSiteId: number,
-  rentableId: number
+  rentableId: number,
 ) {
   return prisma.inventory.create({
     data: { buildingSiteId, count: 0, rentableId },

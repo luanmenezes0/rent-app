@@ -11,7 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import type { BuildingSite } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
