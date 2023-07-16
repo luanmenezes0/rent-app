@@ -36,7 +36,7 @@ describe("Client", () => {
     cy.findByRole("textbox", { name: /uf/i }).type(client.state);
 
     cy.findByRole("dialog").within(() =>
-      cy.findByRole("button", { name: /salvar/i }).click()
+      cy.findByRole("button", { name: /salvar/i }).click(),
     );
   });
 });

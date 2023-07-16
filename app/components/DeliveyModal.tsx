@@ -32,7 +32,7 @@ function SelectArea({
   initialType?: "delivery" | "withdrawal";
 }) {
   const [type, setType] = useState<"delivery" | "withdrawal">(
-    initialType || "delivery"
+    initialType || "delivery",
   );
 
   return (

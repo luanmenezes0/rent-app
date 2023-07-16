@@ -60,5 +60,5 @@ const theme = {
 
 export default extendTheme(
   theme,
-  withDefaultColorScheme({ colorScheme: "teal" })
+  withDefaultColorScheme({ colorScheme: "teal" }),
 );

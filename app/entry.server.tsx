@@ -15,7 +15,7 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
   const callbackMethod = isbot(request.headers.get("user-agent"))
     ? "onAllReady"
@@ -44,7 +44,7 @@ export default function handleRequest(
             new Response(bodyWithStyles, {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
-            })
+            }),
           );
 
           pipe(reactBody);
@@ -57,7 +57,7 @@ export default function handleRequest(
 
           console.error(error);
         },
-      }
+      },
     );
 
     setTimeout(abort, ABORT_DELAY);

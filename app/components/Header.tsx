@@ -16,7 +16,7 @@ import {
   chakra,
   useColorMode,
   useColorModeValue,
-  useDisclosure
+  useDisclosure,
 } from "@chakra-ui/react";
 import { Form, NavLink } from "@remix-run/react";
 import { useUser } from "~/utils";
@@ -30,7 +30,7 @@ export default function Header() {
 
   const darkMode = colorMode === "dark";
 
-  const navColor =  useColorModeValue("gray.700", "gray.700");
+  const navColor = useColorModeValue("gray.700", "gray.700");
 
   return (
     <chakra.header id="header">
@@ -43,16 +43,21 @@ export default function Header() {
         bgColor={navColor}
       >
         <IconButton
-          size={'md'}
+          size={"md"}
           icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
-          aria-label={'Open Menu'}
-          display={{ md: 'none' }}
-          onClick={isOpen ? onClose : onOpen} 
+          aria-label={"Open Menu"}
+          display={{ md: "none" }}
+          onClick={isOpen ? onClose : onOpen}
         />
         <NavLink to="/">
           <Box h="50px" />
         </NavLink>
-        <HStack as="nav" spacing="8" color="white" display={{ base: "none", md: "block" }}>
+        <HStack
+          as="nav"
+          spacing="8"
+          color="white"
+          display={{ base: "none", md: "block" }}
+        >
           <Link as={NavLink} to="/">
             Início
           </Link>
@@ -124,8 +129,8 @@ export default function Header() {
         </HStack>
       </Flex>
       {isOpen ? (
-        <Box pb={4} display={{ md: 'none' }} bgColor={navColor} color="white">
-          <VStack as={'nav'} gap={4} py={4}>
+        <Box pb={4} display={{ md: "none" }} bgColor={navColor} color="white">
+          <VStack as={"nav"} gap={4} py={4}>
             <Link as={NavLink} to="/">
               Início
             </Link>

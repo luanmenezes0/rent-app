@@ -80,13 +80,15 @@ export function ClientModal(props: ClientModalProps) {
                       `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
                         .replaceAll(".", "")
                         .replaceAll("/", "")
-                        .replaceAll("-", "")}`
+                        .replaceAll("-", "")}`,
                     );
 
                     const data = await res.json();
 
                     if (res.ok && form) {
-                      const name = form.elements.namedItem("name") as HTMLInputElement | null;
+                      const name = form.elements.namedItem(
+                        "name",
+                      ) as HTMLInputElement | null;
                       if (name) name.value = data["RAZAO SOCIAL"];
                       form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
                       form.phoneNumber.value = data.TELEFONE;
@@ -159,7 +161,7 @@ export function ClientModal(props: ClientModalProps) {
                     id="city"
                     name="city"
                     required
-                    defaultValue={values?.city ?? ''}
+                    defaultValue={values?.city ?? ""}
                   />
                   {actionData?.fieldErrors?.city && (
                     <FormErrorMessage>

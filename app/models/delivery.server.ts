@@ -24,7 +24,7 @@ export async function createDeliveries(
     "count" | "rentableId" | "deliveryType" | "buildingSiteId"
   >[],
   buildingSiteId: string,
-  date: Date
+  date: Date,
 ) {
   await prisma.delivery.create({
     data: {
@@ -37,7 +37,7 @@ export async function createDeliveries(
 
 export async function editDelivery(
   delivery: Partial<Delivery>,
-  units: Pick<DeliveryUnit, "count" | "deliveryType" | "id">[]
+  units: Pick<DeliveryUnit, "count" | "deliveryType" | "id">[],
 ) {
   const map = units.map((u) => {
     return prisma.deliveryUnit.update({
@@ -65,7 +65,7 @@ export enum DeliveryType {
 
 export async function getRentableCount(
   buildingSiteId: number,
-  rentableId: number
+  rentableId: number,
 ) {
   const count = await prisma.deliveryUnit.aggregate({
     where: {
@@ -87,7 +87,7 @@ export async function getBuildingSiteInventory(buildingSiteId: string) {
   });
 
   const queries = rentables.map((r) =>
-    getRentableCount(Number(buildingSiteId), r.rentableId)
+    getRentableCount(Number(buildingSiteId), r.rentableId),
   );
 
   return Promise.all(queries);
