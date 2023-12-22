@@ -26,6 +26,8 @@ export async function createDeliveries(
   buildingSiteId: string,
   date: Date,
 ) {
+
+  console.log(date)
   await prisma.delivery.create({
     data: {
       buildingSiteId: Number(buildingSiteId),
@@ -102,4 +104,25 @@ export async function getInventory(rentableId: number) {
       count: true,
     },
   });
+}
+
+export async function getWhatever(buildingSiteId: string) {
+  const rentables = await prisma.deliveryUnit.groupBy({
+    where: { buildingSiteId: Number(buildingSiteId) },
+    by: ["rentableId"],
+  });
+
+  async function getInventory1(rentableId: number) {
+    return prisma.deliveryUnit.findMany({
+      where: {
+        buildingSiteId: Number(buildingSiteId),
+        rentableId: Number(rentableId),
+        // units: { some: { rentableId: Number(rentableId) } },
+      },
+    });
+  }
+
+  const queries = rentables.map((r) => getInventory1(r.rentableId));
+
+  return Promise.all(queries);
 }

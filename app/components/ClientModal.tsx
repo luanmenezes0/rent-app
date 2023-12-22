@@ -42,70 +42,69 @@ export function ClientModal(props: ClientModalProps) {
         <ModalCloseButton />
         <ModalBody>
           <Form method="post" id="client-form">
-            <FormControl as="fieldset">
-              <FormLabel as="legend">Pessoa Jurídica</FormLabel>
-              <RadioGroup
-                name="isLegalEntity"
-                defaultValue="false"
-                onChange={(value) => {
-                  value === "true" ? setLabel("CNPJ") : setLabel("CPF");
-                }}
-              >
-                <HStack spacing={4}>
-                  <Radio value="true">Sim</Radio>
-                  <Radio value="false" defaultChecked>
-                    Não
-                  </Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-
-            <FormControl
-              isInvalid={Boolean(actionData?.fieldErrors?.registrationNumber)}
-            >
-              <FormLabel htmlFor="registrationNumber">{label}</FormLabel>
-              <Input
-                id="registrationNumber"
-                name="registrationNumber"
-                defaultValue={values?.registrationNumber ?? ""}
-                minLength={11}
-                onBlur={async (e) => {
-                  const form = e.target.form;
-
-                  if (
-                    e.target.value.length === 18 &&
-                    form?.isLegalEntity.value === "true"
-                  ) {
-                    const res = await fetch(
-                      `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
-                        .replaceAll(".", "")
-                        .replaceAll("/", "")
-                        .replaceAll("-", "")}`,
-                    );
-
-                    const data = await res.json();
-
-                    if (res.ok && form) {
-                      const name = form.elements.namedItem(
-                        "name",
-                      ) as HTMLInputElement | null;
-                      if (name) name.value = data["RAZAO SOCIAL"];
-                      form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
-                      form.phoneNumber.value = data.TELEFONE;
-                      form.neighborhood.value = data.BAIRRO;
-                      form.city.value = data.MUNICIPIO;
-                      form.state.value = data.UF;
-                    }
-                  }
-                }}
-              />
-              {actionData?.fieldErrors?.registrationNumber && (
-                <FormErrorMessage>
-                  {actionData?.fieldErrors?.registrationNumber}
-                </FormErrorMessage>
-              )}
-            </FormControl>
             <VStack spacing={2}>
+              <FormControl as="fieldset">
+                <FormLabel as="legend">Pessoa Jurídica</FormLabel>
+                <RadioGroup
+                  name="isLegalEntity"
+                  defaultValue="false"
+                  onChange={(value) => {
+                    value === "true" ? setLabel("CNPJ") : setLabel("CPF");
+                  }}
+                >
+                  <HStack spacing={4}>
+                    <Radio value="true">Sim</Radio>
+                    <Radio value="false" defaultChecked>
+                      Não
+                    </Radio>
+                  </HStack>
+                </RadioGroup>
+              </FormControl>
+              <FormControl
+                isInvalid={Boolean(actionData?.fieldErrors?.registrationNumber)}
+              >
+                <FormLabel htmlFor="registrationNumber">{label}</FormLabel>
+                <Input
+                  id="registrationNumber"
+                  name="registrationNumber"
+                  defaultValue={values?.registrationNumber ?? ""}
+                  minLength={11}
+                  onBlur={async (e) => {
+                    const form = e.target.form;
+
+                    if (
+                      e.target.value.length === 18 &&
+                      form?.isLegalEntity.value === "true"
+                    ) {
+                      const res = await fetch(
+                        `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
+                          .replaceAll(".", "")
+                          .replaceAll("/", "")
+                          .replaceAll("-", "")}`,
+                      );
+
+                      const data = await res.json();
+
+                      if (res.ok && form) {
+                        const name = form.elements.namedItem(
+                          "name",
+                        ) as HTMLInputElement | null;
+                        if (name) name.value = data["RAZAO SOCIAL"];
+                        form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
+                        form.phoneNumber.value = data.TELEFONE;
+                        form.neighborhood.value = data.BAIRRO;
+                        form.city.value = data.MUNICIPIO;
+                        form.state.value = data.UF;
+                      }
+                    }
+                  }}
+                />
+                {actionData?.fieldErrors?.registrationNumber && (
+                  <FormErrorMessage>
+                    {actionData?.fieldErrors?.registrationNumber}
+                  </FormErrorMessage>
+                )}
+              </FormControl>
               <input type="hidden" name="id" defaultValue={values?.id} />
               <FormControl isInvalid={Boolean(actionData?.fieldErrors?.name)}>
                 <FormLabel htmlFor="name">Nome</FormLabel>
@@ -137,7 +136,7 @@ export function ClientModal(props: ClientModalProps) {
                   </FormErrorMessage>
                 )}
               </FormControl>
-              <HStack>
+              <HStack w="full">
                 <FormControl
                   isInvalid={Boolean(actionData?.fieldErrors?.neighborhood)}
                 >
@@ -170,7 +169,7 @@ export function ClientModal(props: ClientModalProps) {
                   )}
                 </FormControl>
               </HStack>
-              <HStack>
+              <HStack w="full">
                 <FormControl
                   isInvalid={Boolean(actionData?.fieldErrors?.phoneNumber)}
                 >

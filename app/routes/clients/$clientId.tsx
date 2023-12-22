@@ -21,7 +21,7 @@ import {
   useActionData,
   useCatch,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
@@ -79,11 +79,11 @@ export async function action({ request, params }: ActionArgs) {
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
   const actionData = useActionData();
-  const transition = useTransition();
+  const navigation = useNavigation();
 
   const [show, setShow] = useState(false);
 
-  const isAdding = transition.state === "submitting";
+  const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {

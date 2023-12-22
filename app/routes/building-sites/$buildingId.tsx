@@ -1,4 +1,5 @@
 import {
+  Box,
   Button,
   Container,
   Divider,
@@ -9,7 +10,13 @@ import {
   StatArrow,
   StatLabel,
   StatNumber,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
@@ -36,6 +43,7 @@ import {
   createDeliveries,
   editDelivery,
   getBuildingSiteInventory,
+  getWhatever,
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server.";
 import { requireUserId } from "~/session.server";
@@ -57,7 +65,9 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const rentables = await getRentables();
 
-  return json({ buildingSite, inventory, rentables });
+  const whatever = await getWhatever(params.buildingId);
+
+  return json({ buildingSite, inventory, rentables, whatever });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -147,7 +157,7 @@ export async function action({ request }: ActionArgs) {
         {
           buildingSiteId: Number(buildingSiteId),
           id: Number(id),
-          date: dayjs(date).toDate(),
+          date: dayjs(date),
         },
         units,
       );
@@ -164,7 +174,8 @@ const initialState = { show: false, editing: false, data: null };
 type State = { show: boolean; editing: boolean; data: any };
 
 export default function BuildingSite() {
-  const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
+  const { buildingSite, inventory, rentables, whatever = [] } =
+    useLoaderData<typeof loader>();
 
   const transition = useTransition();
   const actionData = useActionData();
@@ -182,6 +193,8 @@ export default function BuildingSite() {
   }, [isAdding, actionData]);
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
+
+  console.log(whatever);
 
   return (
     <>
@@ -250,6 +263,30 @@ export default function BuildingSite() {
             ))}
           </HStack>
         </VStack>
+        <div>
+          <Table size="sm">
+            <Thead>
+              <Tr>
+                <Th>Data</Th>
+                <Th>Remessa</Th>
+                <Th>Saldo</Th>
+                {/* <th>Dias</th>
+                <th>RM * DIAS</th>
+                <th>VALOR</th> */}
+              </Tr>
+            </Thead>
+            <Tbody>
+              {whatever[0]?.map((d, i, arr) => (
+                <Tr key={d.id}>
+                  <Td>{dayjs(d.date).format("DD/MM/YYYY")}</Td>
+                  <Td>{d.count}</Td>
+                  <Td>{arr.slice(0, i).reduce((p, c) => p + c.count, 0)}</Td>
+                </Tr>
+              ))}
+
+            </Tbody>
+          </Table>
+        </div>
         <Divider />
         <VStack align="stretch" as="section">
           <Heading
