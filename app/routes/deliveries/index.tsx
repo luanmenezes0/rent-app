@@ -1,5 +1,8 @@
+import { DeleteIcon } from "@chakra-ui/icons";
 import {
+  Button,
   Container,
+  Flex,
   Heading,
   Link,
   Stat,
@@ -8,21 +11,45 @@ import {
   StatNumber,
 } from "@chakra-ui/react";
 import { json } from "@remix-run/node";
-import { Link as RemixLink, useLoaderData } from "@remix-run/react";
-import type { LoaderArgs } from "@remix-run/server-runtime";
+import { Form, Link as RemixLink, useLoaderData } from "@remix-run/react";
+import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import Header from "~/components/Header";
-import { getDeliveries } from "~/models/delivery.server";
+import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request, context }: LoaderArgs) {
+  const userId = await requireUserId(request);
+
+  return json({ deliveries: await getDeliveries(), userId });
+}
+
+export async function action({ request }: ActionArgs) {
   await requireUserId(request);
 
-  return json({ deliveries: await getDeliveries() });
+  const formData = await request.formData();
+  const action = formData.get("_action");
+
+  switch (action) {
+    case "delete-delivery": {
+      const id = formData.get("id");
+
+      if (typeof id === "string") {
+        await deleteDelivery(id);
+      }
+
+      return null;
+    }
+
+    default:
+      throw new Error("Invalid action");
+  }
 }
 
 export default function Deliveries() {
-  const { deliveries } = useLoaderData<typeof loader>();
+  const { deliveries, userId } = useLoaderData<typeof loader>();
+
+  console.log(userId);
 
   return (
     <>
@@ -33,7 +60,7 @@ export default function Deliveries() {
         </Heading>
 
         {deliveries.map((d) => (
-          <Stat key={d.id} p="6" border="1px" borderRadius="16">
+          <Stat key={d.id} p="4" border="1px" borderRadius="8">
             <StatLabel>
               {d.buildingSite.name} -{" "}
               {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
@@ -46,9 +73,23 @@ export default function Deliveries() {
                 />
               </StatNumber>
             ))}
-            <Link as={RemixLink} to={`/building-sites/${d.buildingSiteId}`}>
-              Ver Obra
-            </Link>
+            <Flex justify="space-between" align="center">
+              <Link as={RemixLink} to={`/building-sites/${d.buildingSiteId}`}>
+                Ver Obra
+              </Link>
+              <Form method="post">
+                <input type="hidden" name="id" value={d.id} />
+                <Button
+                  colorScheme="red"
+                  type="submit"
+                  variant="ghost"
+                  name="_action"
+                  value="delete-delivery"
+                  aria-label="Excluir remessa"
+                  leftIcon={<DeleteIcon />}
+                />
+              </Form>
+            </Flex>
           </Stat>
         ))}
       </Container>
