@@ -93,7 +93,7 @@ model DeliveryUnit {
   id             Int          @id @default(autoincrement())
   count          Int
   deliveryType   Int
-  rentable       Rentable     @relation(fields: [rentableId], references: [id])
+  rentable       Rentable     @relation(fields: [rentableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   rentableId     Int
   Delivery       Delivery?    @relation(fields: [deliveryId], references: [id])
   deliveryId     Int?
