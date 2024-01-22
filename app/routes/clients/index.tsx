@@ -1,10 +1,15 @@
+import { SearchIcon } from "@chakra-ui/icons";
 import {
   Button,
   Center,
   Container,
   Divider,
+  Flex,
   Heading,
   HStack,
+  Input,
+  InputGroup,
+  InputLeftAddon,
   Link,
   Table,
   TableContainer,
@@ -17,18 +22,20 @@ import {
 } from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import {
   Link as RemixLink,
   useActionData,
+  useFetcher,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import { useEffect, useState } from "react";
+
 import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
-
 import Header from "~/components/Header";
+import { PaginationBar } from "~/components/PaginationBar";
 import {
   createClient,
   deleteClient,
@@ -41,7 +48,13 @@ import { clientValidator } from "~/validators/clientValidation";
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
 
-  return json({ clients: await getClients() });
+  const url = new URL(request.url);
+  const top = Number(url.searchParams.get("$top")) || 10;
+  const skip = Number(url.searchParams.get("$skip")) || 0;
+
+  const { count, data } = await getClients({ top, skip });
+
+  return json({ clients: data, count });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -59,7 +72,7 @@ export async function action({ request }: ActionArgs) {
       }
 
       try {
-        await createClient({
+        const client = await createClient({
           address: result.data.address,
           name: result.data.name,
           phoneNumber: result.data.phoneNumber,
@@ -71,6 +84,8 @@ export async function action({ request }: ActionArgs) {
           email: result.data.email ?? null,
           streetCode: result.data.streetCode ?? null,
         });
+
+        return redirect(`/clients/${client.id}`);
       } catch (e: any) {
         if (e.meta?.target?.includes("registrationNumber")) {
           return validationError({
@@ -127,10 +142,12 @@ type ModalState = {
 };
 
 export default function Clients() {
-  const { clients } = useLoaderData<typeof loader>();
+  const { clients, count } = useLoaderData<typeof loader>();
 
   const actionData = useActionData();
-  const transition = useTransition();
+  const navigation = useNavigation();
+
+  const fetcher = useFetcher();
 
   const [show, setShow] = useState(false);
   const [edition, setEdition] = useState<ModalState>({
@@ -138,7 +155,7 @@ export default function Clients() {
     client: null,
   });
 
-  const isAdding = transition.state === "submitting";
+  const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
@@ -147,6 +164,8 @@ export default function Clients() {
     }
   }, [isAdding, actionData]);
 
+  const data = fetcher.data || clients;
+
   return (
     <>
       <Header />
@@ -154,9 +173,20 @@ export default function Clients() {
         <Heading as="h1" size="2xl">
           Clientes
         </Heading>
-        <Button maxW="fit-content" onClick={() => setShow(true)}>
-          Criar Cliente
-        </Button>
+        <Flex justifyContent="space-between">
+          <Button maxW="fit-content" onClick={() => setShow(true)}>
+            Criar Cliente
+          </Button>
+          <fetcher.Form method="GET" action="/clientslist">
+            <InputGroup width="auto">
+              <InputLeftAddon>
+                <SearchIcon />
+              </InputLeftAddon>
+              <Input type="search" placeholder="Buscar cliente" name="search" />
+            </InputGroup>
+          </fetcher.Form>
+        </Flex>
+
         <TableContainer>
           <Table size="sm">
             <Thead>
@@ -170,7 +200,7 @@ export default function Clients() {
               </Tr>
             </Thead>
             <Tbody>
-              {clients.map((c) => (
+              {data.map((c) => (
                 <Tr key={c.id}>
                   <Td>
                     <Link as={RemixLink} to={`/clients/${c.id}`}>
@@ -204,6 +234,7 @@ export default function Clients() {
             </Tbody>
           </Table>
         </TableContainer>
+        <PaginationBar total={count} />
       </Container>
       {show && <ClientModal onClose={() => setShow(false)} />}
       {edition.show && edition.client && (

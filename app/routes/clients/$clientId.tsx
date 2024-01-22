@@ -107,7 +107,8 @@ export default function Client() {
             <Text fontWeight="bold" as="dt">
               Endereço
             </Text>
-            <dd>{client.address}</dd>
+            <dd>{client.address}, {client.neighborhood}</dd>
+            <dd>{client.city} - {client.state}</dd>
           </div>
 
           <div>

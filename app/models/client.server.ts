@@ -1,8 +1,29 @@
 import type { Client } from "@prisma/client";
 import { prisma } from "~/db.server";
 
-export async function getClients() {
-  return prisma.client.findMany();
+export async function getClients({
+  search,
+  top,
+  skip,
+}: {
+  search?: string;
+  skip?: number;
+  top?: number;
+}) {
+  const [count, data] = await Promise.all([
+    prisma.client.count(),
+    prisma.client.findMany({
+      skip,
+      take: top,
+      where: {
+        name: {
+          contains: search,
+        },
+      },
+    }),
+  ]);
+
+  return { count, data };
 }
 
 export async function getClient(id: string) {

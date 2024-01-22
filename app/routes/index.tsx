@@ -5,8 +5,8 @@ import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
 import { RadialChart } from "react-vis";
 import Header from "~/components/Header";
-import type { Rentable } from "~/models/inventory.server.";
-import { getRentables } from "~/models/inventory.server.";
+import type { Rentable } from "~/models/inventory.server";
+import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 
 export async function loader({ request }: LoaderArgs) {

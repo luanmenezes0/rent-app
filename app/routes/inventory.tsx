@@ -1,7 +1,8 @@
-import { CheckIcon } from "@chakra-ui/icons";
+import { CheckIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
+  Flex,
   FormControl,
   FormLabel,
   Heading,
@@ -31,9 +32,10 @@ import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
 import {
   createRentable,
+  deleteInventory,
   editRentable,
   getRentables,
-} from "~/models/inventory.server.";
+} from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { rentableValidator } from "~/validators/rentableValidator";
 
@@ -73,6 +75,14 @@ export async function action({ request }: ActionArgs) {
       const count = formData.get("count") as string;
 
       await editRentable({ id: Number(id), count: Number(count) });
+
+      return null;
+    }
+
+    case "delete": {
+      const id = formData.get("id") as string;
+
+      await deleteInventory(Number(id));
 
       return null;
     }
@@ -198,13 +208,31 @@ export default function Index() {
                     )}
                   </Td>
                   <Td>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setEdit(rentable.id)}
-                    >
-                      Editar
-                    </Button>
+                    <Flex>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setEdit(rentable.id)}
+                      >
+                        Editar
+                      </Button>
+
+                      <Form method="delete">
+                        <input type="hidden" name="id" value={rentable.id} />
+                        <input type="hidden" name="_action" value="delete" />
+                        <IconButton
+                          size="sm"
+                          colorScheme="red"
+                          variant="ghost"
+                          type="submit"
+                          name="_action"
+                          value="delete"
+                          aria-label="Excluir"
+                          icon={<DeleteIcon />}
+                          rounded="full"
+                        />
+                      </Form>
+                    </Flex>
                   </Td>
                 </Tr>
               ))}

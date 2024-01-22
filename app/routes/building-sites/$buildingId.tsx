@@ -37,7 +37,7 @@ import {
   editDelivery,
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
-import { getRentables } from "~/models/inventory.server.";
+import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 import { DeliveyModal } from "../../components/DeliveyModal";
