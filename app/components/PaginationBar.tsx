@@ -7,7 +7,6 @@ function setSearchParamsString(
   changes: Record<string, string | number | undefined>,
 ) {
   const newSearchParams = new URLSearchParams(searchParams);
-  console.log(changes);
   for (const [key, value] of Object.entries(changes)) {
     if (value === undefined) {
       newSearchParams.delete(key);
@@ -19,7 +18,6 @@ function setSearchParamsString(
   // Browsers are ok with $ nowadays
   // optional: return newSearchParams.toString()
 
-  console.log(Object.fromEntries(newSearchParams));
   return Array.from(newSearchParams.entries())
     .map(([key, value]) =>
       value ? `${key}=${encodeURIComponent(value)}` : key,
@@ -82,7 +80,6 @@ export function PaginationBar({ total }: { total: number }) {
               $skip: Math.max($skip - $top, 0),
             }),
           }}
-          onClick={() => console.log("oi")}
           preventScrollReset
           // prefetch="intent"
         >

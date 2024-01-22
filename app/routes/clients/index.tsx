@@ -1,4 +1,3 @@
-import { SearchIcon } from "@chakra-ui/icons";
 import {
   Button,
   Center,
@@ -7,9 +6,6 @@ import {
   Flex,
   Heading,
   HStack,
-  Input,
-  InputGroup,
-  InputLeftAddon,
   Link,
   Table,
   TableContainer,
@@ -26,7 +22,6 @@ import { json, redirect } from "@remix-run/node";
 import {
   Link as RemixLink,
   useActionData,
-  useFetcher,
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
@@ -147,7 +142,7 @@ export default function Clients() {
   const actionData = useActionData();
   const navigation = useNavigation();
 
-  const fetcher = useFetcher();
+  // const fetcher = useFetcher();
 
   const [show, setShow] = useState(false);
   const [edition, setEdition] = useState<ModalState>({
@@ -164,7 +159,7 @@ export default function Clients() {
     }
   }, [isAdding, actionData]);
 
-  const data = fetcher.data || clients;
+  const data = clients;
 
   return (
     <>
@@ -177,14 +172,14 @@ export default function Clients() {
           <Button maxW="fit-content" onClick={() => setShow(true)}>
             Criar Cliente
           </Button>
-          <fetcher.Form method="GET" action="/clientslist">
+          {/*           <fetcher.Form>
             <InputGroup width="auto">
               <InputLeftAddon>
                 <SearchIcon />
               </InputLeftAddon>
               <Input type="search" placeholder="Buscar cliente" name="search" />
             </InputGroup>
-          </fetcher.Form>
+          </fetcher.Form> */}
         </Flex>
 
         <TableContainer>

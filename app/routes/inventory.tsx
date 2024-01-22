@@ -32,7 +32,7 @@ import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
 import {
   createRentable,
-  deleteInventory,
+  deleteRentable,
   editRentable,
   getRentables,
 } from "~/models/inventory.server";
@@ -82,7 +82,7 @@ export async function action({ request }: ActionArgs) {
     case "delete": {
       const id = formData.get("id") as string;
 
-      await deleteInventory(Number(id));
+      await deleteRentable(Number(id));
 
       return null;
     }
