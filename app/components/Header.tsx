@@ -56,7 +56,7 @@ export default function Header() {
           as="nav"
           spacing="8"
           color="white"
-          display={{ base: "none", md: "block" }}
+          display={{ base: "none", md: "flex" }}
         >
           <Link as={NavLink} to="/">
             Início

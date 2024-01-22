@@ -72,10 +72,15 @@ export function ClientModal(props: ClientModalProps) {
                 onBlur={async (e) => {
                   const form = e.target.form;
 
-                  if (
-                    e.target.value.length === 18 &&
-                    form?.isLegalEntity.value === "true"
-                  ) {
+                  const legalEntityChecked =
+                    form?.isLegalEntity.value === "true";
+
+                  const inputValue = e.target.value
+                    .replaceAll(".", "")
+                    .replaceAll("/", "")
+                    .replaceAll("-", "");
+
+                  if (inputValue.length === 14 && legalEntityChecked) {
                     const res = await fetch(
                       `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
                         .replaceAll(".", "")

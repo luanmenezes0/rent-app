@@ -22,7 +22,7 @@ import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
-import type { Rentable } from "~/models/inventory.server.";
+import type { Rentable } from "~/models/inventory.server";
 
 function SelectArea({
   rentableId,

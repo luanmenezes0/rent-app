@@ -24,3 +24,7 @@ export async function createInventory(
     data: { buildingSiteId, count: 0, rentableId },
   });
 }
+
+export async function deleteRentable(id: number) {
+  return prisma.rentable.delete({ where: { id } });
+}
