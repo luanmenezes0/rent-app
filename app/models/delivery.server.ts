@@ -97,6 +97,9 @@ export async function getInventory(rentableId: number) {
   return prisma.deliveryUnit.aggregate({
     where: {
       rentableId: Number(rentableId),
+      deliveryId: {
+        not: null,
+      },
     },
     _sum: {
       count: true,

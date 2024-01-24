@@ -1,29 +1,41 @@
 import {
+  DeleteIcon,
+  EditIcon,
+  TriangleDownIcon,
+  TriangleUpIcon,
+} from "@chakra-ui/icons";
+import {
+  Box,
   Button,
   Container,
   Divider,
-  Heading,
+  Flex,
+  Grid,
   HStack,
+  Heading,
+  Icon,
+  IconButton,
   Link,
   Stat,
-  StatArrow,
   StatLabel,
   StatNumber,
   Text,
-  useColorModeValue,
   VStack,
+  useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link as RemixLink,
   useActionData,
-  useCatch,
+  useFetcher,
   useLoaderData,
-  useTransition,
+  useNavigation,
 } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import { GrDeliver } from "react-icons/gr";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
@@ -34,6 +46,7 @@ import {
 } from "~/models/buildingSite.server";
 import {
   createDeliveries,
+  deleteDelivery,
   editDelivery,
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
@@ -41,6 +54,7 @@ import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 import { DeliveyModal } from "../../components/DeliveyModal";
+import { MyAlertDialog } from "~/components/AlertDialog";
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -155,6 +169,16 @@ export async function action({ request }: ActionArgs) {
       return null;
     }
 
+    case "delete-delivery": {
+      const id = formData.get("id");
+
+      if (typeof id === "string") {
+        await deleteDelivery(id);
+      }
+
+      return null;
+    }
+
     default:
       throw new Error("Invalid action");
   }
@@ -166,13 +190,33 @@ type State = { show: boolean; editing: boolean; data: any };
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
-  const transition = useTransition();
+  const navigation = useNavigation();
   const actionData = useActionData();
 
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
-  const isAdding = transition.state === "submitting";
+  const { isOpen, onOpen, onClose } = useDisclosure();
+
+  const fetcher = useFetcher();
+
+  function handleOpenDeleteModal(id: number) {
+    setIdToDelete(id);
+    onOpen();
+  }
+
+  function handleCloseDeleteModal() {
+    setIdToDelete(null);
+    onClose();
+  }
+
+  function handleDelete(id: number) {
+    fetcher.submit({ id, _action: "delete-delivery" }, { method: "delete" });
+    handleCloseDeleteModal();
+  }
+
+  const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
@@ -182,6 +226,7 @@ export default function BuildingSite() {
   }, [isAdding, actionData]);
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
+  const iconBgColor = useColorModeValue("gray.200", "gray.600");
 
   return (
     <>
@@ -259,28 +304,58 @@ export default function BuildingSite() {
           >
             Remessas
           </Heading>
-
           {buildingSite.deliveries.map((d) => (
-            <Stat key={d.id} p="6" border="1px" borderRadius="16">
-              <StatLabel>{dayjs(d.date).format("DD/MM/YYYY HH:mm")}</StatLabel>
-              {d.units.map((u) => (
-                <StatNumber fontSize="16" key={u.id}>
-                  {u.rentable.name} - {Math.abs(u.count)}{" "}
-                  <StatArrow
-                    type={u.deliveryType === 1 ? "increase" : "decrease"}
-                  />
-                </StatNumber>
-              ))}
-              <Button
+            <Grid
+              templateColumns="min-content 1fr min-content min-content"
+              bgColor={cardColor}
+              gap={2}
+              key={d.id}
+              p="4"
+              borderRadius="8"
+            >
+              <Flex
+                justify="center"
+                align="center"
+                borderRadius="8"
+                p="2"
+                bgColor={iconBgColor}
+                h="min-content"
+              >
+                <Icon color="gray.500" w={8} h={8} as={GrDeliver} />
+              </Flex>
+              <Box justifySelf="start" paddingInline="4">
+                <Heading as="h3" fontSize="14" pb="2">
+                  {dayjs(d.date).format("DD/MM/YYYY HH:mm")}
+                </Heading>
+                {d.units.map((u) => (
+                  <Flex align="center" gap="2" borderRadius="8" key={u.id}>
+                    {u.deliveryType === 1 ? (
+                      <TriangleUpIcon color="green" />
+                    ) : (
+                      <TriangleDownIcon color="red" />
+                    )}
+                    {u.rentable.name} - {Math.abs(u.count)}{" "}
+                  </Flex>
+                ))}
+              </Box>
+              <IconButton
                 variant="outline"
                 size="sm"
+                aria-label="Editar remessa"
+                icon={<EditIcon />}
                 onClick={() =>
                   setDeliveryModal({ show: true, editing: true, data: d })
                 }
-              >
-                Editar
-              </Button>
-            </Stat>
+              />
+              <IconButton
+                variant="outline"
+                size="sm"
+                colorScheme="red"
+                aria-label="Deletar remessa"
+                icon={<DeleteIcon />}
+                onClick={() => handleOpenDeleteModal(d.id)}
+              />
+            </Grid>
           ))}
         </VStack>
       </Container>
@@ -301,22 +376,16 @@ export default function BuildingSite() {
           onClose={() => setShowBuildingModal(false)}
         />
       )}
+      {idToDelete && (
+        <MyAlertDialog
+          isOpen={isOpen}
+          onClose={onClose}
+          onDelete={() => handleDelete(idToDelete)}
+          title="Deletar Remessa"
+        />
+      )}
     </>
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return <div>An unexpected error occurred: {error.message}</div>;
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 404) {
-    return <div>Obra não encontrada</div>;
-  }
-
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
-}
+export { ErrorBoundary } from "~/components/ErrorBoundary";

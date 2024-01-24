@@ -1,4 +1,4 @@
-import { Box, ChakraProvider, Heading } from "@chakra-ui/react";
+import { ChakraProvider } from "@chakra-ui/react";
 import type { LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -8,7 +8,6 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
 } from "@remix-run/react";
 import styles from "~/styles/index.css";
 import { getUser } from "./session.server";
@@ -65,34 +64,4 @@ export default function App() {
   );
 }
 
-// How ChakraProvider should be used on CatchBoundary
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  return (
-    <Document title={`${caught.status} ${caught.statusText}`}>
-      <ChakraProvider theme={theme}>
-        <Box>
-          <Heading as="h1" bg="purple.600">
-            [CatchBoundary]: {caught.status} {caught.statusText}
-          </Heading>
-        </Box>
-      </ChakraProvider>
-    </Document>
-  );
-}
-
-// How ChakraProvider should be used on ErrorBoundary
-export function ErrorBoundary({ error }: { error: Error }) {
-  return (
-    <Document title="Error!">
-      <ChakraProvider>
-        <Box>
-          <Heading as="h1" bg="blue.500">
-            [ErrorBoundary]: There was an error: {error.message}
-          </Heading>
-        </Box>
-      </ChakraProvider>
-    </Document>
-  );
-}
+export { ErrorBoundary } from "~/components/ErrorBoundary";

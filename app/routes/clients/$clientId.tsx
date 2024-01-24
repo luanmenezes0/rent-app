@@ -19,7 +19,6 @@ import { json } from "@remix-run/node";
 import {
   Link,
   useActionData,
-  useCatch,
   useLoaderData,
   useTransition,
 } from "@remix-run/react";
@@ -107,8 +106,12 @@ export default function Client() {
             <Text fontWeight="bold" as="dt">
               Endereço
             </Text>
-            <dd>{client.address}, {client.neighborhood}</dd>
-            <dd>{client.city} - {client.state}</dd>
+            <dd>
+              {client.address}, {client.neighborhood}
+            </dd>
+            <dd>
+              {client.city} - {client.state}
+            </dd>
           </div>
 
           <div>
@@ -174,18 +177,4 @@ export default function Client() {
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return <div>An unexpected error occurred: {error.message}</div>;
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 404) {
-    return <div>Cliente não encontrado</div>;
-  }
-
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
-}
+export { ErrorBoundary } from "~/components/ErrorBoundary";

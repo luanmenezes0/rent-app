@@ -46,7 +46,7 @@ function SelectArea({
         value={type === "delivery" ? "1" : "2"}
       >
         <option value="1">Entrega</option>
-        <option value="2">Retirada</option>
+        <option value="2">Devolução</option>
       </Select>
       {type === "delivery" ? (
         <TriangleUpIcon color="green" />
@@ -97,7 +97,7 @@ export function DeliveyModal({
     : dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (
-    <Modal size="md" isOpen onClose={onClose}>
+    <Modal size="lg" isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
         <ModalHeader>{editionMode ? "Editar" : "Nova"} Remessa</ModalHeader>
@@ -132,7 +132,7 @@ export function DeliveyModal({
               {mappedRentables.map((rentable) => (
                 <FormControl
                   display="grid"
-                  gridTemplateColumns="1fr 85px 1fr"
+                  gridTemplateColumns="1fr 70px auto"
                   gap={4}
                   key={rentable.id}
                 >
