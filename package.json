@@ -45,6 +45,7 @@
     "prisma": "^4.16.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
+    "react-icons": "^5.0.1",
     "react-vis": "^1.11.7",
     "remix-validated-form": "^4.5.7",
     "tiny-invariant": "^1.3.1",
