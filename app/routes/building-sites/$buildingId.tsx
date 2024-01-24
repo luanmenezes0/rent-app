@@ -80,8 +80,6 @@ export async function action({ request }: ActionArgs) {
   const formData = await request.formData();
   const action = formData.get("_action");
 
-  console.log({ action });
-
   switch (action) {
     case "edit-bs": {
       const result = await buildingSiteValidator.validate(formData);
@@ -197,14 +195,25 @@ export default function BuildingSite() {
 
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const fetcher = useFetcher();
 
+  function handleOpenDeleteModal(id: number) {
+    setIdToDelete(id);
+    onOpen();
+  }
+
+  function handleCloseDeleteModal() {
+    setIdToDelete(null);
+    onClose();
+  }
+
   function handleDelete(id: number) {
     fetcher.submit({ id, _action: "delete-delivery" }, { method: "delete" });
-    onClose();
+    handleCloseDeleteModal();
   }
 
   const isAdding = navigation.state === "submitting";
@@ -344,13 +353,7 @@ export default function BuildingSite() {
                 colorScheme="red"
                 aria-label="Deletar remessa"
                 icon={<DeleteIcon />}
-                onClick={onOpen}
-              />
-              <MyAlertDialog
-                isOpen={isOpen}
-                onClose={onClose}
-                onDelete={() => handleDelete(d.id)}
-                title="Deletar Remessa"
+                onClick={() => handleOpenDeleteModal(d.id)}
               />
             </Grid>
           ))}
@@ -371,6 +374,14 @@ export default function BuildingSite() {
           client={buildingSite.client}
           values={buildingSite}
           onClose={() => setShowBuildingModal(false)}
+        />
+      )}
+      {idToDelete && (
+        <MyAlertDialog
+          isOpen={isOpen}
+          onClose={onClose}
+          onDelete={() => handleDelete(idToDelete)}
+          title="Deletar Remessa"
         />
       )}
     </>

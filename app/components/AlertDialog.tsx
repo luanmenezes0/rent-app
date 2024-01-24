@@ -41,7 +41,7 @@ export function MyAlertDialog({
             revertida.
           </AlertDialogBody>
           <AlertDialogFooter>
-           {/* // @ts-ignore */}
+            {/* // @ts-ignore */}
             <Button ref={cancelRef} onClick={onClose}>
               Cancelar
             </Button>
