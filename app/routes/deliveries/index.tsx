@@ -77,7 +77,7 @@ export default function Deliveries() {
               <Link as={RemixLink} to={`/building-sites/${d.buildingSiteId}`}>
                 Ver Obra
               </Link>
-              <Form method="post">
+              <Form method="POST">
                 <input type="hidden" name="id" value={d.id} />
                 <Button
                   colorScheme="red"

@@ -103,7 +103,7 @@ export function DeliveyModal({
         <ModalHeader>{editionMode ? "Editar" : "Nova"} Remessa</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="delivery-form" key={values?.id}>
+          <Form method="POST" id="delivery-form" key={values?.id}>
             <input type="hidden" name="id" value={values?.id} />
             <VStack>
               <FormControl>

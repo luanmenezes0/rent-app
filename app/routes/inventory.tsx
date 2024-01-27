@@ -5,8 +5,8 @@ import {
   Flex,
   FormControl,
   FormLabel,
-  Heading,
   HStack,
+  Heading,
   IconButton,
   Input,
   Modal,
@@ -25,7 +25,7 @@ import {
   Tr,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import { Form, useLoaderData, useTransition } from "@remix-run/react";
+import { Form, useLoaderData, useNavigation } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
@@ -100,7 +100,7 @@ function RentableModal({ onClose }: { onClose: () => void }) {
         <ModalHeader>Adicionar item de estoque</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="rentable-form">
+          <Form method="POST" id="rentable-form">
             <FormControl>
               <FormLabel htmlFor="name">Nome</FormLabel>
               <Input id="name" required name="name" />
@@ -133,10 +133,10 @@ function RentableModal({ onClose }: { onClose: () => void }) {
 function useModal(actionKey: string) {
   const [isModalOpen, showModal] = useState(false);
 
-  const transition = useTransition();
+  const navigation = useNavigation();
 
-  const submitting = transition.state === "submitting";
-  const action = transition.submission?.formData.get("_action");
+  const submitting = navigation.state === "submitting";
+  const action = navigation.formData?.get("_action");
 
   useEffect(() => {
     if (!submitting && action === actionKey) {

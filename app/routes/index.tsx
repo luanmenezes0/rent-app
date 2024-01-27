@@ -1,9 +1,18 @@
-import { Container, Heading, VStack, Wrap } from "@chakra-ui/react";
+import {
+  Box,
+  Container,
+  HStack,
+  Heading,
+  Text,
+  VStack,
+  Wrap,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import type { LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
-import { RadialChart } from "react-vis";
+
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
 import { getRentables } from "~/models/inventory.server";
@@ -32,26 +41,32 @@ function Card({
 
   const totalRented = fetcher.data?.inventory ?? 0;
 
-  const a = totalRented / rentable.count;
-  const b = (rentable.count - totalRented) / rentable.count;
+  const color = useColorModeValue("green.300", "green.600");
 
   return (
-    <VStack as="article" minW="200">
+    <VStack borderRadius="4" as="article" minW="200" bgColor={color} p="4">
       <Heading as="h2" size="md">
         {rentable.name}
       </Heading>
-      <div>ALUGADO: {totalRented}</div>
-      <div>TOTAL: {rentable.count}</div>
-      <RadialChart
-        showLabels
-        data={[
-          { angle: a, label: "Alugado" },
-          { angle: b, label: "Em estoque" },
-        ]}
-        width={200}
-        height={200}
-        labelsStyle={{ fontSize: 11 }}
-      />
+      <HStack justify="space-between" w="100%">
+        <Text fontWeight="600">Alugado</Text>
+        <div>{totalRented}</div>
+      </HStack>
+      <HStack justify="space-between" w="100%">
+        <Text fontWeight="600">Livre</Text>
+        <div>{rentable.count - totalRented}</div>
+      </HStack>
+      <HStack justify="space-between" w="100%">
+        <Text fontWeight="600">Total</Text>
+        <div>{rentable.count}</div>
+      </HStack>
+      <Box h="20px" w="100%" bgColor="black">
+        <Box
+          h="100%"
+          w={`${(totalRented / rentable.count) * 100}%`}
+          bgColor="orange.500"
+        />
+      </Box>
     </VStack>
   );
 }

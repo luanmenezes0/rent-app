@@ -41,7 +41,7 @@ export function ClientModal(props: ClientModalProps) {
         <ModalHeader>{editionMode ? "Editar" : "Criar"} Cliente</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="client-form">
+          <Form method="POST" id="client-form">
             <FormControl as="fieldset">
               <FormLabel as="legend">Pessoa Jurídica</FormLabel>
               <RadioGroup

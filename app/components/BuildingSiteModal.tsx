@@ -36,7 +36,7 @@ export default function BuildingSiteModal(props: Props) {
         <ModalCloseButton />
         <ModalBody>
           <Form
-            method="post"
+            method="POST"
             id="buiding-site-form"
             className="flex flex-col gap-4"
           >

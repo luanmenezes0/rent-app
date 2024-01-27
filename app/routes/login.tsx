@@ -10,7 +10,12 @@ import {
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, useActionData, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useSearchParams,
+  V2_MetaFunction,
+} from "@remix-run/react";
 
 import { validationError } from "remix-validated-form";
 import { verifyLogin } from "~/models/user.server";
@@ -50,10 +55,12 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export const meta: MetaFunction = () => {
-  return {
-    title: "Login",
-  };
+export const meta: V2_MetaFunction = () => {
+  return [
+    {
+      title: "Login",
+    },
+  ];
 };
 
 export default function LoginPage() {
@@ -69,7 +76,7 @@ export default function LoginPage() {
       alignItems="center"
       bgColor={useColorModeValue("gray.100", "gray.700")}
     >
-      <Form method="post" style={{ width: "380px" }}>
+      <Form method="POST" style={{ width: "380px" }}>
         <VStack
           spacing="4"
           maxW="container.md"
