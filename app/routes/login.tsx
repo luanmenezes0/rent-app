@@ -8,13 +8,13 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
   useActionData,
   useSearchParams,
-  V2_MetaFunction,
+  type V2_MetaFunction,
 } from "@remix-run/react";
 
 import { validationError } from "remix-validated-form";

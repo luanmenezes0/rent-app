@@ -3,7 +3,7 @@ import { json, redirect } from "@remix-run/node";
 import {
   Form,
   Link,
-  V2_MetaFunction,
+  type V2_MetaFunction,
   useActionData,
   useSearchParams,
 } from "@remix-run/react";

@@ -1,8 +1,6 @@
 import {
   Button,
-  Center,
   Container,
-  Divider,
   Flex,
   Heading,
   HStack,
@@ -14,9 +12,9 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import type { Client } from "@prisma/client";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
@@ -25,18 +23,13 @@ import {
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 
 import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import { PaginationBar } from "~/components/PaginationBar";
-import {
-  createClient,
-  deleteClient,
-  editClient,
-  getClients,
-} from "~/models/client.server";
+import { createClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 import { clientValidator } from "~/validators/clientValidation";
 
@@ -95,46 +88,10 @@ export async function action({ request }: ActionArgs) {
       return null;
     }
 
-    case "edit": {
-      const result = await clientValidator.validate(formData);
-
-      if (result.error) {
-        return validationError(result.error);
-      }
-
-      await editClient({
-        address: result.data.address,
-        name: result.data.name,
-        phoneNumber: result.data.phoneNumber,
-        isLegalEntity: result.data.isLegalEntity === "true",
-        registrationNumber: result.data.registrationNumber ?? null,
-        id: Number(result.data.id),
-        city: result.data.city,
-        state: result.data.state,
-        neighborhood: result.data.neighborhood,
-        email: result.data.email ?? null,
-        streetCode: result.data.streetCode ?? null,
-      });
-
-      return null;
-    }
-
-    case "delete": {
-      const id = formData.get("id") as string;
-
-      await deleteClient(id);
-      return null;
-    }
-
     default:
       throw new Error("unknown action");
   }
 }
-
-type ModalState = {
-  show: boolean;
-  client: null | Omit<Client, "createdAt" | "updatedAt">;
-};
 
 export default function Clients() {
   const { clients, count } = useLoaderData<typeof loader>();
@@ -142,22 +99,15 @@ export default function Clients() {
   const actionData = useActionData();
   const navigation = useNavigation();
 
-  // const fetcher = useFetcher();
-
-  const [show, setShow] = useState(false);
-  const [edition, setEdition] = useState<ModalState>({
-    show: false,
-    client: null,
-  });
+  const { onClose, isOpen, onOpen } = useDisclosure();
 
   const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
-      setShow(false);
-      setEdition({ show: false, client: null });
+      onClose();
     }
-  }, [isAdding, actionData]);
+  }, [isAdding, actionData, onClose]);
 
   const data = clients;
 
@@ -169,7 +119,7 @@ export default function Clients() {
           Clientes
         </Heading>
         <Flex justifyContent="space-between">
-          <Button maxW="fit-content" onClick={() => setShow(true)}>
+          <Button maxW="fit-content" onClick={onOpen}>
             Criar Cliente
           </Button>
           {/*           <fetcher.Form>
@@ -183,7 +133,7 @@ export default function Clients() {
         </Flex>
 
         <TableContainer>
-          <Table size="sm">
+          <Table size="md">
             <Thead>
               <Tr>
                 <Th>Id</Th>
@@ -213,15 +163,6 @@ export default function Clients() {
                       <Link as={RemixLink} to={`/clients/${c.id}`} px="4">
                         Ver detalhes
                       </Link>
-                      <Center height="30px">
-                        <Divider orientation="vertical" />
-                      </Center>
-                      <Button
-                        variant="ghost"
-                        onClick={() => setEdition({ show: true, client: c })}
-                      >
-                        Editar
-                      </Button>
                     </HStack>
                   </Td>
                 </Tr>
@@ -231,14 +172,7 @@ export default function Clients() {
         </TableContainer>
         <PaginationBar total={count} />
       </Container>
-      {show && <ClientModal onClose={() => setShow(false)} />}
-      {edition.show && edition.client && (
-        <ClientModal
-          editionMode
-          values={edition.client}
-          onClose={() => setEdition({ show: false, client: null })}
-        />
-      )}
+      {isOpen && <ClientModal onClose={onClose} />}
     </>
   );
 }

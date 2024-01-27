@@ -11,6 +11,7 @@ import {
   Th,
   Thead,
   Tr,
+  useDisclosure,
   VisuallyHidden,
   VStack,
 } from "@chakra-ui/react";
@@ -26,11 +27,13 @@ import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
+import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import { createBuildingSite } from "~/models/buildingSite.server";
-import { getClient } from "~/models/client.server";
+import { editClient, getClient } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
+import { clientValidator } from "~/validators/clientValidation";
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -70,6 +73,30 @@ export async function action({ request, params }: ActionArgs) {
       return null;
     }
 
+    case "edit": {
+      const result = await clientValidator.validate(formData);
+
+      if (result.error) {
+        return validationError(result.error);
+      }
+
+      await editClient({
+        address: result.data.address,
+        name: result.data.name,
+        phoneNumber: result.data.phoneNumber,
+        isLegalEntity: result.data.isLegalEntity === "true",
+        registrationNumber: result.data.registrationNumber ?? null,
+        id: Number(result.data.id),
+        city: result.data.city,
+        state: result.data.state,
+        neighborhood: result.data.neighborhood,
+        email: result.data.email ?? null,
+        streetCode: result.data.streetCode ?? null,
+      });
+
+      return null;
+    }
+
     default:
       throw new Error("unknown action");
   }
@@ -79,6 +106,8 @@ export default function Client() {
   const { client } = useLoaderData<typeof loader>();
   const actionData = useActionData();
   const navigation = useNavigation();
+
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [show, setShow] = useState(false);
 
@@ -99,6 +128,9 @@ export default function Client() {
           <Heading as="h1" size="xl">
             {client.name}
           </Heading>
+          <Button variant="outline" onClick={onOpen}>
+            Editar
+          </Button>
         </VStack>
 
         <VStack as="dl" align="flex-start">
@@ -173,6 +205,7 @@ export default function Client() {
       {show && (
         <BuildingSiteModal client={client} onClose={() => setShow(false)} />
       )}
+      {isOpen && <ClientModal onClose={onClose} editionMode values={client} />}
     </>
   );
 }
