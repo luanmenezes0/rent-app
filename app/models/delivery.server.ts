@@ -46,7 +46,7 @@ export async function editDelivery(
     });
   });
 
-  prisma.delivery.update({
+  await prisma.delivery.update({
     where: { id: delivery.id },
     data: delivery,
   });
