@@ -125,8 +125,6 @@ export default function Clients() {
   function onChange(e: React.FormEvent<HTMLInputElement>) {
     const value = e.currentTarget.value;
 
-    console.log(value);
-
     if (!value) {
       setSearchParamsString(searchParams, { search: "" });
     }
