@@ -1,9 +1,13 @@
+import { SearchIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
   Flex,
   Heading,
   HStack,
+  Input,
+  InputGroup,
+  InputLeftAddon,
   Link,
   Table,
   TableContainer,
@@ -18,17 +22,22 @@ import {
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
+  Form,
   Link as RemixLink,
   useActionData,
   useLoaderData,
   useNavigation,
+  useSearchParams,
 } from "@remix-run/react";
 import { useEffect } from "react";
 
 import { validationError } from "remix-validated-form";
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
-import { PaginationBar } from "~/components/PaginationBar";
+import {
+  PaginationBar,
+  setSearchParamsString,
+} from "~/components/PaginationBar";
 import { createClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 import { clientValidator } from "~/validators/clientValidation";
@@ -39,8 +48,9 @@ export async function loader({ request }: LoaderArgs) {
   const url = new URL(request.url);
   const top = Number(url.searchParams.get("$top")) || 10;
   const skip = Number(url.searchParams.get("$skip")) || 0;
+  const search = url.searchParams.get("search") ?? undefined;
 
-  const { count, data } = await getClients({ top, skip });
+  const { count, data } = await getClients({ top, skip, search });
 
   return json({ clients: data, count });
 }
@@ -96,10 +106,11 @@ export async function action({ request }: ActionArgs) {
 export default function Clients() {
   const { clients, count } = useLoaderData<typeof loader>();
 
-  const actionData = useActionData();
-  const navigation = useNavigation();
+  const [searchParams] = useSearchParams();
 
   const { onClose, isOpen, onOpen } = useDisclosure();
+  const actionData = useActionData();
+  const navigation = useNavigation();
 
   const isAdding = navigation.state === "submitting";
 
@@ -110,6 +121,16 @@ export default function Clients() {
   }, [isAdding, actionData, onClose]);
 
   const data = clients;
+
+  function onChange(e: React.FormEvent<HTMLInputElement>) {
+    const value = e.currentTarget.value;
+
+    console.log(value);
+
+    if (!value) {
+      setSearchParamsString(searchParams, { search: "" });
+    }
+  }
 
   return (
     <>
@@ -122,14 +143,19 @@ export default function Clients() {
           <Button maxW="fit-content" onClick={onOpen}>
             Criar Cliente
           </Button>
-          {/*           <fetcher.Form>
+          <Form>
             <InputGroup width="auto">
               <InputLeftAddon>
                 <SearchIcon />
               </InputLeftAddon>
-              <Input type="search" placeholder="Buscar cliente" name="search" />
+              <Input
+                onChange={onChange}
+                type="search"
+                placeholder="Buscar cliente"
+                name="search"
+              />
             </InputGroup>
-          </fetcher.Form> */}
+          </Form>
         </Flex>
 
         <TableContainer>
