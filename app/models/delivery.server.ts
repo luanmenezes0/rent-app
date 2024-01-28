@@ -82,7 +82,12 @@ export async function getRentableCount(
 
 export async function getBuildingSiteInventory(buildingSiteId: string) {
   const rentables = await prisma.deliveryUnit.groupBy({
-    where: { buildingSiteId: Number(buildingSiteId) },
+    where: {
+      buildingSiteId: Number(buildingSiteId),
+      deliveryId: {
+        not: null,
+      },
+    },
     by: ["rentableId"],
   });
 
