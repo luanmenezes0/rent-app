@@ -8,6 +8,7 @@ import {
   Box,
   Flex,
   Grid,
+  HStack,
   Heading,
   Icon,
   IconButton,
@@ -15,7 +16,12 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import type { DeliveryUnit } from "@prisma/client";
-import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import {
+  Link,
+  useActionData,
+  useFetcher,
+  useNavigation,
+} from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { GrDeliver } from "react-icons/gr";
@@ -95,9 +101,17 @@ export default function DeliveryCard({
         <Icon color="gray.500" w={8} h={8} as={GrDeliver} />
       </Flex>
       <Box justifySelf="start" paddingInline="4">
-        <Heading as="h3" fontSize="14" pb="2">
-          {dayjs(delivery.date).format("DD/MM/YYYY HH:mm")}
-        </Heading>
+        <HStack pb="2" fontSize="14">
+          <Heading as="h3" fontSize="14">
+            {dayjs(delivery.date).format("DD/MM/YYYY HH:mm")}
+          </Heading>
+          {delivery.buildingSite && hideActions && (
+            <Link to={`/building-sites/${delivery.buildingSite.id}`}>
+              - {delivery.buildingSite.name}
+            </Link>
+          )}
+        </HStack>
+
         {/* @ts-ignore */}
         {delivery.units.map((u) => (
           <Flex align="center" gap="2" borderRadius="8" key={u.id}>

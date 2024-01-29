@@ -1,12 +1,14 @@
-import { Container, Heading } from "@chakra-ui/react";
+import { Container, Heading, VStack } from "@chakra-ui/react";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import dayjs from "dayjs";
 
 import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
+import { groupBy } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -39,6 +41,13 @@ export async function action({ request }: ActionArgs) {
 export default function Deliveries() {
   const { deliveries } = useLoaderData<typeof loader>();
 
+  const groupedBy = Object.entries(
+    groupBy(
+      deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
+      (d) => d.day,
+    ),
+  ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
+
   return (
     <>
       <Header />
@@ -46,8 +55,15 @@ export default function Deliveries() {
         <Heading as="h1" size="2xl">
           Remessas
         </Heading>
-        {deliveries.map((d) => (
-          <DeliveryCard delivery={d} key={d.id} hideActions />
+        {groupedBy.map(([date, data]) => (
+          <VStack key={date} align="strech" gap="2">
+            <Heading as="h2" size="md">
+              {dayjs(date).format("DD/MM/YYYY")}
+            </Heading>
+            {data.map((d) => (
+              <DeliveryCard delivery={d} key={d.id} hideActions />
+            ))}
+          </VStack>
         ))}
       </Container>
     </>
