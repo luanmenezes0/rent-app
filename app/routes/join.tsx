@@ -1,13 +1,19 @@
-import type { ActionArgs, LoaderArgs, MetaFunction } from "@remix-run/node";
+import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { Form, Link, useActionData, useSearchParams } from "@remix-run/react";
+import {
+  Form,
+  Link,
+  type V2_MetaFunction,
+  useActionData,
+  useSearchParams,
+} from "@remix-run/react";
 import * as React from "react";
 
-import { getUserId, createUserSession } from "~/session.server";
+import { createUserSession, getUserId } from "~/session.server";
 
+import { Flex, VStack, useColorModeValue } from "@chakra-ui/react";
 import { createUser, getUserByEmail } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
-import { Flex, useColorModeValue, VStack } from "@chakra-ui/react";
 
 export async function loader({ request }: LoaderArgs) {
   const userId = await getUserId(request);
@@ -65,10 +71,12 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export const meta: MetaFunction = () => {
-  return {
-    title: "Sign Up",
-  };
+export const meta: V2_MetaFunction = () => {
+  return [
+    {
+      title: "Sign Up",
+    },
+  ];
 };
 
 export default function Join() {
@@ -93,7 +101,7 @@ export default function Join() {
       alignItems="center"
       bgColor={useColorModeValue("gray.100", "gray.700")}
     >
-      <Form method="post" style={{ width: "380px" }}>
+      <Form method="POST" style={{ width: "380px" }}>
         <VStack
           spacing="4"
           maxW="container.md"

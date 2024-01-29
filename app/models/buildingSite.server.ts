@@ -17,7 +17,7 @@ export async function getBuildingSite(id: string) {
     include: {
       client: true,
       deliveries: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { date: "desc" },
         include: {
           units: {
             include: {

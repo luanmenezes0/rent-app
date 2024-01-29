@@ -93,7 +93,7 @@ export function DeliveyModal({
   }
 
   const initialDateValue = values
-    ? dayjs(values.createdAt).format("YYYY-MM-DDTHH:mm")
+    ? dayjs(values.date).format("YYYY-MM-DDTHH:mm")
     : dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (
@@ -103,7 +103,11 @@ export function DeliveyModal({
         <ModalHeader>{editionMode ? "Editar" : "Nova"} Remessa</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="delivery-form" key={values?.id}>
+          <Form
+            method={editionMode ? "PUT" : "POST"}
+            id="delivery-form"
+            key={values?.id}
+          >
             <input type="hidden" name="id" value={values?.id} />
             <VStack>
               <FormControl>

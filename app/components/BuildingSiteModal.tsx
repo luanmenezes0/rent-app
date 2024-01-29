@@ -11,6 +11,7 @@ import {
   ModalFooter,
   ModalHeader,
   ModalOverlay,
+  Textarea,
   VStack,
 } from "@chakra-ui/react";
 import type { BuildingSite } from "@prisma/client";
@@ -36,7 +37,7 @@ export default function BuildingSiteModal(props: Props) {
         <ModalCloseButton />
         <ModalBody>
           <Form
-            method="post"
+            method="POST"
             id="buiding-site-form"
             className="flex flex-col gap-4"
           >
@@ -61,7 +62,7 @@ export default function BuildingSiteModal(props: Props) {
                 isInvalid={Boolean(actionData?.fieldErrors?.address)}
               >
                 <FormLabel htmlFor="address">Endereço</FormLabel>
-                <Input
+                <Textarea
                   id="address"
                   name="address"
                   defaultValue={editionMode ? values?.address : client.address}

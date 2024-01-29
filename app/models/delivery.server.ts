@@ -46,7 +46,7 @@ export async function editDelivery(
     });
   });
 
-  prisma.delivery.update({
+  await prisma.delivery.update({
     where: { id: delivery.id },
     data: delivery,
   });
@@ -82,7 +82,12 @@ export async function getRentableCount(
 
 export async function getBuildingSiteInventory(buildingSiteId: string) {
   const rentables = await prisma.deliveryUnit.groupBy({
-    where: { buildingSiteId: Number(buildingSiteId) },
+    where: {
+      buildingSiteId: Number(buildingSiteId),
+      deliveryId: {
+        not: null,
+      },
+    },
     by: ["rentableId"],
   });
 

@@ -119,7 +119,7 @@ export default function Header() {
             <MenuList>
               <MenuItem>{user.email}</MenuItem>
               <MenuDivider />
-              <Form action="/logout" method="post">
+              <Form action="/logout" method="POST">
                 <MenuItem type="submit" className="w-full">
                   Sair
                 </MenuItem>

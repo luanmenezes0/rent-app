@@ -11,7 +11,13 @@ export async function getClients({
   top?: number;
 }) {
   const [count, data] = await Promise.all([
-    prisma.client.count(),
+    prisma.client.count({
+      where: {
+        name: {
+          contains: search,
+        },
+      },
+    }),
     prisma.client.findMany({
       skip,
       take: top,

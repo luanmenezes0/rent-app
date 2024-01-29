@@ -57,7 +57,7 @@ export default function BuildingSites() {
                 <Tr key={bs.id}>
                   <Td>{bs.id}</Td>
                   <Td>{bs.name}</Td>
-                  <Td>{bs.address}</Td>
+                  <Td>{bs.address.slice(0, 50)}</Td>
                   <Td>
                     <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
                   </Td>

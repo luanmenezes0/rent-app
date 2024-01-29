@@ -69,3 +69,13 @@ export function useUser(): User {
 export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
+
+
+export function groupBy<T>(arr: T[], fn: (item: T) => any) {
+  return arr.reduce<Record<string, T[]>>((prev, curr) => {
+    const groupKey = fn(curr);
+    const group = prev[groupKey] || [];
+    group.push(curr);
+    return { ...prev, [groupKey]: group };
+  }, {});
+}

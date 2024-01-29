@@ -1,5 +1,5 @@
 import type { Client } from "@prisma/client";
-import { Form, useActionData } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 
 import {
   Button,
@@ -19,7 +19,7 @@ import {
   RadioGroup,
   VStack,
 } from "@chakra-ui/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface ClientModalProps {
   onClose: () => void;
@@ -32,7 +32,19 @@ export function ClientModal(props: ClientModalProps) {
 
   const [label, setLabel] = useState<"CNPJ" | "CPF">("CPF");
 
-  const actionData = useActionData<{ fieldErrors: Partial<Client> }>();
+  const fetcher = useFetcher();
+
+  const { data: actionData } = fetcher;
+
+  const isSubmitting = fetcher.state === "submitting";
+
+  const isEdition = fetcher.formData?.get("_action") === "edit";
+
+  useEffect(() => {
+    if (!isSubmitting && isEdition && !actionData?.fieldErrors) {
+      onClose();
+    }
+  }, [isSubmitting, actionData, onClose, isEdition]);
 
   return (
     <Modal size="xl" isOpen onClose={onClose}>
@@ -41,7 +53,7 @@ export function ClientModal(props: ClientModalProps) {
         <ModalHeader>{editionMode ? "Editar" : "Criar"} Cliente</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="post" id="client-form">
+          <fetcher.Form method="PUT" id="client-form">
             <FormControl as="fieldset">
               <FormLabel as="legend">Pessoa Jurídica</FormLabel>
               <RadioGroup
@@ -213,7 +225,7 @@ export function ClientModal(props: ClientModalProps) {
                 </FormControl>
               </HStack>
             </VStack>
-          </Form>
+          </fetcher.Form>
         </ModalBody>
 
         <ModalFooter>

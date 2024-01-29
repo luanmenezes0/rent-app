@@ -1,27 +1,19 @@
-import { DeleteIcon } from "@chakra-ui/icons";
-import {
-  Button,
-  Container,
-  Flex,
-  Heading,
-  Link,
-  Stat,
-  StatArrow,
-  StatLabel,
-  StatNumber,
-} from "@chakra-ui/react";
+import { Container, Heading, VStack } from "@chakra-ui/react";
 import { json } from "@remix-run/node";
-import { Form, Link as RemixLink, useLoaderData } from "@remix-run/react";
+import { useLoaderData } from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
+
+import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
+import { groupBy } from "~/utils";
 
-export async function loader({ request, context }: LoaderArgs) {
-  const userId = await requireUserId(request);
+export async function loader({ request }: LoaderArgs) {
+  await requireUserId(request);
 
-  return json({ deliveries: await getDeliveries(), userId });
+  return json({ deliveries: await getDeliveries() });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -47,9 +39,14 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function Deliveries() {
-  const { deliveries, userId } = useLoaderData<typeof loader>();
+  const { deliveries } = useLoaderData<typeof loader>();
 
-  console.log(userId);
+  const groupedBy = Object.entries(
+    groupBy(
+      deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
+      (d) => d.day,
+    ),
+  ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
 
   return (
     <>
@@ -58,39 +55,15 @@ export default function Deliveries() {
         <Heading as="h1" size="2xl">
           Remessas
         </Heading>
-
-        {deliveries.map((d) => (
-          <Stat key={d.id} p="4" border="1px" borderRadius="8">
-            <StatLabel>
-              {d.buildingSite.name} -{" "}
-              {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-            </StatLabel>
-            {d.units.map((u) => (
-              <StatNumber key={u.id}>
-                {u.rentable.name} - {Math.abs(u.count)}{" "}
-                <StatArrow
-                  type={u.deliveryType === 1 ? "increase" : "decrease"}
-                />
-              </StatNumber>
+        {groupedBy.map(([date, data]) => (
+          <VStack key={date} align="strech" gap="2">
+            <Heading as="h2" size="md">
+              {dayjs(date).format("DD/MM/YYYY")}
+            </Heading>
+            {data.map((d) => (
+              <DeliveryCard delivery={d} key={d.id} hideActions />
             ))}
-            <Flex justify="space-between" align="center">
-              <Link as={RemixLink} to={`/building-sites/${d.buildingSiteId}`}>
-                Ver Obra
-              </Link>
-              <Form method="post">
-                <input type="hidden" name="id" value={d.id} />
-                <Button
-                  colorScheme="red"
-                  type="submit"
-                  variant="ghost"
-                  name="_action"
-                  value="delete-delivery"
-                  aria-label="Excluir remessa"
-                  leftIcon={<DeleteIcon />}
-                />
-              </Form>
-            </Flex>
-          </Stat>
+          </VStack>
         ))}
       </Container>
     </>
