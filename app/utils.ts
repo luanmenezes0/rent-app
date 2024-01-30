@@ -79,4 +79,4 @@ export function groupBy<T>(arr: T[], fn: (item: T) => any) {
   }, {});
 }
 
-export const PAGINATION_LIMIT = 10;
+export const PAGINATION_LIMIT = 20;
