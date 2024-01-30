@@ -40,13 +40,14 @@ import {
 } from "~/components/PaginationBar";
 import { createClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
+import { PAGINATION_LIMIT } from "~/utils";
 import { clientValidator } from "~/validators/clientValidation";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
 
   const url = new URL(request.url);
-  const top = Number(url.searchParams.get("$top")) || 10;
+  const top = Number(url.searchParams.get("$top")) || PAGINATION_LIMIT;
   const skip = Number(url.searchParams.get("$skip")) || 0;
   const search = url.searchParams.get("search") ?? undefined;
 

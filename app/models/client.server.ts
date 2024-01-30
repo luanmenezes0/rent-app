@@ -10,7 +10,7 @@ export async function getClients({
   skip?: number;
   top?: number;
 }) {
-  const [count, data] = await Promise.all([
+  const [count, data] = await prisma.$transaction([
     prisma.client.count({
       where: {
         name: {

@@ -70,7 +70,6 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
 
-
 export function groupBy<T>(arr: T[], fn: (item: T) => any) {
   return arr.reduce<Record<string, T[]>>((prev, curr) => {
     const groupKey = fn(curr);
@@ -79,3 +78,5 @@ export function groupBy<T>(arr: T[], fn: (item: T) => any) {
     return { ...prev, [groupKey]: group };
   }, {});
 }
+
+export const PAGINATION_LIMIT = 10;

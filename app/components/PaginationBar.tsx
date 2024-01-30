@@ -1,6 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { Button, Flex, VisuallyHidden } from "@chakra-ui/react";
 import { Link, useSearchParams } from "@remix-run/react";
+import { PAGINATION_LIMIT } from "~/utils";
 
 export function setSearchParamsString(
   searchParams: URLSearchParams,
@@ -28,7 +29,7 @@ export function setSearchParamsString(
 export function PaginationBar({ total }: { total: number }) {
   const [searchParams] = useSearchParams();
   const $skip = Number(searchParams.get("$skip")) || 0;
-  const $top = Number(searchParams.get("$top")) || 10;
+  const $top = Number(searchParams.get("$top")) || PAGINATION_LIMIT;
   const totalPages = Math.ceil(total / $top);
   const currentPage = Math.floor($skip / $top) + 1;
   const maxPages = 7;
@@ -58,21 +59,6 @@ export function PaginationBar({ total }: { total: number }) {
 
   return (
     <Flex justifyContent="center" m="4">
-      {/*       <Button size="sm" variant="ghost" disabled={!canPageBackwards}>
-        <Link
-          to={{
-            search: setSearchParamsString(searchParams, {
-              $skip: 0,
-            }),
-          }}
-          preventScrollReset
-          prefetch="intent"
-          className="text-neutral-600"
-        >
-          <VisuallyHidden> First page</VisuallyHidden>
-          <ArrowLeftIcon />
-        </Link>
-      </Button> */}
       <Button size="sm" variant="ghost" disabled={!canPageBackwards}>
         <Link
           to={{
@@ -81,7 +67,7 @@ export function PaginationBar({ total }: { total: number }) {
             }),
           }}
           preventScrollReset
-          // prefetch="intent"
+          prefetch="intent"
         >
           <VisuallyHidden> Previous page</VisuallyHidden>
           <ChevronLeftIcon />
@@ -109,7 +95,7 @@ export function PaginationBar({ total }: { total: number }) {
                   }),
                 }}
                 preventScrollReset
-                // prefetch="intent"
+                prefetch="intent"
               >
                 {pageNumber}
               </Link>
@@ -125,27 +111,12 @@ export function PaginationBar({ total }: { total: number }) {
             }),
           }}
           preventScrollReset
-          // prefetch="intent"
+          prefetch="intent"
         >
           <VisuallyHidden> Next page</VisuallyHidden>
           <ChevronRightIcon />
         </Link>
       </Button>
-      {/*       <Button size="sm" variant="ghost" disabled={!canPageForwards}>
-        <Link
-          to={{
-            search: setSearchParamsString(searchParams, {
-              $skip: (totalPages - 1) * $top,
-            }),
-          }}
-          preventScrollReset
-          prefetch="intent"
-          className="text-neutral-600"
-        >
-          <VisuallyHidden> Last page</VisuallyHidden>
-          <ArrowRightIcon />
-        </Link>
-      </Button> */}
     </Flex>
   );
 }
