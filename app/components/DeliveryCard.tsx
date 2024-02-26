@@ -135,14 +135,15 @@ export default function DeliveryCard({
           }
         />
       )}
-      <IconButton
+{      <IconButton
         variant={"outline"}
         size={"sm"}
         aria-label={"Imprimir"}
         icon={<GrPrint />}
         as="a"
+        target="_blank"
         href={`/print-pdf?deliveryId=${delivery.id}`}
-      ></IconButton>
+      ></IconButton>}
       {!hideActions && (
         <IconButton
           variant="outline"
