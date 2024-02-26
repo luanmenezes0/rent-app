@@ -24,6 +24,9 @@ import { useUser } from "~/utils";
 export default function Header() {
   const user = useUser();
 
+  const isAdmin =
+    user.email === "rachel@remix.run" || "luanmenezes99@gmail.com";
+
   const { isOpen, onOpen, onClose } = useDisclosure();
 
   const { colorMode, toggleColorMode } = useColorMode();
@@ -70,9 +73,16 @@ export default function Header() {
           <Link as={NavLink} to="/deliveries">
             Remessas
           </Link>
-          <Link as={NavLink} to="/inventory">
-            Estoque
-          </Link>
+          {isAdmin && (
+            <Link as={NavLink} to="/admin/inventory">
+              Estoque
+            </Link>
+          )}
+          {isAdmin && (
+            <Link as={NavLink} to="/admin/users">
+              Usuários
+            </Link>
+          )}
         </HStack>
         <HStack>
           <Button onClick={toggleColorMode} variant="ghost">
@@ -143,9 +153,16 @@ export default function Header() {
             <Link as={NavLink} to="/deliveries">
               Remessas
             </Link>
-            <Link as={NavLink} to="/inventory">
-              Estoque
-            </Link>
+            {isAdmin && (
+              <Link as={NavLink} to="/admin/inventory">
+                Estoque
+              </Link>
+            )}
+            {isAdmin && (
+              <Link as={NavLink} to="/admin/users">
+                Usuários
+              </Link>
+            )}
           </VStack>
         </Box>
       ) : null}
