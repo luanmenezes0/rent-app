@@ -15,13 +15,26 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import Header from "~/components/Header";
+import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
+import { PAGINATION_LIMIT } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
 
-  return json({ buildingSites: await getBuildingSites() });
+  const url = new URL(request.url);
+  const top = Number(url.searchParams.get("$top")) || PAGINATION_LIMIT;
+  const skip = Number(url.searchParams.get("$skip")) || 0;
+  const search = url.searchParams.get("search") ?? undefined;
+
+  const { data, count } = await getBuildingSites({
+    top,
+    skip,
+    search,
+  });
+
+  return json({ buildingSites: data, count });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -31,7 +44,7 @@ export async function action({ request }: ActionArgs) {
 }
 
 export default function BuildingSites() {
-  const { buildingSites } = useLoaderData<typeof loader>();
+  const { buildingSites, count } = useLoaderData<typeof loader>();
 
   return (
     <>
@@ -66,6 +79,7 @@ export default function BuildingSites() {
             </Tbody>
           </Table>
         </TableContainer>
+        <PaginationBar total={count} />
       </Container>
     </>
   );

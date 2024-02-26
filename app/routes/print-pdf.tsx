@@ -2,7 +2,9 @@ import type { LoaderArgs } from "@remix-run/server-runtime";
 import puppeteer from "puppeteer";
 
 const saveAsPdf = async (url: string, cookie: string | null) => {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({
+    executablePath: "/usr/bin/google-chrome",
+  });
   const page = await browser.newPage();
 
   if (cookie) {
