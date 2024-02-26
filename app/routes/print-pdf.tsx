@@ -4,6 +4,7 @@ import puppeteer from "puppeteer";
 const saveAsPdf = async (url: string, cookie: string | null) => {
   const browser = await puppeteer.launch({
     executablePath: "/usr/bin/google-chrome",
+    args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
   const page = await browser.newPage();
 
