@@ -24,7 +24,7 @@ import {
 } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { GrDeliver } from "react-icons/gr";
+import { GrDeliver, GrPrint } from "react-icons/gr";
 import { MyAlertDialog } from "./AlertDialog";
 import { DeliveyModal } from "./DeliveyModal";
 
@@ -83,7 +83,7 @@ export default function DeliveryCard({
 
   return (
     <Grid
-      templateColumns="min-content 1fr min-content min-content"
+      templateColumns="min-content 1fr min-content min-content min-content"
       bgColor={cardColor}
       gap={2}
       key={delivery.id}
@@ -135,6 +135,14 @@ export default function DeliveryCard({
           }
         />
       )}
+      <IconButton
+        variant={"outline"}
+        size={"sm"}
+        aria-label={"Imprimir"}
+        icon={<GrPrint />}
+        as="a"
+        href={`/print-pdf?deliveryId=${delivery.id}`}
+      ></IconButton>
       {!hideActions && (
         <IconButton
           variant="outline"
@@ -145,7 +153,6 @@ export default function DeliveryCard({
           onClick={() => handleOpenDeleteModal(delivery.id)}
         />
       )}
-
       {deliveryModal.show && rentables && (
         <DeliveyModal
           onClose={() => setDeliveryModal(initialState)}
@@ -155,7 +162,6 @@ export default function DeliveryCard({
           values={deliveryModal.data}
         />
       )}
-
       {idToDelete && (
         <MyAlertDialog
           isOpen={isOpen}

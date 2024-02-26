@@ -43,6 +43,7 @@
     "framer-motion": "^6.5.1",
     "isbot": "^3.5.3",
     "prisma": "^4.16.0",
+    "puppeteer": "^22.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-icons": "^5.0.1",
