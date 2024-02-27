@@ -37,7 +37,7 @@ export default function Index() {
 
   return (
     <Container fontSize="14px">
-      <VStack gap={8} padding={4} align="start">
+      <VStack gap={8} paddingTop={10} align="start">
         <VStack alignSelf="center">
           <Heading fontSize="20">Ordem de Entrega</Heading>
           <p>Naldo Locações</p>
@@ -53,9 +53,10 @@ export default function Index() {
         <Table size="sm" colorScheme="black" variant="striped">
           <Thead>
             <Tr>
-              <Th>#</Th>
+              <Th>Código</Th>
               <Th>Item</Th>
               <Th>Quantidade</Th>
+              <Th>Status</Th>
             </Tr>
           </Thead>
           <Tbody>
@@ -63,15 +64,15 @@ export default function Index() {
               <Tr key={unit.id}>
                 <Td>{unit.id}</Td>
                 <Td>{unit.rentable.name}</Td>
-                <Td>{unit.count}</Td>
-                {/* <Td>{unit.deliveryType}</Td> */}
+                <Td>{Math.abs(unit.count)}</Td>
+                <Td>{unit.deliveryType === 1 ? "Entrega" : "Devolução"}</Td>
               </Tr>
             ))}
           </Tbody>
         </Table>
         {/* <pre>{JSON.stringify(delivery, null, 2)}</pre> */}
 
-        <p>Assinatura do cliente: ___________________________</p>
+        <p>Assinatura do cliente: _____________________________________</p>
         <footer>
           <span>Naldo Locações - </span>
           <span> Rua 121, 122, Planalto Caucaia - </span>

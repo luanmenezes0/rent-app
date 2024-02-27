@@ -1,4 +1,5 @@
 import {
+  Box,
   Container,
   Heading,
   Table,
@@ -18,7 +19,11 @@ import Header from "~/components/Header";
 import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
-import { PAGINATION_LIMIT } from "~/utils";
+import {
+  BuildingSiteStatus,
+  BuildingSiteStatusLabels,
+  PAGINATION_LIMIT,
+} from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -43,6 +48,22 @@ export async function action({ request }: ActionArgs) {
   return null;
 }
 
+function BuildingSiteStatusLabel({ status }: { status: number }) {
+  const isActive = status === BuildingSiteStatus.ACTIVE;
+
+  return (
+    <Box
+      textAlign="center"
+      borderRadius="8px"
+      p="1"
+      color="white"
+      bg={isActive ? "green" : "red"}
+    >
+      {BuildingSiteStatusLabels[status]}
+    </Box>
+  );
+}
+
 export default function BuildingSites() {
   const { buildingSites, count } = useLoaderData<typeof loader>();
 
@@ -60,6 +81,7 @@ export default function BuildingSites() {
                 <Th>Id</Th>
                 <Th>Nome</Th>
                 <Th>Endereço</Th>
+                <Th>Status</Th>
                 <Th>
                   <VisuallyHidden>Ações</VisuallyHidden>
                 </Th>
@@ -71,6 +93,9 @@ export default function BuildingSites() {
                   <Td>{bs.id}</Td>
                   <Td>{bs.name}</Td>
                   <Td>{bs.address.slice(0, 50)}</Td>
+                  <Td>
+                    <BuildingSiteStatusLabel status={bs.status} />
+                  </Td>
                   <Td>
                     <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
                   </Td>
