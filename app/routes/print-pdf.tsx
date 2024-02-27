@@ -8,13 +8,13 @@ const saveAsPdf = async (url: string, cookie: string | null) => {
   });
 
   const page = await browser.newPage();
-  console.log("cookie", cookie);
+
   if (cookie) {
     await page.setExtraHTTPHeaders({
       Cookie: cookie,
+      Connection: "keep-alive",
     });
   }
-
   await page.goto(url, {
     waitUntil: "networkidle0",
   });

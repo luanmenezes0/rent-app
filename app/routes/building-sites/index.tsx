@@ -8,7 +8,7 @@ import {
   Th,
   Thead,
   Tr,
-  VisuallyHidden
+  VisuallyHidden,
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -19,9 +19,7 @@ import Header from "~/components/Header";
 import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
-import {
-  PAGINATION_LIMIT
-} from "~/utils";
+import { PAGINATION_LIMIT } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
   await requireUserId(request);
@@ -45,8 +43,6 @@ export async function action({ request }: ActionArgs) {
 
   return null;
 }
-
-
 
 export default function BuildingSites() {
   const { buildingSites, count } = useLoaderData<typeof loader>();
