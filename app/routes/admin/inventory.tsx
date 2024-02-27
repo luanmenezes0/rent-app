@@ -1,4 +1,4 @@
-import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
+import { EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
@@ -179,6 +179,21 @@ function RentableModal({
         </ModalBody>
 
         <ModalFooter gap="2">
+          {/* <Form method="delete">
+            <input type="hidden" name="id" value={values?.id} />
+            <input type="hidden" name="_action" value="delete" />
+            <IconButton
+              size="sm"
+              colorScheme="red"
+              variant="ghost"
+              type="submit"
+              name="_action"
+              value="delete"
+              aria-label="Excluir"
+              icon={<DeleteIcon />}
+              rounded="full"
+            />
+          </Form> */}
           <Button onClick={onClose} variant="outline">
             Cancelar
           </Button>
@@ -259,21 +274,6 @@ export default function Index() {
                           onOpen();
                         }}
                       />
-                      <Form method="delete">
-                        <input type="hidden" name="id" value={rentable.id} />
-                        <input type="hidden" name="_action" value="delete" />
-                        <IconButton
-                          size="sm"
-                          colorScheme="red"
-                          variant="ghost"
-                          type="submit"
-                          name="_action"
-                          value="delete"
-                          aria-label="Excluir"
-                          icon={<DeleteIcon />}
-                          rounded="full"
-                        />
-                      </Form>
                     </Flex>
                   </Td>
                 </Tr>

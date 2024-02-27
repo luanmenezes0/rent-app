@@ -27,6 +27,7 @@ import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import { createBuildingSite } from "~/models/buildingSite.server";
@@ -180,6 +181,7 @@ export default function Client() {
                 <Th>Id</Th>
                 <Th>Nome</Th>
                 <Th>Endereço</Th>
+                <Th>Status</Th>
                 <Th>
                   <VisuallyHidden>Ações</VisuallyHidden>
                 </Th>
@@ -193,6 +195,9 @@ export default function Client() {
                   </Td>
                   <Td>{bs.name}</Td>
                   <Td>{bs.address}</Td>
+                  <Td>
+                    <BuildingSiteStatusLabel status={bs.status} />
+                  </Td>
                   <Td>
                     <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
                   </Td>

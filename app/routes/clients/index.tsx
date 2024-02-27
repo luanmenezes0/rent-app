@@ -182,7 +182,7 @@ export default function Clients() {
                       {c.name}
                     </Link>
                   </Td>
-                  <Td>{c.address.slice(0, 50)}</Td>
+                  <Td>{c.address.slice(0, 46)}</Td>
                   <Td>
                     <HStack>
                       <Link as={RemixLink} to={`/clients/${c.id}`} px="4">

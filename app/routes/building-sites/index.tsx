@@ -1,5 +1,4 @@
 import {
-  Box,
   Container,
   Heading,
   Table,
@@ -9,20 +8,19 @@ import {
   Th,
   Thead,
   Tr,
-  VisuallyHidden,
+  VisuallyHidden
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 
 import Header from "~/components/Header";
 import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
 import {
-  BuildingSiteStatus,
-  BuildingSiteStatusLabels,
-  PAGINATION_LIMIT,
+  PAGINATION_LIMIT
 } from "~/utils";
 
 export async function loader({ request }: LoaderArgs) {
@@ -48,21 +46,7 @@ export async function action({ request }: ActionArgs) {
   return null;
 }
 
-function BuildingSiteStatusLabel({ status }: { status: number }) {
-  const isActive = status === BuildingSiteStatus.ACTIVE;
 
-  return (
-    <Box
-      textAlign="center"
-      borderRadius="8px"
-      p="1"
-      color="white"
-      bg={isActive ? "green" : "red"}
-    >
-      {BuildingSiteStatusLabels[status]}
-    </Box>
-  );
-}
 
 export default function BuildingSites() {
   const { buildingSites, count } = useLoaderData<typeof loader>();
@@ -92,7 +76,7 @@ export default function BuildingSites() {
                 <Tr key={bs.id}>
                   <Td>{bs.id}</Td>
                   <Td>{bs.name}</Td>
-                  <Td>{bs.address.slice(0, 50)}</Td>
+                  <Td>{bs.address.slice(0, 46)}</Td>
                   <Td>
                     <BuildingSiteStatusLabel status={bs.status} />
                   </Td>

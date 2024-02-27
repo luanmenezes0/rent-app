@@ -65,7 +65,7 @@ export async function createBuildingSite(
 }
 
 export async function editBuildingSite(
-  buildingSite: Pick<BuildingSite, "address" | "name" | "id">,
+  buildingSite: Omit<BuildingSite, "createdAt" | "updatedAt" | "clientId">,
 ) {
   return prisma.buildingSite.update({
     data: buildingSite,

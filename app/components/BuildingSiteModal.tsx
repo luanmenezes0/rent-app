@@ -1,5 +1,6 @@
 import {
   Button,
+  Checkbox,
   FormControl,
   FormErrorMessage,
   FormLabel,
@@ -14,12 +15,14 @@ import {
   Textarea,
   VStack,
 } from "@chakra-ui/react";
-import type { BuildingSite } from "@prisma/client";
-import { Form, useActionData } from "@remix-run/react";
+import type { BuildingSite, Client } from "@prisma/client";
+import { useActionData, useFetcher } from "@remix-run/react";
+import { useState } from "react";
+import { BuildingSiteStatus } from "~/utils";
 
 type Props = {
   onClose: () => void;
-  client: { id: number; address: string };
+  client: Omit<Client, "updatedAt" | "createdAt">;
   editionMode?: boolean;
   values?: Omit<BuildingSite, "createdAt" | "updatedAt">;
 };
@@ -29,6 +32,21 @@ export default function BuildingSiteModal(props: Props) {
 
   const actionData = useActionData<{ fieldErrors: Partial<BuildingSite> }>();
 
+  const fetcher = useFetcher();
+
+  const [status, setStatus] = useState(() => {
+    if (editionMode && values) {
+      return values.status;
+    }
+    return BuildingSiteStatus.ACTIVE;
+  });
+
+  function submit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+    const form = Object.fromEntries(new FormData(event.currentTarget.form!));
+    const action = editionMode ? "edit-bs" : "create-bs";
+    fetcher.submit({ ...form, status, _action: action }, { method: "POST" });
+  }
+
   return (
     <Modal size="xl" isOpen onClose={onClose}>
       <ModalOverlay />
@@ -36,7 +54,7 @@ export default function BuildingSiteModal(props: Props) {
         <ModalHeader>{editionMode ? "Editar" : "Nova"} Obra</ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form
+          <fetcher.Form
             method="POST"
             id="buiding-site-form"
             className="flex flex-col gap-4"
@@ -50,7 +68,11 @@ export default function BuildingSiteModal(props: Props) {
                   id="name"
                   name="name"
                   required
-                  defaultValue={values?.name}
+                  defaultValue={
+                    editionMode
+                      ? values?.name
+                      : `OBRA ${client.name.split(" ")[0]}`
+                  }
                 />
                 {actionData?.fieldErrors?.name && (
                   <FormErrorMessage>
@@ -65,7 +87,11 @@ export default function BuildingSiteModal(props: Props) {
                 <Textarea
                   id="address"
                   name="address"
-                  defaultValue={editionMode ? values?.address : client.address}
+                  defaultValue={
+                    editionMode
+                      ? values?.address
+                      : `${client.address}, ${client.neighborhood} - ${client.city}`
+                  }
                   required
                 />
                 {actionData?.fieldErrors?.address && (
@@ -74,19 +100,24 @@ export default function BuildingSiteModal(props: Props) {
                   </FormErrorMessage>
                 )}
               </FormControl>
+              <FormControl display="flex" alignItems="baseline">
+                <FormLabel htmlFor="status">Ativa</FormLabel>
+                <Checkbox
+                  name="status"
+                  id="status"
+                  onChange={({ target }) => setStatus(target.checked ? 1 : 2)}
+                  defaultChecked={status === BuildingSiteStatus.ACTIVE}
+                  value={status === BuildingSiteStatus.ACTIVE ? 1 : 2}
+                />
+              </FormControl>
             </VStack>
-          </Form>
+          </fetcher.Form>
         </ModalBody>
         <ModalFooter>
           <Button onClick={onClose} variant="ghost" mx="4">
             Cancelar
           </Button>
-          <Button
-            type="submit"
-            form="buiding-site-form"
-            name="_action"
-            value={editionMode ? "edit-bs" : "create-bs"}
-          >
+          <Button form="buiding-site-form" onClick={submit}>
             Salvar
           </Button>
         </ModalFooter>
