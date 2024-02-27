@@ -8,12 +8,19 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+// import { useHydrated } from "remix-utils/use-hydrated"
 import {
   Link as RemixLink,
   useActionData,
@@ -37,11 +44,14 @@ import {
   deleteDelivery,
   editDelivery,
   getBuildingSiteInventory,
+  getDeliveryUnits,
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 import { DeliveyModal } from "../../components/DeliveyModal";
+
+dayjs.locale("pt-br");
 
 export async function loader({ request, params }: LoaderArgs) {
   await requireUserId(request);
@@ -58,7 +68,9 @@ export async function loader({ request, params }: LoaderArgs) {
 
   const rentables = await getRentables();
 
-  return json({ buildingSite, inventory, rentables });
+  const deliveryUnits = await getDeliveryUnits(params.buildingId);
+
+  return json({ buildingSite, inventory, rentables, deliveryUnits });
 }
 
 export async function action({ request }: ActionArgs) {
@@ -100,6 +112,7 @@ export async function action({ request }: ActionArgs) {
             count: Number(deliveryType) === 1 ? Number(count) : -Number(count),
             deliveryType: Number(deliveryType),
             buildingSiteId: Number(buildingSiteId),
+            date: dayjs(date).toDate(),
           };
         })
         .filter((u) => u.count !== 0);
@@ -176,7 +189,9 @@ const initialState = { show: false, editing: false, data: null };
 type State = { show: boolean; editing: boolean; data: any };
 
 export default function BuildingSite() {
-  const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
+  const { buildingSite, inventory, rentables, deliveryUnits } =
+    useLoaderData<typeof loader>();
+  // console.log(deliveryUnits);
 
   const fetcher = useFetchers();
   const actionData = useActionData();
@@ -194,6 +209,28 @@ export default function BuildingSite() {
   }, [isAdding, actionData]);
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
+
+  function getBalance(arr: any[], i: number) {
+    return arr.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
+  }
+
+  function getDiffInDays(arr: any[], i: number, date: any) {
+    const isLast = arr.length === i + 1;
+
+    const formatedDate = dayjs(date).toISOString();
+
+    console.log("formatedDate", formatedDate);
+    console.log("formatedDate with dayjs", dayjs(formatedDate).format());
+
+    if (isLast) {
+      return dayjs().diff(dayjs(formatedDate), "day");
+    }
+
+    return dayjs(arr[i + 1].date).diff(dayjs(formatedDate), "day");
+  }
+
+    console.log("DATAAAA", deliveryUnits["Andaime"][3].date)
+  console.log("DATAAAA", dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"))
 
   return (
     <>
@@ -264,6 +301,43 @@ export default function BuildingSite() {
           </HStack>
         </VStack>
         <Divider />
+        <div>
+          {Object.entries(deliveryUnits).map(([name, unit]) => (
+            <VStack key={name}>
+              <Text fontWeight="bold">{name}</Text>
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    <Th>Data</Th>
+                    <Th>Movimentação</Th>
+                    <Th>Saldo</Th>
+                    <Th>Dias</Th>
+                    <Th>RM * DIAS</Th>
+                    <Th>VALOR</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {unit.map((d, i, arr) => (
+                    <Tr key={d.id}>
+                      <Td>{dayjs(d.date).format("DD/MM/YYYY")}</Td>
+                      <Td>{d.count}</Td>
+                      <Td>{getBalance(arr, i)}</Td>
+                      <Td>{getDiffInDays(arr, i, d.date)}</Td>
+                      {/* <Td>
+                        {getBalance(arr, i) * getDiffInDays(arr, i, d.date)}
+                      </Td>
+                      <Td>
+                        {getBalance(arr, i) *
+                          getDiffInDays(arr, i, d.date) *
+                          d.rentable.unitPrice}
+                      </Td> */}
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </VStack>
+          ))}
+        </div>
         <VStack align="stretch" as="section">
           <Heading
             as="h2"
