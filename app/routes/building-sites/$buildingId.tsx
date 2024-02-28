@@ -17,14 +17,15 @@ import { json } from "@remix-run/node";
 import {
   Link as RemixLink,
   useActionData,
+  useFetchers,
   useLoaderData,
-  useNavigation,
 } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import {
@@ -78,6 +79,7 @@ export async function action({ request }: ActionArgs) {
         address: result.data.address,
         name: result.data.name,
         id: Number(result.data.id),
+        status: Number(result.data.status ?? 1),
       });
 
       return null;
@@ -176,13 +178,13 @@ type State = { show: boolean; editing: boolean; data: any };
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
-  const navigation = useNavigation();
+  const fetcher = useFetchers();
   const actionData = useActionData();
 
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
-  const isAdding = navigation.state === "submitting";
+  const isAdding = fetcher.some((f) => f.state === "submitting");
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
@@ -234,6 +236,7 @@ export default function BuildingSite() {
               <dd>{buildingSite.client.name}</dd>
             </Link>
           </div>
+          <BuildingSiteStatusLabel status={buildingSite.status} />
         </VStack>
         <Divider />
         <VStack align="stretch" as="section">

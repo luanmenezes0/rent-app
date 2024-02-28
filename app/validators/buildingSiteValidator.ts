@@ -6,6 +6,7 @@ export const BuildingSiteSchema = z.object({
   name: z.string().min(1, "O Nome é obrigatório"),
   address: z.string().min(1, "O Endereço é obrigatório"),
   clientId: z.string(),
+  status: z.string().optional(),
 });
 
 export const buildingSiteValidator = withZod(BuildingSiteSchema);
