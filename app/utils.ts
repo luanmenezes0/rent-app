@@ -80,3 +80,13 @@ export function groupBy<T>(arr: T[], fn: (item: T) => any) {
 }
 
 export const PAGINATION_LIMIT = 20;
+
+export const BuildingSiteStatus = {
+  ACTIVE: 1,
+  INACTIVE: 2,
+} as const;
+
+export const BuildingSiteStatusLabels: Record<number, string> = {
+  [BuildingSiteStatus.ACTIVE]: "Ativa",
+  [BuildingSiteStatus.INACTIVE]: "Inativa",
+};

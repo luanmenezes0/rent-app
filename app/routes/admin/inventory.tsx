@@ -1,14 +1,16 @@
-import { CheckIcon, DeleteIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
   Flex,
   FormControl,
   FormLabel,
-  HStack,
+  Grid,
   Heading,
   IconButton,
   Input,
+  InputGroup,
+  InputLeftAddon,
   Modal,
   ModalBody,
   ModalCloseButton,
@@ -20,16 +22,24 @@ import {
   TableContainer,
   Tbody,
   Td,
+  Textarea,
   Th,
   Thead,
   Tr,
   VisuallyHidden,
+  useDisclosure,
 } from "@chakra-ui/react";
-import { Form, useLoaderData, useNavigation } from "@remix-run/react";
+import {
+  Form,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "@remix-run/react";
 import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
+import type { Rentable } from "~/models/inventory.server";
 import {
   createRentable,
   deleteRentable,
@@ -65,6 +75,8 @@ export async function action({ request }: ActionArgs) {
       await createRentable({
         name: result.data.name,
         count: Number(result.data.count),
+        description: result.data.description,
+        unitPrice: Number(result.data.unitPrice),
       });
 
       return null;
@@ -73,8 +85,17 @@ export async function action({ request }: ActionArgs) {
     case "edit": {
       const id = formData.get("id") as string;
       const count = formData.get("count") as string;
+      const description = formData.get("description") as string;
+      const unitPrice = formData.get("unitPrice") as string;
+      const name = formData.get("name") as string;
 
-      await editRentable({ id: Number(id), count: Number(count) });
+      await editRentable({
+        name,
+        id: Number(id),
+        count: Number(count),
+        description,
+        unitPrice: Number(unitPrice),
+      });
 
       return null;
     }
@@ -92,23 +113,68 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
-function RentableModal({ onClose }: { onClose: () => void }) {
+function RentableModal({
+  onClose,
+  editionMode,
+  values,
+}: {
+  onClose: () => void;
+  editionMode?: boolean;
+  values: Omit<Rentable, "createdAt" | "updatedAt"> | null;
+}) {
   return (
     <Modal size="md" isOpen onClose={onClose}>
       <ModalOverlay />
       <ModalContent>
-        <ModalHeader>Adicionar item de estoque</ModalHeader>
+        <ModalHeader>
+          {editionMode ? "Editar" : "Novo"} item de Estoque
+        </ModalHeader>
         <ModalCloseButton />
         <ModalBody>
-          <Form method="POST" id="rentable-form">
-            <FormControl>
-              <FormLabel htmlFor="name">Nome</FormLabel>
-              <Input id="name" required name="name" />
-            </FormControl>
-            <FormControl>
-              <FormLabel htmlFor="count">Quantidade</FormLabel>
-              <Input id="count" required name="count" type="number" />
-            </FormControl>
+          <Form method={editionMode ? "PUT" : "POST"} id="rentable-form">
+            <Grid gap={2}>
+              <input type="hidden" name="id" defaultValue={values?.id} />
+              <FormControl>
+                <FormLabel htmlFor="name">Nome</FormLabel>
+                <Input
+                  id="name"
+                  required
+                  name="name"
+                  defaultValue={values?.name}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="description">Descrição</FormLabel>
+                <Textarea
+                  id="description"
+                  name="description"
+                  defaultValue={values?.description ?? ""}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="count">Quantidade</FormLabel>
+                <Input
+                  id="count"
+                  required
+                  name="count"
+                  type="number"
+                  defaultValue={values?.count}
+                />
+              </FormControl>
+              <FormControl>
+                <FormLabel htmlFor="unitPrice">Valor Unitário</FormLabel>
+                <InputGroup>
+                  <InputLeftAddon>R$</InputLeftAddon>
+                  <Input
+                    id="unitPrice"
+                    required
+                    name="unitPrice"
+                    type="number"
+                    defaultValue={values?.unitPrice}
+                  />
+                </InputGroup>
+              </FormControl>
+            </Grid>
           </Form>
         </ModalBody>
 
@@ -120,7 +186,7 @@ function RentableModal({ onClose }: { onClose: () => void }) {
             type="submit"
             form="rentable-form"
             name="_action"
-            value="create"
+            value={editionMode ? "edit" : "create"}
           >
             Salvar
           </Button>
@@ -130,29 +196,24 @@ function RentableModal({ onClose }: { onClose: () => void }) {
   );
 }
 
-function useModal(actionKey: string) {
-  const [isModalOpen, showModal] = useState(false);
-
-  const navigation = useNavigation();
-
-  const submitting = navigation.state === "submitting";
-  const action = navigation.formData?.get("_action");
-
-  useEffect(() => {
-    if (!submitting && action === actionKey) {
-      showModal(false);
-    }
-  }, [submitting, action, actionKey]);
-
-  return [isModalOpen, showModal] as const;
-}
-
 export default function Index() {
   const { rentables } = useLoaderData<typeof loader>();
+  const actionData = useActionData();
+  const navigation = useNavigation();
 
-  const [edit, setEdit] = useState<number | null>(null);
+  const { isOpen, onOpen, onClose } = useDisclosure();
+  const [editData, setEditData] = useState<Omit<
+    Rentable,
+    "createdAt" | "updatedAt"
+  > | null>(null);
 
-  const [isModalOpen, showModal] = useModal("create");
+  const isAdding = navigation.state === "submitting";
+
+  useEffect(() => {
+    if (!isAdding && !actionData?.fieldErrors) {
+      onClose();
+    }
+  }, [isAdding, actionData, onClose]);
 
   return (
     <>
@@ -161,7 +222,7 @@ export default function Index() {
         <Heading as="h1" size="2xl">
           Estoque
         </Heading>
-        <Button maxW="fit-content" onClick={() => showModal(true)}>
+        <Button maxW="fit-content" onClick={onOpen}>
           Criar novo item
         </Button>
         <TableContainer>
@@ -170,7 +231,9 @@ export default function Index() {
               <Tr>
                 <Th>Id</Th>
                 <Th>Nome</Th>
+                <Th>Descrição</Th>
                 <Th>Quantidade</Th>
+                <Th>Preço unitário</Th>
                 <Th>
                   <VisuallyHidden>Edit</VisuallyHidden>
                 </Th>
@@ -181,42 +244,21 @@ export default function Index() {
                 <Tr key={rentable.id}>
                   <Td>{rentable.id}</Td>
                   <Td> {rentable.name}</Td>
-                  <Td>
-                    {edit === rentable.id ? (
-                      <Form method="put" onSubmit={() => setEdit(null)}>
-                        <HStack justify="start">
-                          <input type="hidden" name="id" value={rentable.id} />
-                          <input type="hidden" name="_action" value="edit" />
-                          <Input
-                            type="number"
-                            defaultValue={rentable.count}
-                            name="count"
-                            maxW="150px"
-                          />
-                          <IconButton
-                            type="submit"
-                            name="_action"
-                            value="edit"
-                            aria-label="Editar"
-                            icon={<CheckIcon />}
-                            rounded="full"
-                          />
-                        </HStack>
-                      </Form>
-                    ) : (
-                      rentable.count
-                    )}
-                  </Td>
+                  <Td> {rentable.description}</Td>
+                  <Td>{rentable.count}</Td>
+                  <Td>R$ {rentable.unitPrice}</Td>
                   <Td>
                     <Flex>
-                      <Button
+                      <IconButton
+                        aria-label="Editar"
+                        icon={<EditIcon />}
                         variant="ghost"
                         size="sm"
-                        onClick={() => setEdit(rentable.id)}
-                      >
-                        Editar
-                      </Button>
-
+                        onClick={() => {
+                          setEditData(rentable);
+                          onOpen();
+                        }}
+                      />
                       <Form method="delete">
                         <input type="hidden" name="id" value={rentable.id} />
                         <input type="hidden" name="_action" value="delete" />
@@ -239,7 +281,13 @@ export default function Index() {
             </Tbody>
           </Table>
         </TableContainer>
-        {isModalOpen && <RentableModal onClose={() => showModal(false)} />}
+        {isOpen && (
+          <RentableModal
+            onClose={onClose}
+            values={editData}
+            editionMode={Boolean(editData)}
+          />
+        )}
       </Container>
     </>
   );

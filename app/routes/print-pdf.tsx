@@ -6,8 +6,9 @@ const saveAsPdf = async (url: string, cookie: string | null) => {
     executablePath: "/usr/bin/google-chrome",
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
-  const page = await browser.newPage();
 
+  const page = await browser.newPage();
+  console.log("cookie", cookie);
   if (cookie) {
     await page.setExtraHTTPHeaders({
       Cookie: cookie,

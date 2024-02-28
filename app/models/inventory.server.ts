@@ -7,12 +7,14 @@ export async function getRentables() {
 }
 
 export async function createRentable(
-  rentable: Pick<Rentable, "name" | "count">,
+  rentable: Pick<Rentable, "name" | "count" | "description" | "unitPrice">,
 ) {
   return prisma.rentable.create({ data: rentable });
 }
 
-export async function editRentable(rentable: Pick<Rentable, "id" | "count">) {
+export async function editRentable(
+  rentable: Pick<Rentable, "name" | "count" | "description" | "unitPrice" | "id">,
+) {
   return prisma.rentable.update({ data: rentable, where: { id: rentable.id } });
 }
 
