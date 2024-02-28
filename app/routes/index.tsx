@@ -31,15 +31,13 @@ function Card({
 }: {
   rentable: Omit<Rentable, "createdAt" | "updatedAt">;
 }) {
-  const fetcher = useFetcher<{ inventory: number | null }>();
+  const { load, data } = useFetcher<{ inventory: number | null }>();
 
   useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load(`/rentablesinventory/?id=${rentable.id}`);
-    }
-  }, [fetcher, rentable.id]);
+    load(`/rentablesinventory/?id=${rentable.id}`);
+  }, [load, rentable.id]);
 
-  const totalRented = fetcher.data?.inventory ?? 0;
+  const totalRented = data?.inventory ?? 0;
 
   const color = useColorModeValue("green.300", "green.600");
 
