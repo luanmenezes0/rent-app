@@ -1,4 +1,3 @@
 node_modules
 cypress/.eslintrc.js
 build
-remix.config.js

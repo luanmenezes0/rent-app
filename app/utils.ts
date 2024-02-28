@@ -33,17 +33,24 @@ export function safeRedirect(
  * @param {string} id The route id
  * @returns {JSON|undefined} The router data or undefined if not found
  */
-export function useMatchesData(id: string) {
+export function useMatchesData(
+  id: string,
+): Record<string, unknown> | undefined {
   const matchingRoutes = useMatches();
   const route = useMemo(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id],
   );
-  return route?.data as any;
+  return route?.data as Record<string, unknown>;
 }
 
-function isUser(user: any): user is User {
-  return user && typeof user === "object" && typeof user.email === "string";
+function isUser(user: unknown): user is User {
+  return (
+    user != null &&
+    typeof user === "object" &&
+    "email" in user &&
+    typeof user.email === "string"
+  );
 }
 
 export function useOptionalUser(): User | undefined {
