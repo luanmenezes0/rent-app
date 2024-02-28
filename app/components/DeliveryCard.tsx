@@ -49,7 +49,9 @@ export default function DeliveryCard({
   const iconBgColor = useColorModeValue("gray.200", "gray.600");
 
   const navigation = useNavigation();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: { [keyName: string]: string };
+  }>();
 
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);

@@ -8,7 +8,7 @@ import {
   Wrap,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
@@ -18,7 +18,7 @@ import type { Rentable } from "~/models/inventory.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const rentables = await getRentables();

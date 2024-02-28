@@ -40,6 +40,7 @@ export default function handleRequest(
           responseHeaders.set("Content-Type", "text/html");
 
           resolve(
+            // @ts-ignore
             new Response(bodyWithStyles, {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,

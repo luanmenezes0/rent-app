@@ -1,4 +1,4 @@
-import type { LoaderArgs } from "@remix-run/server-runtime";
+import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
 import puppeteer from "puppeteer";
 
 const saveAsPdf = async (url: string, cookie: string | null) => {
@@ -28,7 +28,7 @@ const saveAsPdf = async (url: string, cookie: string | null) => {
   return result;
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const cookie = request.headers.get("Cookie");
 
   const url = new URL(request.url);

@@ -1,5 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -17,7 +17,7 @@ export const links = () => {
   return [{ rel: "stylesheet", href: styles }];
 };
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     user: await getUser(request),
   });

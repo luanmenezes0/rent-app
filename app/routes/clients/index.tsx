@@ -19,7 +19,7 @@ import {
   useDisclosure,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -43,7 +43,7 @@ import { requireUserId } from "~/session.server";
 import { PAGINATION_LIMIT } from "~/utils";
 import { clientValidator } from "~/validators/clientValidation";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const url = new URL(request.url);
@@ -56,7 +56,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({ clients: data, count });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -110,7 +110,9 @@ export default function Clients() {
   const [searchParams] = useSearchParams();
 
   const { onClose, isOpen, onOpen } = useDisclosure();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: { [keyName: string]: string };
+  }>();
   const navigation = useNavigation();
 
   const isAdding = navigation.state === "submitting";

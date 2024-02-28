@@ -35,7 +35,7 @@ import {
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
@@ -49,7 +49,7 @@ import {
 import { requireUserId } from "~/session.server";
 import { rentableValidator } from "~/validators/rentableValidator";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const rentables = await getRentables();
@@ -57,7 +57,7 @@ export async function loader({ request }: LoaderArgs) {
   return { rentables };
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -213,7 +213,9 @@ function RentableModal({
 
 export default function Index() {
   const { rentables } = useLoaderData<typeof loader>();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: { [keyName: string]: string };
+  }>();
   const navigation = useNavigation();
 
   const { isOpen, onOpen, onClose } = useDisclosure();

@@ -1,11 +1,11 @@
 import { Container, Heading } from "@chakra-ui/react";
 import { useLoaderData } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
 import Header from "~/components/Header";
 import { prisma } from "~/db.server";
 import { requireUserId } from "~/session.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const users = await prisma.user.findMany();
@@ -13,7 +13,7 @@ export async function loader({ request }: LoaderArgs) {
   return { users };
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();

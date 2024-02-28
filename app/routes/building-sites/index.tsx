@@ -10,7 +10,7 @@ import {
   Tr,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
@@ -21,7 +21,7 @@ import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
 import { PAGINATION_LIMIT } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const url = new URL(request.url);
@@ -38,7 +38,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({ buildingSites: data, count });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   return null;

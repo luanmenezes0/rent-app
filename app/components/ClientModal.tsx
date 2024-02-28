@@ -32,9 +32,11 @@ export function ClientModal(props: ClientModalProps) {
 
   const [label, setLabel] = useState<"CNPJ" | "CPF">("CPF");
 
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ fieldErrors: { [key: string]: string } }>();
 
   const { data: actionData } = fetcher;
+
+  console.log(actionData);
 
   const isSubmitting = fetcher.state === "submitting";
 

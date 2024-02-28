@@ -1,7 +1,7 @@
 import { Container, Heading, VStack } from "@chakra-ui/react";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 
 import DeliveryCard from "~/components/DeliveryCard";
@@ -10,13 +10,13 @@ import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 import { groupBy } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   return json({ deliveries: await getDeliveries() });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();

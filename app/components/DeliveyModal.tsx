@@ -72,7 +72,9 @@ export function DeliveyModal({
   values,
   rentables,
 }: DeliveryModalProps) {
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: { [keyName: string]: string };
+  }>();
 
   let mappedRentables = [];
 

@@ -12,7 +12,7 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link as RemixLink,
@@ -43,7 +43,7 @@ import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 import { DeliveyModal } from "../../components/DeliveyModal";
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.buildingId, "buldingId not found");
@@ -61,7 +61,7 @@ export async function loader({ request, params }: LoaderArgs) {
   return json({ buildingSite, inventory, rentables });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -179,7 +179,7 @@ export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
   const fetcher = useFetchers();
-  const actionData = useActionData();
+  const actionData = useActionData<{ fieldErrors: { [key: string]: string } }>();
 
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [showBuildingModal, setShowBuildingModal] = useState(false);
