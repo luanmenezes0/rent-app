@@ -1,6 +1,7 @@
 import { Container, Heading } from "@chakra-ui/react";
 import { useLoaderData } from "@remix-run/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
+
 import Header from "~/components/Header";
 import { prisma } from "~/db.server";
 import { requireUserId } from "~/session.server";

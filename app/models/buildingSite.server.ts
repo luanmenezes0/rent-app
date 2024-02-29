@@ -1,4 +1,5 @@
 import type { BuildingSite } from "@prisma/client";
+
 import { prisma } from "~/db.server";
 
 export async function getBuildingSites({

@@ -16,8 +16,8 @@ import {
   useSearchParams,
   type MetaFunction,
 } from "@remix-run/react";
-
 import { validationError } from "remix-validated-form";
+
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect } from "~/utils";
@@ -89,7 +89,6 @@ export default function LoginPage() {
             <Input
               id="email"
               required
-              autoFocus
               name="email"
               type="email"
               autoComplete="email"

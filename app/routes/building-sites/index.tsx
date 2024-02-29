@@ -13,8 +13,8 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import Header from "~/components/Header";
 import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";

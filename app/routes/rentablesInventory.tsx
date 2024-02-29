@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
+
 import { getInventory } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 

@@ -37,6 +37,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const pdf = await saveAsPdf(`${url.origin}/deliveries/${deliveryId}`, cookie);
 
-  let headers = new Headers({ "Content-Type": "application/pdf" });
+  const headers = new Headers({ "Content-Type": "application/pdf" });
   return new Response(pdf, { status: 200, headers });
 }

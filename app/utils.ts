@@ -95,3 +95,5 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
   [BuildingSiteStatus.ACTIVE]: "Ativa",
   [BuildingSiteStatus.INACTIVE]: "Inativa",
 };
+
+export type OmitDate<T> = Omit<T, "createdAt" | "updatedAt">;

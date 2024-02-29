@@ -1,6 +1,7 @@
 import { ChevronLeftIcon, ChevronRightIcon } from "@chakra-ui/icons";
 import { Button, Flex, VisuallyHidden } from "@chakra-ui/react";
 import { Link, useSearchParams } from "@remix-run/react";
+
 import { PAGINATION_LIMIT } from "~/utils";
 
 export function setSearchParamsString(
@@ -36,7 +37,7 @@ export function PaginationBar({ total }: { total: number }) {
   const halfMaxPages = Math.floor(maxPages / 2);
   const canPageBackwards = $skip > 0;
   const canPageForwards = $skip + $top < total;
-  const pageNumbers = [] as Array<number>;
+  const pageNumbers = [] as number[];
   if (totalPages <= maxPages) {
     for (let i = 1; i <= totalPages; i++) {
       pageNumbers.push(i);

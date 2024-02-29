@@ -9,12 +9,12 @@ import {
 } from "@chakra-ui/react";
 import { useRef } from "react";
 
-type AlertDialogProps = {
+interface AlertDialogProps {
   onDelete: () => void;
   onClose: () => void;
   isOpen: boolean;
   title: string;
-};
+}
 
 export function MyAlertDialog({
   onDelete,
@@ -22,12 +22,11 @@ export function MyAlertDialog({
   isOpen,
   title,
 }: AlertDialogProps) {
-  const cancelRef = useRef<HTMLButtonElement>();
+  const cancelRef = useRef<HTMLButtonElement>(null);
 
   return (
     <AlertDialog
       isOpen={isOpen}
-      // @ts-ignore
       leastDestructiveRef={cancelRef}
       onClose={onClose}
     >
@@ -41,7 +40,6 @@ export function MyAlertDialog({
             revertida.
           </AlertDialogBody>
           <AlertDialogFooter>
-            {/* @ts-ignore */}
             <Button ref={cancelRef} onClick={onClose}>
               Cancelar
             </Button>

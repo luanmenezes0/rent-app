@@ -26,6 +26,7 @@ import {
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import { ClientModal } from "~/components/ClientModal";
@@ -106,7 +107,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
   const actionData = useActionData<{
-    fieldErrors: { [keyName: string]: string };
+    fieldErrors: Record<string, string>;
   }>();
   const navigation = useNavigation();
 
@@ -209,10 +210,8 @@ export default function Client() {
           </Table>
         </TableContainer>
       </Container>
-      {show && (
-        <BuildingSiteModal client={client} onClose={() => setShow(false)} />
-      )}
-      {isOpen && <ClientModal onClose={onClose} editionMode values={client} />}
+      {show ? <BuildingSiteModal client={client} onClose={() => setShow(false)} /> : null}
+      {isOpen ? <ClientModal onClose={onClose} editionMode values={client} /> : null}
     </>
   );
 }

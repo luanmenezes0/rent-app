@@ -22,7 +22,9 @@ import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
+
 import type { Rentable } from "~/models/inventory.server";
+import { OmitDate } from "~/utils";
 
 function SelectArea({
   rentableId,
@@ -61,8 +63,10 @@ interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
   editionMode?: boolean;
-  values?: Delivery & { units: Array<DeliveryUnit & { rentable: Rentable }> };
-  rentables: Omit<Rentable, "createdAt" | "updatedAt">[];
+  values?: OmitDate<Delivery> & {
+    units: (OmitDate<DeliveryUnit> & { rentable: OmitDate<Rentable> })[];
+  };
+  rentables: OmitDate<Rentable>[];
 }
 
 export function DeliveyModal({
@@ -73,7 +77,7 @@ export function DeliveyModal({
   rentables,
 }: DeliveryModalProps) {
   const actionData = useActionData<{
-    fieldErrors: { [keyName: string]: string };
+    fieldErrors: Record<string, string>;
   }>();
 
   let mappedRentables = [];
@@ -127,14 +131,14 @@ export function DeliveyModal({
                 name="buildingSiteId"
                 value={buildingSiteId}
               />
-              {actionData?.fieldErrors?.count && (
+              {actionData?.fieldErrors?.count ? (
                 <Alert status="error" borderRadius="16">
                   <AlertIcon />
                   <AlertDescription>
                     {actionData?.fieldErrors?.count}
                   </AlertDescription>
                 </Alert>
-              )}
+              ) : null}
               {mappedRentables.map((rentable) => (
                 <FormControl
                   display="grid"

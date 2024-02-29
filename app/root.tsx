@@ -1,4 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
+import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction, LoaderFunctionArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
@@ -9,10 +10,11 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+
 import styles from "~/styles/index.css";
+
 import { getUser } from "./session.server";
 import theme from "./theme";
-import { cssBundleHref } from "@remix-run/css-bundle";
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },

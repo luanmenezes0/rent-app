@@ -38,6 +38,7 @@ import {
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
+
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
 import {
@@ -214,7 +215,7 @@ function RentableModal({
 export default function Index() {
   const { rentables } = useLoaderData<typeof loader>();
   const actionData = useActionData<{
-    fieldErrors: { [keyName: string]: string };
+    fieldErrors: Record<string, string>;
   }>();
   const navigation = useNavigation();
 
@@ -283,13 +284,11 @@ export default function Index() {
             </Tbody>
           </Table>
         </TableContainer>
-        {isOpen && (
-          <RentableModal
+        {isOpen ? <RentableModal
             onClose={onClose}
             values={editData}
             editionMode={Boolean(editData)}
-          />
-        )}
+          /> : null}
       </Container>
     </>
   );

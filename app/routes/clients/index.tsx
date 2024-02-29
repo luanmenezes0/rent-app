@@ -30,8 +30,8 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { useEffect } from "react";
-
 import { validationError } from "remix-validated-form";
+
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import {
@@ -111,7 +111,7 @@ export default function Clients() {
 
   const { onClose, isOpen, onOpen } = useDisclosure();
   const actionData = useActionData<{
-    fieldErrors: { [keyName: string]: string };
+    fieldErrors: Record<string, string>;
   }>();
   const navigation = useNavigation();
 
@@ -199,7 +199,7 @@ export default function Clients() {
         </TableContainer>
         <PaginationBar total={count} />
       </Container>
-      {isOpen && <ClientModal onClose={onClose} />}
+      {isOpen ? <ClientModal onClose={onClose} /> : null}
     </>
   );
 }
