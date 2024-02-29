@@ -19,6 +19,7 @@ import {
   useDisclosure,
   VisuallyHidden,
 } from "@chakra-ui/react";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
@@ -85,14 +86,19 @@ export async function action({ request }: ActionFunctionArgs) {
         });
 
         return redirect(`/clients/${client.id}`);
-      } catch (e: any) {
-        if (e.meta?.target?.includes("registrationNumber")) {
-          return validationError({
-            fieldErrors: {
-              registrationNumber:
-                "Já existe um cliente cadastrado com este CPF ou CNPJ.",
-            },
-          });
+      } catch (e) {
+        if (e instanceof PrismaClientKnownRequestError) {
+          if (e.code === "P2002") {
+            const errors = e.meta?.target as string[];
+            if (errors.includes("registrationNumber")) {
+              return validationError({
+                fieldErrors: {
+                  registrationNumber:
+                    "Já existe um cliente cadastrado com este CPF ou CNPJ.",
+                },
+              });
+            }
+          }
         }
       }
 

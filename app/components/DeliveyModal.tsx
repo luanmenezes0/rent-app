@@ -20,11 +20,11 @@ import {
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import { useState } from "react";
 
 import type { Rentable } from "~/models/inventory.server";
-import { OmitDate } from "~/utils";
 
 function SelectArea({
   rentableId,
@@ -63,10 +63,10 @@ interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
   editionMode?: boolean;
-  values?: OmitDate<Delivery> & {
-    units: (OmitDate<DeliveryUnit> & { rentable: OmitDate<Rentable> })[];
+  values?: SerializeFrom<Delivery> & {
+    units: (SerializeFrom<DeliveryUnit> & { rentable: SerializeFrom<Rentable> })[];
   };
-  rentables: OmitDate<Rentable>[];
+  rentables: SerializeFrom<Rentable>[];
 }
 
 export function DeliveyModal({

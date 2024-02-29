@@ -35,7 +35,11 @@ import {
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/server-runtime";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  SerializeFrom,
+} from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 
@@ -121,7 +125,7 @@ function RentableModal({
 }: {
   onClose: () => void;
   editionMode?: boolean;
-  values: Omit<Rentable, "createdAt" | "updatedAt"> | null;
+  values: SerializeFrom<Rentable> | null;
 }) {
   return (
     <Modal size="md" isOpen onClose={onClose}>
@@ -220,10 +224,9 @@ export default function Index() {
   const navigation = useNavigation();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [editData, setEditData] = useState<Omit<
-    Rentable,
-    "createdAt" | "updatedAt"
-  > | null>(null);
+  const [editData, setEditData] = useState<SerializeFrom<Rentable> | null>(
+    null,
+  );
 
   const isAdding = navigation.state === "submitting";
 
@@ -284,11 +287,13 @@ export default function Index() {
             </Tbody>
           </Table>
         </TableContainer>
-        {isOpen ? <RentableModal
+        {isOpen ? (
+          <RentableModal
             onClose={onClose}
             values={editData}
             editionMode={Boolean(editData)}
-          /> : null}
+          />
+        ) : null}
       </Container>
     </>
   );

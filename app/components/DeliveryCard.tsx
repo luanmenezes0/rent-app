@@ -16,20 +16,20 @@ import {
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit, Rentable } from "@prisma/client";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { GrDeliver, GrPrint } from "react-icons/gr";
 
-import { OmitDate } from "~/utils";
 
 import { MyAlertDialog } from "./AlertDialog";
 import { DeliveyModal } from "./DeliveyModal";
 
 interface DeliveryCardProps {
-  delivery: OmitDate<Delivery> & {
-    units: (OmitDate<DeliveryUnit> & { rentable: OmitDate<Rentable> })[];
+  delivery: SerializeFrom<Delivery> & {
+    units: (SerializeFrom<DeliveryUnit> & { rentable: SerializeFrom<Rentable> })[];
   };
-  rentables: OmitDate<Rentable>[];
+  rentables: SerializeFrom<Rentable>[];
 }
 const initialState = { show: false, editing: false, data: null };
 interface State {

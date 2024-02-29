@@ -18,12 +18,13 @@ import {
 } from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 
 interface ClientModalProps {
   onClose: () => void;
   editionMode?: boolean;
-  values?: Omit<Client, "createdAt" | "updatedAt">;
+  values?: SerializeFrom<Client>;
 }
 
 export function ClientModal(props: ClientModalProps) {

@@ -75,6 +75,7 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function groupBy<T>(arr: T[], fn: (item: T) => any) {
   return arr.reduce<Record<string, T[]>>((prev, curr) => {
     const groupKey = fn(curr);
@@ -95,5 +96,3 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
   [BuildingSiteStatus.ACTIVE]: "Ativa",
   [BuildingSiteStatus.INACTIVE]: "Inativa",
 };
-
-export type OmitDate<T> = Omit<T, "createdAt" | "updatedAt">;
