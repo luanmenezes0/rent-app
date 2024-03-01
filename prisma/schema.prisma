@@ -8,8 +8,9 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id    String  @id @default(cuid())
+  email String  @unique
+  role  String? @default("USER")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -73,7 +74,7 @@ model DeliveryUnit {
   deliveryType   Int
   rentable       Rentable     @relation(fields: [rentableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   rentableId     Int
-  Delivery       Delivery?    @relation(fields: [deliveryId], references: [id])
+  Delivery       Delivery?    @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deliveryId     Int?
   buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
   buildingSiteId Int
