@@ -1,5 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import type { LoaderArgs } from "@remix-run/node";
+import { cssBundleHref } from "@remix-run/css-bundle";
+import type { LinksFunction, LoaderFunctionArgs} from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -9,15 +10,18 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+
 import styles from "~/styles/index.css";
+
 import { getUser } from "./session.server";
 import theme from "./theme";
 
-export const links = () => {
-  return [{ rel: "stylesheet", href: styles }];
-};
+export const links: LinksFunction = () => [
+  { rel: "stylesheet", href: styles },
+  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
+];
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   return json({
     user: await getUser(request),
   });
@@ -25,7 +29,7 @@ export async function loader({ request }: LoaderArgs) {
 
 function Document({
   children,
-  title = "App title",
+  title = "Rent App",
 }: {
   children: React.ReactNode;
   title?: string;

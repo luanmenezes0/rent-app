@@ -15,7 +15,7 @@ import {
   VisuallyHidden,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Link,
@@ -26,6 +26,7 @@ import {
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import { ClientModal } from "~/components/ClientModal";
@@ -36,7 +37,7 @@ import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 import { clientValidator } from "~/validators/clientValidation";
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
   invariant(params.clientId, "clientId not found");
 
@@ -49,7 +50,7 @@ export async function loader({ request, params }: LoaderArgs) {
   return json({ client });
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.clientId, "clientId not found");
@@ -105,7 +106,9 @@ export async function action({ request, params }: ActionArgs) {
 
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: Record<string, string>;
+  }>();
   const navigation = useNavigation();
 
   const { isOpen, onClose, onOpen } = useDisclosure();
@@ -207,10 +210,8 @@ export default function Client() {
           </Table>
         </TableContainer>
       </Container>
-      {show && (
-        <BuildingSiteModal client={client} onClose={() => setShow(false)} />
-      )}
-      {isOpen && <ClientModal onClose={onClose} editionMode values={client} />}
+      {show ? <BuildingSiteModal client={client} onClose={() => setShow(false)} /> : null}
+      {isOpen ? <ClientModal onClose={onClose} editionMode values={client} /> : null}
     </>
   );
 }

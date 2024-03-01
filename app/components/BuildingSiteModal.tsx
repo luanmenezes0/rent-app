@@ -17,15 +17,17 @@ import {
 } from "@chakra-ui/react";
 import type { BuildingSite, Client } from "@prisma/client";
 import { useActionData, useFetcher } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import { useState } from "react";
+
 import { BuildingSiteStatus } from "~/utils";
 
-type Props = {
+interface Props {
   onClose: () => void;
-  client: Omit<Client, "updatedAt" | "createdAt">;
+  client: SerializeFrom<Client>;
   editionMode?: boolean;
-  values?: Omit<BuildingSite, "createdAt" | "updatedAt">;
-};
+  values?: SerializeFrom<BuildingSite>;
+}
 
 export default function BuildingSiteModal(props: Props) {
   const { onClose, client, editionMode = false, values } = props;
@@ -74,11 +76,9 @@ export default function BuildingSiteModal(props: Props) {
                       : `OBRA ${client.name.split(" ")[0]}`
                   }
                 />
-                {actionData?.fieldErrors?.name && (
-                  <FormErrorMessage>
+                {actionData?.fieldErrors?.name ? <FormErrorMessage>
                     {actionData?.fieldErrors?.name}
-                  </FormErrorMessage>
-                )}
+                  </FormErrorMessage> : null}
               </FormControl>
               <FormControl
                 isInvalid={Boolean(actionData?.fieldErrors?.address)}
@@ -94,11 +94,9 @@ export default function BuildingSiteModal(props: Props) {
                   }
                   required
                 />
-                {actionData?.fieldErrors?.address && (
-                  <FormErrorMessage>
+                {actionData?.fieldErrors?.address ? <FormErrorMessage>
                     {actionData?.fieldErrors?.address}
-                  </FormErrorMessage>
-                )}
+                  </FormErrorMessage> : null}
               </FormControl>
               <FormControl display="flex" alignItems="baseline">
                 <FormLabel htmlFor="status">Ativa</FormLabel>

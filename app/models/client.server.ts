@@ -1,4 +1,5 @@
 import type { Client } from "@prisma/client";
+
 import { prisma } from "~/db.server";
 
 export async function getClients({

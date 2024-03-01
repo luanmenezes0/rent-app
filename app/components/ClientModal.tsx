@@ -1,6 +1,3 @@
-import type { Client } from "@prisma/client";
-import { useFetcher } from "@remix-run/react";
-
 import {
   Button,
   FormControl,
@@ -19,12 +16,15 @@ import {
   RadioGroup,
   VStack,
 } from "@chakra-ui/react";
+import type { Client } from "@prisma/client";
+import { useFetcher } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 
 interface ClientModalProps {
   onClose: () => void;
   editionMode?: boolean;
-  values?: Omit<Client, "createdAt" | "updatedAt">;
+  values?: SerializeFrom<Client>;
 }
 
 export function ClientModal(props: ClientModalProps) {
@@ -32,9 +32,11 @@ export function ClientModal(props: ClientModalProps) {
 
   const [label, setLabel] = useState<"CNPJ" | "CPF">("CPF");
 
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ fieldErrors: Record<string, string> }>();
 
   const { data: actionData } = fetcher;
+
+  console.log(actionData);
 
   const isSubmitting = fetcher.state === "submitting";
 
@@ -116,11 +118,9 @@ export function ClientModal(props: ClientModalProps) {
                   }
                 }}
               />
-              {actionData?.fieldErrors?.registrationNumber && (
-                <FormErrorMessage>
+              {actionData?.fieldErrors?.registrationNumber ? <FormErrorMessage>
                   {actionData?.fieldErrors?.registrationNumber}
-                </FormErrorMessage>
-              )}
+                </FormErrorMessage> : null}
             </FormControl>
             <VStack spacing={2}>
               <input type="hidden" name="id" defaultValue={values?.id} />
@@ -132,11 +132,9 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.name}
                 />
-                {actionData?.fieldErrors?.name && (
-                  <FormErrorMessage>
+                {actionData?.fieldErrors?.name ? <FormErrorMessage>
                     {actionData?.fieldErrors?.name}
-                  </FormErrorMessage>
-                )}
+                  </FormErrorMessage> : null}
               </FormControl>
               <FormControl
                 isInvalid={Boolean(actionData?.fieldErrors?.address)}
@@ -148,11 +146,9 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.address}
                 />
-                {actionData?.fieldErrors?.address && (
-                  <FormErrorMessage>
+                {actionData?.fieldErrors?.address ? <FormErrorMessage>
                     {actionData?.fieldErrors?.address}
-                  </FormErrorMessage>
-                )}
+                  </FormErrorMessage> : null}
               </FormControl>
               <HStack>
                 <FormControl
@@ -165,11 +161,9 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.neighborhood}
                   />
-                  {actionData?.fieldErrors?.neighborhood && (
-                    <FormErrorMessage>
+                  {actionData?.fieldErrors?.neighborhood ? <FormErrorMessage>
                       {actionData?.fieldErrors?.neighborhood}
-                    </FormErrorMessage>
-                  )}
+                    </FormErrorMessage> : null}
                 </FormControl>
 
                 <FormControl isInvalid={Boolean(actionData?.fieldErrors?.city)}>
@@ -180,11 +174,9 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.city ?? ""}
                   />
-                  {actionData?.fieldErrors?.city && (
-                    <FormErrorMessage>
+                  {actionData?.fieldErrors?.city ? <FormErrorMessage>
                       {actionData?.fieldErrors?.city}
-                    </FormErrorMessage>
-                  )}
+                    </FormErrorMessage> : null}
                 </FormControl>
               </HStack>
               <HStack>
@@ -200,11 +192,9 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     type="tel"
                   />
-                  {actionData?.fieldErrors?.phoneNumber && (
-                    <FormErrorMessage>
+                  {actionData?.fieldErrors?.phoneNumber ? <FormErrorMessage>
                       {actionData?.fieldErrors?.phoneNumber}
-                    </FormErrorMessage>
-                  )}
+                    </FormErrorMessage> : null}
                 </FormControl>
 
                 <FormControl
@@ -217,11 +207,9 @@ export function ClientModal(props: ClientModalProps) {
                     defaultValue={values?.state ?? ""}
                     required
                   />
-                  {actionData?.fieldErrors?.state && (
-                    <FormErrorMessage>
+                  {actionData?.fieldErrors?.state ? <FormErrorMessage>
                       {actionData?.fieldErrors?.state}
-                    </FormErrorMessage>
-                  )}
+                    </FormErrorMessage> : null}
                 </FormControl>
               </HStack>
             </VStack>

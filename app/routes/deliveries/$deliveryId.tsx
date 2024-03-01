@@ -9,7 +9,7 @@ import {
   Tr,
   VStack,
 } from "@chakra-ui/react";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -18,7 +18,7 @@ import invariant from "tiny-invariant";
 import { getDelivery } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.deliveryId, "buldingId not found");

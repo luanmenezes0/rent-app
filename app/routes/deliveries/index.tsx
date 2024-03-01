@@ -1,22 +1,36 @@
-import { Container, Heading, VStack } from "@chakra-ui/react";
+import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
+import {
+  Box,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  Icon,
+  IconButton,
+  VStack,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import { Link, useLoaderData } from "@remix-run/react";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+} from "@remix-run/server-runtime";
 import dayjs from "dayjs";
+import { GrDeliver, GrPrint } from "react-icons/gr";
 
-import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 import { groupBy } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   return json({ deliveries: await getDeliveries() });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -41,6 +55,9 @@ export async function action({ request }: ActionArgs) {
 export default function Deliveries() {
   const { deliveries } = useLoaderData<typeof loader>();
 
+  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const iconBgColor = useColorModeValue("gray.200", "gray.600");
+
   const groupedBy = Object.entries(
     groupBy(
       deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
@@ -61,7 +78,60 @@ export default function Deliveries() {
               {dayjs(date).format("DD/MM/YYYY")}
             </Heading>
             {data.map((d) => (
-              <DeliveryCard delivery={d} key={d.id} hideActions />
+              <Flex
+                bgColor={cardColor}
+                gap={4}
+                key={d.id}
+                p="4"
+                borderRadius="8"
+                flexDirection={{ base: "column", md: "row" }}
+              >
+                <Flex
+                  justify="center"
+                  align="center"
+                  borderRadius="8"
+                  display={{ base: "none", md: "flex" }}
+                  p="2"
+                  bgColor={iconBgColor}
+                  h="min-content"
+                >
+                  <Icon color="gray.500" w={8} h={8} as={GrDeliver} />
+                </Flex>
+                <Box justifySelf="start" flexGrow={1}>
+                  <HStack pb="2" fontSize="14">
+                    <Heading as="h3" fontSize="14">
+                      {dayjs(d.date).format("DD/MM/YYYY HH:mm")}
+                    </Heading>
+                    {d.buildingSite ? (
+                      <Link to={`/building-sites/${d.buildingSite.id}`}>
+                        - {d.buildingSite.name}
+                      </Link>
+                    ) : null}
+                  </HStack>
+
+                  {d.units.map((u) => (
+                    <Flex align="center" gap="2" borderRadius="8" key={u.id}>
+                      {u.deliveryType === 1 ? (
+                        <TriangleUpIcon color="green" />
+                      ) : (
+                        <TriangleDownIcon color="red" />
+                      )}
+                      {u.rentable.name} - {Math.abs(u.count)}{" "}
+                    </Flex>
+                  ))}
+                </Box>
+                <div>
+                  <IconButton
+                    variant={"outline"}
+                    size={"sm"}
+                    aria-label={"Imprimir"}
+                    icon={<GrPrint />}
+                    as="a"
+                    target="_blank"
+                    href={`/print-pdf?deliveryId=${d.id}`}
+                  />
+                </div>
+              </Flex>
             ))}
           </VStack>
         ))}

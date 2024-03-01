@@ -20,8 +20,10 @@ import {
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import { useState } from "react";
+
 import type { Rentable } from "~/models/inventory.server";
 
 function SelectArea({
@@ -61,8 +63,10 @@ interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
   editionMode?: boolean;
-  values?: Delivery & { units: Array<DeliveryUnit & { rentable: Rentable }> };
-  rentables: Omit<Rentable, "createdAt" | "updatedAt">[];
+  values?: SerializeFrom<Delivery> & {
+    units: (SerializeFrom<DeliveryUnit> & { rentable: SerializeFrom<Rentable> })[];
+  };
+  rentables: SerializeFrom<Rentable>[];
 }
 
 export function DeliveyModal({
@@ -72,7 +76,9 @@ export function DeliveyModal({
   values,
   rentables,
 }: DeliveryModalProps) {
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: Record<string, string>;
+  }>();
 
   let mappedRentables = [];
 
@@ -125,14 +131,14 @@ export function DeliveyModal({
                 name="buildingSiteId"
                 value={buildingSiteId}
               />
-              {actionData?.fieldErrors?.count && (
+              {actionData?.fieldErrors?.count ? (
                 <Alert status="error" borderRadius="16">
                   <AlertIcon />
                   <AlertDescription>
                     {actionData?.fieldErrors?.count}
                   </AlertDescription>
                 </Alert>
-              )}
+              ) : null}
               {mappedRentables.map((rentable) => (
                 <FormControl
                   display="grid"

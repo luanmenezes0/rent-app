@@ -19,6 +19,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import { Form, NavLink } from "@remix-run/react";
+
 import { useUser } from "~/utils";
 
 export default function Header() {
@@ -73,16 +74,12 @@ export default function Header() {
           <Link as={NavLink} to="/deliveries">
             Remessas
           </Link>
-          {isAdmin && (
-            <Link as={NavLink} to="/admin/inventory">
+          {isAdmin ? <Link as={NavLink} to="/admin/inventory">
               Estoque
-            </Link>
-          )}
-          {isAdmin && (
-            <Link as={NavLink} to="/admin/users">
+            </Link> : null}
+          {isAdmin ? <Link as={NavLink} to="/admin/users">
               Usuários
-            </Link>
-          )}
+            </Link> : null}
         </HStack>
         <HStack>
           <Button onClick={toggleColorMode} variant="ghost">
@@ -153,16 +150,12 @@ export default function Header() {
             <Link as={NavLink} to="/deliveries">
               Remessas
             </Link>
-            {isAdmin && (
-              <Link as={NavLink} to="/admin/inventory">
+            {isAdmin ? <Link as={NavLink} to="/admin/inventory">
                 Estoque
-              </Link>
-            )}
-            {isAdmin && (
-              <Link as={NavLink} to="/admin/users">
+              </Link> : null}
+            {isAdmin ? <Link as={NavLink} to="/admin/users">
                 Usuários
-              </Link>
-            )}
+              </Link> : null}
           </VStack>
         </Box>
       ) : null}

@@ -1,13 +1,12 @@
 import { PassThrough } from "stream";
 
-import type { EntryContext } from "@remix-run/node";
-import { Response } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
-import isbot from "isbot";
-import { renderToPipeableStream } from "react-dom/server";
 import createEmotionCache from "@emotion/cache";
 import { CacheProvider as EmotionCacheProvider } from "@emotion/react";
 import createEmotionServer from "@emotion/server/create-instance";
+import { createReadableStreamFromReadable, type EntryContext } from "@remix-run/node";
+import { RemixServer } from "@remix-run/react";
+import isbot from "isbot";
+import { renderToPipeableStream } from "react-dom/server";
 
 const ABORT_DELAY = 5000;
 
@@ -41,7 +40,8 @@ export default function handleRequest(
           responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(bodyWithStyles, {
+            // @ts-expect-error - Remix types are incorrect?
+            new Response(createReadableStreamFromReadable(bodyWithStyles), {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
             }),

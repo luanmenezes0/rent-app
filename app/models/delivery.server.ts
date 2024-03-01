@@ -1,4 +1,5 @@
 import type { Delivery, DeliveryUnit } from "@prisma/client";
+
 import { prisma } from "~/db.server";
 
 export async function getDeliveries() {

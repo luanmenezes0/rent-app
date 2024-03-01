@@ -8,28 +8,28 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
   useActionData,
   useSearchParams,
-  type V2_MetaFunction,
+  type MetaFunction,
 } from "@remix-run/react";
-
 import { validationError } from "remix-validated-form";
+
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect } from "~/utils";
 import { loginValidator } from "~/validators/userValidator";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/notes");
 
@@ -55,7 +55,7 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [
     {
       title: "Login",
@@ -89,7 +89,6 @@ export default function LoginPage() {
             <Input
               id="email"
               required
-              autoFocus
               name="email"
               type="email"
               autoComplete="email"
