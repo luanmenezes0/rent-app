@@ -35,9 +35,14 @@ import {
   useLoaderData,
   useNavigation,
 } from "@remix-run/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/server-runtime";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+  SerializeFrom,
+} from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
+
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
 import {
@@ -49,7 +54,7 @@ import {
 import { requireUserId } from "~/session.server";
 import { rentableValidator } from "~/validators/rentableValidator";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const rentables = await getRentables();
@@ -57,7 +62,7 @@ export async function loader({ request }: LoaderArgs) {
   return { rentables };
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -120,7 +125,7 @@ function RentableModal({
 }: {
   onClose: () => void;
   editionMode?: boolean;
-  values: Omit<Rentable, "createdAt" | "updatedAt"> | null;
+  values: SerializeFrom<Rentable> | null;
 }) {
   return (
     <Modal size="md" isOpen onClose={onClose}>
@@ -213,14 +218,15 @@ function RentableModal({
 
 export default function Index() {
   const { rentables } = useLoaderData<typeof loader>();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: Record<string, string>;
+  }>();
   const navigation = useNavigation();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [editData, setEditData] = useState<Omit<
-    Rentable,
-    "createdAt" | "updatedAt"
-  > | null>(null);
+  const [editData, setEditData] = useState<SerializeFrom<Rentable> | null>(
+    null,
+  );
 
   const isAdding = navigation.state === "submitting";
 
@@ -281,13 +287,13 @@ export default function Index() {
             </Tbody>
           </Table>
         </TableContainer>
-        {isOpen && (
+        {isOpen ? (
           <RentableModal
             onClose={onClose}
             values={editData}
             editionMode={Boolean(editData)}
           />
-        )}
+        ) : null}
       </Container>
     </>
   );

@@ -19,7 +19,8 @@ import {
   useDisclosure,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
@@ -30,8 +31,8 @@ import {
   useSearchParams,
 } from "@remix-run/react";
 import { useEffect } from "react";
-
 import { validationError } from "remix-validated-form";
+
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import {
@@ -43,7 +44,7 @@ import { requireUserId } from "~/session.server";
 import { PAGINATION_LIMIT } from "~/utils";
 import { clientValidator } from "~/validators/clientValidation";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const url = new URL(request.url);
@@ -56,7 +57,7 @@ export async function loader({ request }: LoaderArgs) {
   return json({ clients: data, count });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -85,14 +86,19 @@ export async function action({ request }: ActionArgs) {
         });
 
         return redirect(`/clients/${client.id}`);
-      } catch (e: any) {
-        if (e.meta?.target?.includes("registrationNumber")) {
-          return validationError({
-            fieldErrors: {
-              registrationNumber:
-                "Já existe um cliente cadastrado com este CPF ou CNPJ.",
-            },
-          });
+      } catch (e) {
+        if (e instanceof PrismaClientKnownRequestError) {
+          if (e.code === "P2002") {
+            const errors = e.meta?.target as string[];
+            if (errors.includes("registrationNumber")) {
+              return validationError({
+                fieldErrors: {
+                  registrationNumber:
+                    "Já existe um cliente cadastrado com este CPF ou CNPJ.",
+                },
+              });
+            }
+          }
         }
       }
 
@@ -110,7 +116,9 @@ export default function Clients() {
   const [searchParams] = useSearchParams();
 
   const { onClose, isOpen, onOpen } = useDisclosure();
-  const actionData = useActionData();
+  const actionData = useActionData<{
+    fieldErrors: Record<string, string>;
+  }>();
   const navigation = useNavigation();
 
   const isAdding = navigation.state === "submitting";
@@ -197,7 +205,7 @@ export default function Clients() {
         </TableContainer>
         <PaginationBar total={count} />
       </Container>
-      {isOpen && <ClientModal onClose={onClose} />}
+      {isOpen ? <ClientModal onClose={onClose} /> : null}
     </>
   );
 }

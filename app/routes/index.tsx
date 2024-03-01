@@ -8,7 +8,7 @@ import {
   Wrap,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { LoaderArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
@@ -18,7 +18,7 @@ import type { Rentable } from "~/models/inventory.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   const rentables = await getRentables();
@@ -26,20 +26,14 @@ export async function loader({ request }: LoaderArgs) {
   return json({ rentables });
 }
 
-function Card({
-  rentable,
-}: {
-  rentable: Omit<Rentable, "createdAt" | "updatedAt">;
-}) {
-  const fetcher = useFetcher<{ inventory: number | null }>();
+function Card({ rentable }: { rentable: SerializeFrom<Rentable> }) {
+  const { load, data } = useFetcher<{ inventory: number | null }>();
 
   useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load(`/rentablesinventory/?id=${rentable.id}`);
-    }
-  }, [fetcher, rentable.id]);
+    load(`/rentablesinventory/?id=${rentable.id}`);
+  }, [load, rentable.id]);
 
-  const totalRented = fetcher.data?.inventory ?? 0;
+  const totalRented = data?.inventory ?? 0;
 
   const color = useColorModeValue("green.300", "green.600");
 

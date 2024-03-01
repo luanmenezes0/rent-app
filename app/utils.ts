@@ -41,11 +41,16 @@ export function useMatchesData(
     () => matchingRoutes.find((route) => route.id === id),
     [matchingRoutes, id],
   );
-  return route?.data;
+  return route?.data as Record<string, unknown>;
 }
 
-function isUser(user: any): user is User {
-  return user && typeof user === "object" && typeof user.email === "string";
+function isUser(user: unknown): user is User {
+  return (
+    user != null &&
+    typeof user === "object" &&
+    "email" in user &&
+    typeof user.email === "string"
+  );
 }
 
 export function useOptionalUser(): User | undefined {
@@ -70,6 +75,7 @@ export function validateEmail(email: unknown): email is string {
   return typeof email === "string" && email.length > 3 && email.includes("@");
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function groupBy<T>(arr: T[], fn: (item: T) => any) {
   return arr.reduce<Record<string, T[]>>((prev, curr) => {
     const groupKey = fn(curr);

@@ -1,27 +1,26 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import { Flex, VStack, useColorModeValue } from "@chakra-ui/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Form,
   Link,
-  type V2_MetaFunction,
   useActionData,
   useSearchParams,
+  type MetaFunction,
 } from "@remix-run/react";
 import * as React from "react";
 
-import { createUserSession, getUserId } from "~/session.server";
-
-import { Flex, VStack, useColorModeValue } from "@chakra-ui/react";
 import { createUser, getUserByEmail } from "~/models/user.server";
+import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect, validateEmail } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
   return json({});
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const email = formData.get("email");
   const password = formData.get("password");
@@ -71,7 +70,7 @@ export async function action({ request }: ActionArgs) {
   });
 }
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [
     {
       title: "Sign Up",
@@ -121,7 +120,6 @@ export default function Join() {
                 ref={emailRef}
                 id="email"
                 required
-                autoFocus={true}
                 name="email"
                 type="email"
                 autoComplete="email"
@@ -129,11 +127,11 @@ export default function Join() {
                 aria-describedby="email-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.email && (
+              {actionData?.errors?.email ? (
                 <div className="pt-1 text-red-700" id="email-error">
                   {actionData.errors.email}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 
@@ -155,11 +153,11 @@ export default function Join() {
                 aria-describedby="password-error"
                 className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
               />
-              {actionData?.errors?.password && (
+              {actionData?.errors?.password ? (
                 <div className="pt-1 text-red-700" id="password-error">
                   {actionData.errors.password}
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
 

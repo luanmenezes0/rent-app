@@ -17,8 +17,9 @@ import {
   Tr,
   VStack,
   useColorModeValue,
+  useDisclosure,
 } from "@chakra-ui/react";
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 // import { useHydrated } from "remix-utils/use-hydrated"
 import {
@@ -31,6 +32,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
@@ -49,11 +51,10 @@ import {
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
+
 import { DeliveyModal } from "../../components/DeliveyModal";
 
-dayjs.locale("pt-br");
-
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.buildingId, "buldingId not found");
@@ -73,7 +74,7 @@ export async function loader({ request, params }: LoaderArgs) {
   return json({ buildingSite, inventory, rentables, deliveryUnits });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -185,28 +186,25 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
-const initialState = { show: false, editing: false, data: null };
-type State = { show: boolean; editing: boolean; data: any };
-
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables, deliveryUnits } =
     useLoaderData<typeof loader>();
   // console.log(deliveryUnits);
 
   const fetcher = useFetchers();
-  const actionData = useActionData();
+  const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
 
-  const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
+  const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
   const isAdding = fetcher.some((f) => f.state === "submitting");
 
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
-      setDeliveryModal(initialState);
+      onClose();
       setShowBuildingModal(false);
     }
-  }, [isAdding, actionData]);
+  }, [isAdding, actionData, onClose]);
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
 
@@ -242,10 +240,7 @@ export default function BuildingSite() {
             {buildingSite.name}
           </Heading>
           <HStack py={6}>
-            <Button
-              variant="outline"
-              onClick={() => setDeliveryModal({ ...initialState, show: true })}
-            >
+            <Button variant="outline" onClick={onOpen}>
               Adicionar Remessa
             </Button>
             <Button
@@ -347,32 +342,26 @@ export default function BuildingSite() {
             Remessas
           </Heading>
           {buildingSite.deliveries.map((d) => (
-            <DeliveryCard
-              key={d.id}
-              delivery={d}
-              buildingSite={buildingSite}
-              rentables={rentables}
-            />
+            <DeliveryCard key={d.id} delivery={d} rentables={rentables} />
           ))}
         </VStack>
       </Container>
-      {deliveryModal.show && (
+      {/* delivery creation */}
+      {isOpen ? (
         <DeliveyModal
-          onClose={() => setDeliveryModal(initialState)}
+          onClose={onClose}
           buildingSiteId={buildingSite.id}
-          editionMode={deliveryModal.editing}
           rentables={rentables}
-          values={deliveryModal.data}
         />
-      )}
-      {showBuildingModal && (
+      ) : null}
+      {showBuildingModal ? (
         <BuildingSiteModal
           editionMode
           client={buildingSite.client}
           values={buildingSite}
           onClose={() => setShowBuildingModal(false)}
         />
-      )}
+      ) : null}
     </>
   );
 }
