@@ -17,13 +17,8 @@ import {
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link,
-  useActionData,
-  useLoaderData,
-  useNavigation,
-} from "@remix-run/react";
-import { useEffect, useState } from "react";
+import { Link, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
@@ -106,22 +101,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
-  const actionData = useActionData<{
-    fieldErrors: Record<string, string>;
-  }>();
-  const navigation = useNavigation();
 
   const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [show, setShow] = useState(false);
-
-  const isAdding = navigation.state === "submitting";
-
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      setShow(false);
-    }
-  }, [isAdding, actionData]);
 
   return (
     <>
@@ -210,8 +193,12 @@ export default function Client() {
           </Table>
         </TableContainer>
       </Container>
-      {show ? <BuildingSiteModal client={client} onClose={() => setShow(false)} /> : null}
-      {isOpen ? <ClientModal onClose={onClose} editionMode values={client} /> : null}
+      {show ? (
+        <BuildingSiteModal client={client} onClose={() => setShow(false)} />
+      ) : null}
+      {isOpen ? (
+        <ClientModal onClose={onClose} editionMode values={client} />
+      ) : null}
     </>
   );
 }

@@ -16,9 +16,9 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { BuildingSite, Client } from "@prisma/client";
-import { useActionData, useFetcher } from "@remix-run/react";
+import { useFetcher } from "@remix-run/react";
 import { SerializeFrom } from "@remix-run/server-runtime";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { BuildingSiteStatus } from "~/utils";
 
@@ -32,9 +32,7 @@ interface Props {
 export default function BuildingSiteModal(props: Props) {
   const { onClose, client, editionMode = false, values } = props;
 
-  const actionData = useActionData<{ fieldErrors: Partial<BuildingSite> }>();
-
-  const fetcher = useFetcher();
+  const fetcher = useFetcher<{ fieldErrors: Partial<BuildingSite> }>();
 
   const [status, setStatus] = useState(() => {
     if (editionMode && values) {
@@ -43,7 +41,13 @@ export default function BuildingSiteModal(props: Props) {
     return BuildingSiteStatus.ACTIVE;
   });
 
-  function submit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
+  useEffect(() => {
+    if (fetcher.data === null) {
+      onClose();
+    }
+  }, [fetcher.data, onClose]);
+
+  function onSubmit(event: React.MouseEvent<HTMLButtonElement, MouseEvent>) {
     const form = Object.fromEntries(new FormData(event.currentTarget.form!));
     const action = editionMode ? "edit-bs" : "create-bs";
     fetcher.submit({ ...form, status, _action: action }, { method: "POST" });
@@ -64,7 +68,7 @@ export default function BuildingSiteModal(props: Props) {
             <VStack spacing={2}>
               <input type="hidden" name="clientId" value={client.id} />
               <input type="hidden" name="id" value={values?.id} />
-              <FormControl isInvalid={Boolean(actionData?.fieldErrors?.name)}>
+              <FormControl isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}>
                 <FormLabel htmlFor="name">Nome</FormLabel>
                 <Input
                   id="name"
@@ -76,12 +80,14 @@ export default function BuildingSiteModal(props: Props) {
                       : `OBRA ${client.name.split(" ")[0]}`
                   }
                 />
-                {actionData?.fieldErrors?.name ? <FormErrorMessage>
-                    {actionData?.fieldErrors?.name}
-                  </FormErrorMessage> : null}
+                {fetcher.data?.fieldErrors?.name ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.name}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <FormControl
-                isInvalid={Boolean(actionData?.fieldErrors?.address)}
+                isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
               >
                 <FormLabel htmlFor="address">Endereço</FormLabel>
                 <Textarea
@@ -94,9 +100,11 @@ export default function BuildingSiteModal(props: Props) {
                   }
                   required
                 />
-                {actionData?.fieldErrors?.address ? <FormErrorMessage>
-                    {actionData?.fieldErrors?.address}
-                  </FormErrorMessage> : null}
+                {fetcher.data?.fieldErrors?.address ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.address}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <FormControl display="flex" alignItems="baseline">
                 <FormLabel htmlFor="status">Ativa</FormLabel>
@@ -115,7 +123,7 @@ export default function BuildingSiteModal(props: Props) {
           <Button onClick={onClose} variant="ghost" mx="4">
             Cancelar
           </Button>
-          <Button form="buiding-site-form" onClick={submit}>
+          <Button form="buiding-site-form" onClick={onSubmit}>
             Salvar
           </Button>
         </ModalFooter>

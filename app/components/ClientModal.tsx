@@ -32,21 +32,15 @@ export function ClientModal(props: ClientModalProps) {
 
   const [label, setLabel] = useState<"CNPJ" | "CPF">("CPF");
 
-  const fetcher = useFetcher<{ fieldErrors: Record<string, string> }>();
+  const fetcher = useFetcher<{ fieldErrors: Record<keyof Client, string> }>();
 
   const { data: actionData } = fetcher;
 
-  console.log(actionData);
-
-  const isSubmitting = fetcher.state === "submitting";
-
-  const isEdition = fetcher.formData?.get("_action") === "edit";
-
   useEffect(() => {
-    if (!isSubmitting && isEdition && !actionData?.fieldErrors) {
+    if (actionData === null) {
       onClose();
     }
-  }, [isSubmitting, actionData, onClose, isEdition]);
+  }, [actionData, onClose]);
 
   return (
     <Modal size="xl" isOpen onClose={onClose}>
@@ -118,9 +112,11 @@ export function ClientModal(props: ClientModalProps) {
                   }
                 }}
               />
-              {actionData?.fieldErrors?.registrationNumber ? <FormErrorMessage>
+              {actionData?.fieldErrors?.registrationNumber ? (
+                <FormErrorMessage>
                   {actionData?.fieldErrors?.registrationNumber}
-                </FormErrorMessage> : null}
+                </FormErrorMessage>
+              ) : null}
             </FormControl>
             <VStack spacing={2}>
               <input type="hidden" name="id" defaultValue={values?.id} />
@@ -132,9 +128,11 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.name}
                 />
-                {actionData?.fieldErrors?.name ? <FormErrorMessage>
+                {actionData?.fieldErrors?.name ? (
+                  <FormErrorMessage>
                     {actionData?.fieldErrors?.name}
-                  </FormErrorMessage> : null}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <FormControl
                 isInvalid={Boolean(actionData?.fieldErrors?.address)}
@@ -146,9 +144,11 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.address}
                 />
-                {actionData?.fieldErrors?.address ? <FormErrorMessage>
+                {actionData?.fieldErrors?.address ? (
+                  <FormErrorMessage>
                     {actionData?.fieldErrors?.address}
-                  </FormErrorMessage> : null}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <HStack>
                 <FormControl
@@ -161,9 +161,11 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.neighborhood}
                   />
-                  {actionData?.fieldErrors?.neighborhood ? <FormErrorMessage>
+                  {actionData?.fieldErrors?.neighborhood ? (
+                    <FormErrorMessage>
                       {actionData?.fieldErrors?.neighborhood}
-                    </FormErrorMessage> : null}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
 
                 <FormControl isInvalid={Boolean(actionData?.fieldErrors?.city)}>
@@ -174,9 +176,11 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.city ?? ""}
                   />
-                  {actionData?.fieldErrors?.city ? <FormErrorMessage>
+                  {actionData?.fieldErrors?.city ? (
+                    <FormErrorMessage>
                       {actionData?.fieldErrors?.city}
-                    </FormErrorMessage> : null}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
               </HStack>
               <HStack>
@@ -192,9 +196,11 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     type="tel"
                   />
-                  {actionData?.fieldErrors?.phoneNumber ? <FormErrorMessage>
+                  {actionData?.fieldErrors?.phoneNumber ? (
+                    <FormErrorMessage>
                       {actionData?.fieldErrors?.phoneNumber}
-                    </FormErrorMessage> : null}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
 
                 <FormControl
@@ -207,9 +213,11 @@ export function ClientModal(props: ClientModalProps) {
                     defaultValue={values?.state ?? ""}
                     required
                   />
-                  {actionData?.fieldErrors?.state ? <FormErrorMessage>
+                  {actionData?.fieldErrors?.state ? (
+                    <FormErrorMessage>
                       {actionData?.fieldErrors?.state}
-                    </FormErrorMessage> : null}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
               </HStack>
             </VStack>
