@@ -21,7 +21,6 @@ import {
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-// import { useHydrated } from "remix-utils/use-hydrated"
 import {
   Link as RemixLink,
   useActionData,
@@ -189,11 +188,10 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables, deliveryUnits } =
     useLoaderData<typeof loader>();
-  // console.log(deliveryUnits);
-
-  const fetcher = useFetchers();
   const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
+  const fetcher = useFetchers();
 
+  const cardColor = useColorModeValue("gray.100", "gray.700");
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
@@ -206,7 +204,7 @@ export default function BuildingSite() {
     }
   }, [isAdding, actionData, onClose]);
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  console.table(deliveryUnits["Andaime"]);
 
   function getBalance(arr: any[], i: number) {
     return arr.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
@@ -217,8 +215,8 @@ export default function BuildingSite() {
 
     const formatedDate = dayjs(date).toISOString();
 
-    console.log("formatedDate", formatedDate);
-    console.log("formatedDate with dayjs", dayjs(formatedDate).format());
+    /*     console.log("formatedDate", formatedDate);
+    console.log("formatedDate with dayjs", dayjs(formatedDate).format()); */
 
     if (isLast) {
       return dayjs().diff(dayjs(formatedDate), "day");
@@ -227,9 +225,12 @@ export default function BuildingSite() {
     return dayjs(arr[i + 1].date).diff(dayjs(formatedDate), "day");
   }
 
-    console.log("DATAAAA", deliveryUnits["Andaime"][3].date)
-  console.log("DATAAAA", dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"))
-
+  /*  console.log("DATAAAA", deliveryUnits["Andaime"][3].date); */
+  /*   console.log(
+    "DATAAAA",
+    dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"),
+  );
+ */
   return (
     <>
       <Header />
@@ -296,7 +297,28 @@ export default function BuildingSite() {
           </HStack>
         </VStack>
         <Divider />
-        <div>
+
+        <VStack align="stretch" as="section">
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Remessas
+          </Heading>
+          {buildingSite.deliveries.map((d) => (
+            <DeliveryCard key={d.id} delivery={d} rentables={rentables} />
+          ))}
+        </VStack>
+        <Divider />
+{/*         <VStack align="stretch" as="section" gap={2}>
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Balanço Financeiro
+          </Heading>
           {Object.entries(deliveryUnits).map(([name, unit]) => (
             <VStack key={name}>
               <Text fontWeight="bold">{name}</Text>
@@ -318,33 +340,21 @@ export default function BuildingSite() {
                       <Td>{d.count}</Td>
                       <Td>{getBalance(arr, i)}</Td>
                       <Td>{getDiffInDays(arr, i, d.date)}</Td>
-                      {/* <Td>
+                      <Td>
                         {getBalance(arr, i) * getDiffInDays(arr, i, d.date)}
                       </Td>
                       <Td>
                         {getBalance(arr, i) *
                           getDiffInDays(arr, i, d.date) *
                           d.rentable.unitPrice}
-                      </Td> */}
+                      </Td>
                     </Tr>
                   ))}
                 </Tbody>
               </Table>
             </VStack>
           ))}
-        </div>
-        <VStack align="stretch" as="section">
-          <Heading
-            as="h2"
-            size="lg"
-            color={useColorModeValue("green.600", "green.100")}
-          >
-            Remessas
-          </Heading>
-          {buildingSite.deliveries.map((d) => (
-            <DeliveryCard key={d.id} delivery={d} rentables={rentables} />
-          ))}
-        </VStack>
+        </VStack> */}
       </Container>
       {/* delivery creation */}
       {isOpen ? (
