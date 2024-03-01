@@ -27,7 +27,16 @@ import { groupBy } from "~/utils";
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
-  return json({ deliveries: await getDeliveries() });
+  const deliveries = await getDeliveries();
+
+  const deliveriesGroupedByDate = Object.entries(
+    groupBy(
+      deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
+      (d) => d.day,
+    ),
+  ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
+
+  return json({ deliveries: deliveriesGroupedByDate });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -58,13 +67,6 @@ export default function Deliveries() {
   const cardColor = useColorModeValue("gray.100", "gray.700");
   const iconBgColor = useColorModeValue("gray.200", "gray.600");
 
-  const groupedBy = Object.entries(
-    groupBy(
-      deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
-      (d) => d.day,
-    ),
-  ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
-
   return (
     <>
       <Header />
@@ -72,7 +74,7 @@ export default function Deliveries() {
         <Heading as="h1" size="2xl">
           Remessas
         </Heading>
-        {groupedBy.map(([date, data]) => (
+        {deliveries.map(([date, data]) => (
           <VStack key={date} align="strech" gap="2">
             <Heading as="h2" size="md">
               {dayjs(date).format("DD/MM/YYYY")}

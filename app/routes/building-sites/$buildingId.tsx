@@ -8,7 +8,13 @@ import {
   Stat,
   StatLabel,
   StatNumber,
+  Table,
+  Tbody,
+  Td,
   Text,
+  Th,
+  Thead,
+  Tr,
   VStack,
   useColorModeValue,
   useDisclosure,
@@ -39,6 +45,7 @@ import {
   deleteDelivery,
   editDelivery,
   getBuildingSiteInventory,
+  getDeliveryUnits,
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
@@ -61,7 +68,9 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const rentables = await getRentables();
 
-  return json({ buildingSite, inventory, rentables });
+  const deliveryUnits = await getDeliveryUnits(params.buildingId);
+
+  return json({ buildingSite, inventory, rentables, deliveryUnits });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -103,6 +112,7 @@ export async function action({ request }: ActionFunctionArgs) {
             count: Number(deliveryType) === 1 ? Number(count) : -Number(count),
             deliveryType: Number(deliveryType),
             buildingSiteId: Number(buildingSiteId),
+            date: dayjs(date).toDate(),
           };
         })
         .filter((u) => u.count !== 0);
@@ -176,11 +186,12 @@ export async function action({ request }: ActionFunctionArgs) {
 }
 
 export default function BuildingSite() {
-  const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
-
-  const fetcher = useFetchers();
+  const { buildingSite, inventory, rentables, deliveryUnits } =
+    useLoaderData<typeof loader>();
   const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
+  const fetcher = useFetchers();
 
+  const cardColor = useColorModeValue("gray.100", "gray.700");
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
 
@@ -193,8 +204,33 @@ export default function BuildingSite() {
     }
   }, [isAdding, actionData, onClose]);
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  console.table(deliveryUnits["Andaime"]);
 
+  function getBalance(arr: any[], i: number) {
+    return arr.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
+  }
+
+  function getDiffInDays(arr: any[], i: number, date: any) {
+    const isLast = arr.length === i + 1;
+
+    const formatedDate = dayjs(date).toISOString();
+
+    /*     console.log("formatedDate", formatedDate);
+    console.log("formatedDate with dayjs", dayjs(formatedDate).format()); */
+
+    if (isLast) {
+      return dayjs().diff(dayjs(formatedDate), "day");
+    }
+
+    return dayjs(arr[i + 1].date).diff(dayjs(formatedDate), "day");
+  }
+
+  /*  console.log("DATAAAA", deliveryUnits["Andaime"][3].date); */
+  /*   console.log(
+    "DATAAAA",
+    dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"),
+  );
+ */
   return (
     <>
       <Header />
@@ -261,6 +297,7 @@ export default function BuildingSite() {
           </HStack>
         </VStack>
         <Divider />
+
         <VStack align="stretch" as="section">
           <Heading
             as="h2"
@@ -273,6 +310,51 @@ export default function BuildingSite() {
             <DeliveryCard key={d.id} delivery={d} rentables={rentables} />
           ))}
         </VStack>
+        <Divider />
+{/*         <VStack align="stretch" as="section" gap={2}>
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Balanço Financeiro
+          </Heading>
+          {Object.entries(deliveryUnits).map(([name, unit]) => (
+            <VStack key={name}>
+              <Text fontWeight="bold">{name}</Text>
+              <Table size="sm">
+                <Thead>
+                  <Tr>
+                    <Th>Data</Th>
+                    <Th>Movimentação</Th>
+                    <Th>Saldo</Th>
+                    <Th>Dias</Th>
+                    <Th>RM * DIAS</Th>
+                    <Th>VALOR</Th>
+                  </Tr>
+                </Thead>
+                <Tbody>
+                  {unit.map((d, i, arr) => (
+                    <Tr key={d.id}>
+                      <Td>{dayjs(d.date).format("DD/MM/YYYY")}</Td>
+                      <Td>{d.count}</Td>
+                      <Td>{getBalance(arr, i)}</Td>
+                      <Td>{getDiffInDays(arr, i, d.date)}</Td>
+                      <Td>
+                        {getBalance(arr, i) * getDiffInDays(arr, i, d.date)}
+                      </Td>
+                      <Td>
+                        {getBalance(arr, i) *
+                          getDiffInDays(arr, i, d.date) *
+                          d.rentable.unitPrice}
+                      </Td>
+                    </Tr>
+                  ))}
+                </Tbody>
+              </Table>
+            </VStack>
+          ))}
+        </VStack> */}
       </Container>
       {/* delivery creation */}
       {isOpen ? (
