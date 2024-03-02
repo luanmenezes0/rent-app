@@ -15,14 +15,9 @@ import {
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import {
-  Link as RemixLink,
-  useActionData,
-  useFetchers,
-  useLoaderData,
-} from "@remix-run/react";
+import { Link as RemixLink, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
@@ -61,7 +56,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const rentables = await getRentables();
 
-  return json({ buildingSite, inventory, rentables });
+  const buildingSiteWithFormatedDate = {
+    ...buildingSite,
+    deliveries: buildingSite.deliveries.map((d) => ({
+      ...d,
+      date: dayjs(d.date).format(),
+    })),
+  };
+
+  return json({
+    buildingSite: buildingSiteWithFormatedDate,
+    inventory,
+    rentables,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -178,20 +185,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
-  const fetcher = useFetchers();
-  const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
-
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
-
-  const isAdding = fetcher.some((f) => f.state === "submitting");
-
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      onClose();
-      setShowBuildingModal(false);
-    }
-  }, [isAdding, actionData, onClose]);
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
 

@@ -31,7 +31,11 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const deliveriesGroupedByDate = Object.entries(
     groupBy(
-      deliveries.map((d) => ({ ...d, day: dayjs(d.date).startOf("day") })),
+      deliveries.map((d) => ({
+        ...d,
+        date: dayjs(d.date).format(),
+        day: dayjs(d.date).startOf("day"),
+      })),
       (d) => d.day,
     ),
   ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
