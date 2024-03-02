@@ -56,7 +56,19 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const rentables = await getRentables();
 
-  return json({ buildingSite, inventory, rentables });
+  const buildingSiteWithFormatedDate = {
+    ...buildingSite,
+    deliveries: buildingSite.deliveries.map((d) => ({
+      ...d,
+      date: dayjs(d.date).format(),
+    })),
+  };
+
+  return json({
+    buildingSite: buildingSiteWithFormatedDate,
+    inventory,
+    rentables,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
