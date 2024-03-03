@@ -21,44 +21,7 @@ const theme = {
   },
 };
 
-// const customTheme = extendTheme(
-//   {
-//     colors: colors,
-//     components: {
-//       Text: {
-//         baseStyle: (props) => ({
-//           color: mode(
-//             colors.primaryFontColor.lightMode,
-//             colors.primaryFontColor.darkMode
-//           )(props),
-//         }),
-//         variants: {
-//           secondary: (props) => ({
-//             color: mode(
-//               colors.primaryFontColor.lightMode,
-//               colors.primaryFontColor.darkMode
-//             )(props),
-//           }),
-//         },
-//       },
-//     },
-
-//     styles: {
-//       global: (props) => ({
-//         // Optionally set global CSS styles
-//         body: {
-//           color: mode(
-//             colors.primaryFontColor.lightMode,
-//             colors.primaryFontColor.darkMode
-//           )(props),
-//         },
-//       }),
-//     },
-//   },
-//   withDefaultColorScheme({ colorScheme: "teal" })
-// );
-
 export default extendTheme(
   theme,
-  withDefaultColorScheme({ colorScheme: "teal" }),
+  withDefaultColorScheme({ colorScheme: "orange" }),
 );

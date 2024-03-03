@@ -7,3 +7,10 @@ export const LoginSchema = z.object({
 });
 
 export const loginValidator = withZod(LoginSchema);
+
+export const UserSchema = z.object({
+  userId: z.string().min(1, "O userId é obrigatório"),
+  role: z.enum(["ADMIN", "USER"]),
+});
+
+export const userValidator = withZod(UserSchema);

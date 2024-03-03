@@ -1,4 +1,14 @@
-import { Flex, VStack, useColorModeValue } from "@chakra-ui/react";
+import {
+  Button,
+  Flex,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  Heading,
+  Input,
+  VStack,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
@@ -8,55 +18,50 @@ import {
   useSearchParams,
   type MetaFunction,
 } from "@remix-run/react";
-import * as React from "react";
-
-import { createUser, getUserByEmail } from "~/models/user.server";
+import { validationError } from "remix-validated-form";
+import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validateEmail } from "~/utils";
+import { safeRedirect } from "~/utils";
+import { loginValidator } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
+
   return json({});
 }
 
 export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
-  const email = formData.get("email");
-  const password = formData.get("password");
+
+  const token = formData.get("token");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
-  if (!validateEmail(email)) {
-    return json(
-      { errors: { email: "Email is invalid", password: null } },
-      { status: 400 },
-    );
+  if (!token) {
+    return validationError({ fieldErrors: { token: "Token inválido" } });
   }
 
-  if (typeof password !== "string" || password.length === 0) {
-    return json(
-      { errors: { email: null, password: "Password is required" } },
-      { status: 400 },
-    );
+  const tokenIsValid = await verifyToken(decodeURIComponent(token.toString()));
+  if (!tokenIsValid) {
+    return validationError({
+      fieldErrors: { token: "Token inválido" },
+    });
   }
 
-  if (password.length < 8) {
-    return json(
-      { errors: { email: null, password: "Password is too short" } },
-      { status: 400 },
-    );
+  const result = await loginValidator.validate(formData);
+  if (result.error) {
+    return validationError(result.error);
   }
+
+  const { email, password } = result.data;
 
   const existingUser = await getUserByEmail(email);
   if (existingUser) {
-    return json(
+    return validationError(
       {
-        errors: {
-          email: "A user already exists with this email",
-          password: null,
-        },
+        fieldErrors: { email: "E-mail já cadastrado." },
       },
-      { status: 400 },
+      { email },
     );
   }
 
@@ -82,16 +87,8 @@ export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
-  const emailRef = React.useRef<HTMLInputElement>(null);
-  const passwordRef = React.useRef<HTMLInputElement>(null);
 
-  React.useEffect(() => {
-    if (actionData?.errors?.email) {
-      emailRef.current?.focus();
-    } else if (actionData?.errors?.password) {
-      passwordRef.current?.focus();
-    }
-  }, [actionData]);
+  const token = searchParams.get("token");
 
   return (
     <Flex
@@ -108,79 +105,46 @@ export default function Join() {
           bgColor={useColorModeValue("white", "gray.800")}
           borderRadius="lg"
         >
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Email address
-            </label>
-            <div className="mt-1">
-              <input
-                ref={emailRef}
-                id="email"
-                required
-                name="email"
-                type="email"
-                autoComplete="email"
-                aria-invalid={actionData?.errors?.email ? true : undefined}
-                aria-describedby="email-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.errors?.email ? (
-                <div className="pt-1 text-red-700" id="email-error">
-                  {actionData.errors.email}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Password
-            </label>
-            <div className="mt-1">
-              <input
-                id="password"
-                ref={passwordRef}
-                name="password"
-                type="password"
-                autoComplete="new-password"
-                aria-invalid={actionData?.errors?.password ? true : undefined}
-                aria-describedby="password-error"
-                className="w-full rounded border border-gray-500 px-2 py-1 text-lg"
-              />
-              {actionData?.errors?.password ? (
-                <div className="pt-1 text-red-700" id="password-error">
-                  {actionData.errors.password}
-                </div>
-              ) : null}
-            </div>
-          </div>
-
+          <Heading fontSize="20">Primeiro acesso</Heading>
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.email)}>
+            <FormLabel htmlFor="email">E-mail</FormLabel>
+            <Input
+              id="email"
+              required
+              name="email"
+              type="email"
+              autoComplete="email"
+            />
+            <FormErrorMessage>{actionData?.fieldErrors.email}</FormErrorMessage>
+          </FormControl>
+          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.password)}>
+            <FormLabel htmlFor="password">Senha</FormLabel>
+            <Input
+              id="password"
+              name="password"
+              type="password"
+              required
+              autoComplete="new-password"
+            />
+            <FormErrorMessage>
+              {actionData?.fieldErrors.password}
+            </FormErrorMessage>
+          </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          <button
-            type="submit"
-            className="w-full rounded bg-blue-500  py-2 px-4 text-white hover:bg-blue-600 focus:bg-blue-400"
-          >
-            Create Account
-          </button>
-          <div className="flex items-center justify-center">
-            <div className="text-center text-sm text-gray-500">
-              Already have an account?{" "}
-              <Link
-                className="text-blue-500 underline"
-                to={{
-                  pathname: "/login",
-                  search: searchParams.toString(),
-                }}
-              >
-                Log in
-              </Link>
-            </div>
+          {token && <input type="hidden" name="token" value={token} />}
+          <Button w="full" type="submit">
+            Criar conta
+          </Button>
+          <div>
+            <span>Já tem uma conta? </span>
+            <Link
+              to={{
+                pathname: "/login",
+                search: searchParams.toString(),
+              }}
+            >
+              Entrar
+            </Link>
           </div>
         </VStack>
       </Form>
