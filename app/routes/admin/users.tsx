@@ -44,6 +44,7 @@ import { validationError } from "remix-validated-form";
 import Header from "~/components/Header";
 import { SERVER_SECRET, editUser, getUsers } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
+import { userRoles } from "~/utils";
 import { userValidator } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -112,7 +113,8 @@ function UserModal({ onClose }: { onClose: () => void }) {
               <Input id="email" required name="email" type="email" />
             </FormControl>
           </Form>
-          {actionData?.link ? <Flex alignItems="center" gap={2}>
+          {actionData?.link ? (
+            <Flex alignItems="center" gap={2}>
               <Box bgColor="teal.800" p={2} my={2} borderRadius={4}>
                 <Text wordBreak="break-all" fontSize="12px">
                   {actionData?.link}
@@ -121,7 +123,8 @@ function UserModal({ onClose }: { onClose: () => void }) {
               <Button type="button" onClick={onCopy}>
                 {hasCopied ? "Copied!" : "Copy"}
               </Button>
-            </Flex> : null}
+            </Flex>
+          ) : null}
         </ModalBody>
         <ModalFooter gap="2">
           <Button onClick={onClose} variant="outline">
@@ -151,7 +154,11 @@ export default function Users() {
 
   function onChangeRole(isChecked: boolean, userId: string) {
     fetcher.submit(
-      { role: isChecked ? "ADMIN" : "USER", _action: "edit", userId },
+      {
+        role: isChecked ? userRoles.ADMIN : userRoles.USER,
+        _action: "edit",
+        userId,
+      },
       { method: "PUT" },
     );
   }
@@ -183,7 +190,7 @@ export default function Users() {
                   <Td>{user.email}</Td>
                   <Td>
                     <Switch
-                      defaultChecked={user.role === "ADMIN"}
+                      defaultChecked={user.role === userRoles.ADMIN}
                       onChange={(e) => onChangeRole(e.target.checked, user.id)}
                     />
                   </Td>

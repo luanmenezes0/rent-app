@@ -7,6 +7,9 @@ on:
       - dev
   pull_request:
 
+env:
+  USER_SECRET: ${{ secrets.USER_SECRET }}
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
