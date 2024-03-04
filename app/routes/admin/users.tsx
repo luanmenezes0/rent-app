@@ -38,9 +38,9 @@ import type {
 } from "@remix-run/server-runtime";
 import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
-
 import { useEffect } from "react";
 import { validationError } from "remix-validated-form";
+
 import Header from "~/components/Header";
 import { SERVER_SECRET, editUser, getUsers } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
@@ -96,7 +96,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
 
   useEffect(() => {
     setValue(actionData?.link ?? "");
-  }, [actionData?.link]);
+  }, [actionData?.link, setValue]);
 
   return (
     <Modal size="lg" isOpen onClose={onClose}>
@@ -112,8 +112,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
               <Input id="email" required name="email" type="email" />
             </FormControl>
           </Form>
-          {actionData?.link && (
-            <Flex alignItems="center" gap={2}>
+          {actionData?.link ? <Flex alignItems="center" gap={2}>
               <Box bgColor="teal.800" p={2} my={2} borderRadius={4}>
                 <Text wordBreak="break-all" fontSize="12px">
                   {actionData?.link}
@@ -122,8 +121,7 @@ function UserModal({ onClose }: { onClose: () => void }) {
               <Button type="button" onClick={onCopy}>
                 {hasCopied ? "Copied!" : "Copy"}
               </Button>
-            </Flex>
-          )}
+            </Flex> : null}
         </ModalBody>
         <ModalFooter gap="2">
           <Button onClick={onClose} variant="outline">
@@ -196,7 +194,7 @@ export default function Users() {
           </Table>
         </TableContainer>
       </Container>
-      {isOpen && <UserModal onClose={onClose} />}
+      {isOpen ? <UserModal onClose={onClose} /> : null}
     </>
   );
 }

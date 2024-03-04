@@ -19,6 +19,7 @@ import {
   type MetaFunction,
 } from "@remix-run/react";
 import { validationError } from "remix-validated-form";
+
 import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
 import { safeRedirect } from "~/utils";
@@ -131,7 +132,7 @@ export default function Join() {
             </FormErrorMessage>
           </FormControl>
           <input type="hidden" name="redirectTo" value={redirectTo} />
-          {token && <input type="hidden" name="token" value={token} />}
+          {token ? <input type="hidden" name="token" value={token} /> : null}
           <Button w="full" type="submit">
             Criar conta
           </Button>

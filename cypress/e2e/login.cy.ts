@@ -8,6 +8,7 @@ describe("Login", () => {
     cy.cleanupUser();
   });
 
+  // eslint-disable-next-line cypress/no-async-tests
   it("should allow you to register and login", async () => {
     const loginForm = {
       email: `${faker.internet.userName()}@example.com`,
@@ -18,6 +19,7 @@ describe("Login", () => {
 
     const hash = await bcrypt.hash(SERVER_SECRET, 10);
 
+    // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.visit(`/join?token=${encodeURIComponent(hash)}`).wait(1000);
 
     // cy.findByRole("link", { name: /cadastre-se/i }).click();
