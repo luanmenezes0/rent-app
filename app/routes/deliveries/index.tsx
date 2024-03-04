@@ -24,6 +24,8 @@ import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 import { groupBy } from "~/utils";
 
+dayjs.locale("pt-br");
+
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
@@ -39,6 +41,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
       (d) => d.day,
     ),
   ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
+
+  console.log(deliveriesGroupedByDate[0]);
 
   return json({ deliveries: deliveriesGroupedByDate });
 }
