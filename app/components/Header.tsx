@@ -25,8 +25,7 @@ import { useUser } from "~/utils";
 export default function Header() {
   const user = useUser();
 
-  const isAdmin =
-    user.email === "rachel@remix.run" || "luanmenezes99@gmail.com";
+  const isAdmin = user?.role === "ADMIN";
 
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -74,12 +73,16 @@ export default function Header() {
           <Link as={NavLink} to="/deliveries">
             Remessas
           </Link>
-          {isAdmin ? <Link as={NavLink} to="/admin/inventory">
+          {isAdmin ? (
+            <Link as={NavLink} to="/admin/inventory">
               Estoque
-            </Link> : null}
-          {isAdmin ? <Link as={NavLink} to="/admin/users">
+            </Link>
+          ) : null}
+          {isAdmin ? (
+            <Link as={NavLink} to="/admin/users">
               Usuários
-            </Link> : null}
+            </Link>
+          ) : null}
         </HStack>
         <HStack>
           <Button onClick={toggleColorMode} variant="ghost">
@@ -150,12 +153,16 @@ export default function Header() {
             <Link as={NavLink} to="/deliveries">
               Remessas
             </Link>
-            {isAdmin ? <Link as={NavLink} to="/admin/inventory">
+            {isAdmin ? (
+              <Link as={NavLink} to="/admin/inventory">
                 Estoque
-              </Link> : null}
-            {isAdmin ? <Link as={NavLink} to="/admin/users">
+              </Link>
+            ) : null}
+            {isAdmin ? (
+              <Link as={NavLink} to="/admin/users">
                 Usuários
-              </Link> : null}
+              </Link>
+            ) : null}
           </VStack>
         </Box>
       ) : null}

@@ -1,7 +1,7 @@
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
 
-const SERVER_SECRET = "946684799000";
+const SERVER_SECRET = process.env.USER_SECRET!;
 
 describe("Login", () => {
   afterEach(() => {

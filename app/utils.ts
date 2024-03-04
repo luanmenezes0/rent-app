@@ -96,3 +96,5 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
   [BuildingSiteStatus.ACTIVE]: "Ativa",
   [BuildingSiteStatus.INACTIVE]: "Inativa",
 };
+
+export const userRoles = { USER: "USER", ADMIN: "ADMIN" } as const;
