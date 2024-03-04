@@ -194,7 +194,11 @@ export default function Users() {
                       onChange={(e) => onChangeRole(e.target.checked, user.id)}
                     />
                   </Td>
-                  <Td>{dayjs(user.createdAt).format("DD/MM/YYYY")}</Td>
+                  <Td>
+                    {dayjs(user.createdAt)
+                      .tz("America/Fortaleza")
+                      .format("DD/MM/YYYY")}
+                  </Td>
                 </Tr>
               ))}
             </Tbody>

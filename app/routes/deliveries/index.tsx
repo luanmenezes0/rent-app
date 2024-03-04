@@ -33,7 +33,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     groupBy(
       deliveries.map((d) => ({
         ...d,
-        date: dayjs(d.date).format(),
+        date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
         day: dayjs(d.date).tz("America/Fortaleza").startOf("day"),
       })),
       (d) => d.day,
@@ -83,7 +83,7 @@ export default function Deliveries() {
         {deliveries.map(([date, data]) => (
           <VStack key={date} align="strech" gap="2">
             <Heading as="h2" size="md">
-              {dayjs(date).format("DD/MM/YYYY")}
+              {dayjs(date).tz("America/Fortaleza").format("DD/MM/YYYY")}
             </Heading>
             {data.map((d) => (
               <Flex
@@ -108,7 +108,7 @@ export default function Deliveries() {
                 <Box justifySelf="start" flexGrow={1}>
                   <HStack pb="2" fontSize="14">
                     <Heading as="h3" fontSize="14">
-                      {dayjs(d.date).format("DD/MM/YYYY HH:mm")}
+                      {d.date}
                     </Heading>
                     {d.buildingSite ? (
                       <Link to={`/building-sites/${d.buildingSite.id}`}>

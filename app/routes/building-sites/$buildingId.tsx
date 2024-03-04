@@ -60,7 +60,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     ...buildingSite,
     deliveries: buildingSite.deliveries.map((d) => ({
       ...d,
-      date: dayjs(d.date).format(),
+      date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
     })),
   };
 
