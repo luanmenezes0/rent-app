@@ -34,7 +34,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
       deliveries.map((d) => ({
         ...d,
         date: dayjs(d.date).format(),
-        day: dayjs(d.date).startOf("day"),
+        day: dayjs(d.date).tz("America/Fortaleza").startOf("day"),
       })),
       (d) => d.day,
     ),
