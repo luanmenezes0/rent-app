@@ -64,6 +64,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
   };
 
+  console.log(buildingSiteWithFormatedDate.deliveries.map((d) => d.date));
+
   return json({
     buildingSite: buildingSiteWithFormatedDate,
     inventory,

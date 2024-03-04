@@ -17,17 +17,17 @@ import {
 import type { Delivery, DeliveryUnit, Rentable } from "@prisma/client";
 import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
 import { SerializeFrom } from "@remix-run/server-runtime";
-import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { GrDeliver, GrPrint } from "react-icons/gr";
-
 
 import { MyAlertDialog } from "./AlertDialog";
 import { DeliveyModal } from "./DeliveyModal";
 
 interface DeliveryCardProps {
   delivery: SerializeFrom<Delivery> & {
-    units: (SerializeFrom<DeliveryUnit> & { rentable: SerializeFrom<Rentable> })[];
+    units: (SerializeFrom<DeliveryUnit> & {
+      rentable: SerializeFrom<Rentable>;
+    })[];
   };
   rentables: SerializeFrom<Rentable>[];
 }
@@ -104,7 +104,7 @@ export default function DeliveryCard({
         <Box justifySelf="start" flexGrow={1}>
           <HStack pb="2" fontSize="14">
             <Heading as="h3" fontSize="14">
-              {dayjs(delivery.date).format("DD/MM/YYYY HH:mm")}
+              {delivery.date}
             </Heading>
           </HStack>
 

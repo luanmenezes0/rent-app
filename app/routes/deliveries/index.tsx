@@ -40,8 +40,6 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
   ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
 
-  console.log(deliveriesGroupedByDate[0]);
-
   return json({ deliveries: deliveriesGroupedByDate });
 }
 
