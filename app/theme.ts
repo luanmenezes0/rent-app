@@ -23,5 +23,5 @@ const theme = {
 
 export default extendTheme(
   theme,
-  withDefaultColorScheme({ colorScheme: "orange" }),
+  withDefaultColorScheme({ colorScheme: "pink" }),
 );

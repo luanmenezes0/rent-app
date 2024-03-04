@@ -19,6 +19,7 @@ import { getDelivery } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
+  console.log(request);
   await requireUserId(request);
 
   invariant(params.deliveryId, "buldingId not found");

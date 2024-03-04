@@ -24,8 +24,6 @@ import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 import { groupBy } from "~/utils";
 
-dayjs.locale("pt-br");
-
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 

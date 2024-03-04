@@ -1,6 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import { cssBundleHref } from "@remix-run/css-bundle";
-import type { LinksFunction, LoaderFunctionArgs} from "@remix-run/node";
+import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
@@ -10,11 +10,19 @@ import {
   Scripts,
   ScrollRestoration,
 } from "@remix-run/react";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/timezone.js";
+import timezone from "dayjs/plugin/utc.js";
 
 import styles from "~/styles/index.css";
 
 import { getUser } from "./session.server";
 import theme from "./theme";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+dayjs.tz.setDefault("America/Fortaleza");
 
 export const links: LinksFunction = () => [
   { rel: "stylesheet", href: styles },
