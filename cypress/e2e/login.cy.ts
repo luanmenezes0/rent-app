@@ -1,8 +1,6 @@
 import { faker } from "@faker-js/faker";
 import bcrypt from "bcryptjs";
 
-const SERVER_SECRET = process.env.USER_SECRET!;
-
 describe("Login", () => {
   afterEach(() => {
     cy.cleanupUser();
@@ -17,7 +15,7 @@ describe("Login", () => {
 
     cy.then(() => ({ email: loginForm.email })).as("user");
 
-    const hash = await bcrypt.hash(SERVER_SECRET, 10);
+    const hash = await bcrypt.hash(Cypress.env("USER_SECRET"), 10);
 
     // eslint-disable-next-line cypress/no-unnecessary-waiting
     cy.visit(`/join?token=${encodeURIComponent(hash)}`).wait(1000);
