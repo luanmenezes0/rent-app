@@ -1,3 +1,4 @@
+import { DeleteIcon } from "@chakra-ui/icons";
 import {
   Box,
   Button,
@@ -6,6 +7,7 @@ import {
   FormControl,
   FormLabel,
   Heading,
+  IconButton,
   Input,
   Modal,
   ModalBody,
@@ -23,6 +25,7 @@ import {
   Th,
   Thead,
   Tr,
+  VisuallyHidden,
   useClipboard,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -38,13 +41,19 @@ import type {
 } from "@remix-run/server-runtime";
 import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 
+import { MyAlertDialog } from "~/components/AlertDialog";
 import Header from "~/components/Header";
-import { SERVER_SECRET, editUser, getUsers } from "~/models/user.server";
+import {
+  SERVER_SECRET,
+  deleteUser,
+  editUser,
+  getUsers,
+} from "~/models/user.server";
 import { requireUserId } from "~/session.server";
-import { userRoles } from "~/utils";
+import { useUser, userRoles } from "~/utils";
 import { userValidator } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -81,6 +90,16 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       await editUser(result.data.userId, result.data.role);
+
+      return null;
+    }
+
+    case "delete": {
+      const userId = formData.get("userId");
+
+      if (typeof userId === "string") {
+        await deleteUser(userId);
+      }
 
       return null;
     }
@@ -147,10 +166,16 @@ function UserModal({ onClose }: { onClose: () => void }) {
 
 export default function Users() {
   const { users } = useLoaderData<typeof loader>();
+  const fetcher = useFetcher();
 
+  const user = useUser();
+
+  const deleteModal = useDisclosure();
   const { isOpen, onOpen, onClose } = useDisclosure();
 
-  const fetcher = useFetcher();
+  const [idToDelete, setIdToDelete] = useState<string | null>(null);
+
+  const isAdmin = user?.role === "ADMIN";
 
   function onChangeRole(isChecked: boolean, userId: string) {
     fetcher.submit(
@@ -161,6 +186,14 @@ export default function Users() {
       },
       { method: "PUT" },
     );
+  }
+
+  function deleteUser() {
+    fetcher.submit(
+      { _action: "delete", userId: idToDelete },
+      { method: "DELETE" },
+    );
+    deleteModal.onClose();
   }
 
   return (
@@ -181,6 +214,11 @@ export default function Users() {
                 <Th>Email</Th>
                 <Th>Administrador?</Th>
                 <Th>Data de criação</Th>
+                {isAdmin ? (
+                  <Th>
+                    <VisuallyHidden>Ações</VisuallyHidden>
+                  </Th>
+                ) : null}
               </Tr>
             </Thead>
             <Tbody>
@@ -199,6 +237,22 @@ export default function Users() {
                       .tz("America/Fortaleza")
                       .format("DD/MM/YYYY")}
                   </Td>
+                  <Td>
+                    {isAdmin ? (
+                      <IconButton
+                        aria-label="Excluir Usuário"
+                        icon={<DeleteIcon />}
+                        onClick={() => {
+                          setIdToDelete(user.id);
+                          deleteModal.onOpen();
+                        }}
+                        variant="ghost"
+                        colorScheme="red"
+                        isRound
+                        size="sm"
+                      />
+                    ) : null}
+                  </Td>
                 </Tr>
               ))}
             </Tbody>
@@ -206,6 +260,15 @@ export default function Users() {
         </TableContainer>
       </Container>
       {isOpen ? <UserModal onClose={onClose} /> : null}
+      <MyAlertDialog
+        isOpen={deleteModal.isOpen}
+        onClose={() => {
+          setIdToDelete(null);
+          deleteModal.onClose();
+        }}
+        onDelete={deleteUser}
+        title="Excluir usuário"
+      />
     </>
   );
 }

@@ -10,8 +10,8 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { json, redirectDocument } from "@remix-run/node";
-import { Form, Link, useLoaderData } from "@remix-run/react";
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
 import type {
   ActionFunctionArgs,
   LoaderFunctionArgs,
@@ -58,12 +58,6 @@ export async function action({ request }: ActionFunctionArgs) {
       }
 
       return null;
-    }
-
-    case "print-pdf": {
-      const deliveryId = formData.get("deliveryId");
-
-      return redirectDocument(`/print-pdf?deliveryId=${deliveryId}`);
     }
 
     default:
@@ -132,21 +126,18 @@ export default function Deliveries() {
                     </Flex>
                   ))}
                 </Box>
-                <Form method="POST">
-                  <input type="hidden" name="deliveryId" value={d.id} />
-                  <IconButton
-                    variant={"outline"}
-                    size={"sm"}
-                    aria-label={"Imprimir"}
-                    icon={<GrPrint />}
-                    type="submit"
-                    name="_action"
-                    value="print-pdf"
-                    /*  as="a"
-                    target="_blank"
-                    href={`/print-pdf?deliveryId=${d.id}`} */
-                  />
-                </Form>
+
+                <IconButton
+                  variant={"outline"}
+                  size={"sm"}
+                  aria-label={"Imprimir"}
+                  icon={<GrPrint />}
+                  name="_action"
+                  value="print-pdf"
+                  as="a"
+                  target="_blank"
+                  href={`/print-pdf?deliveryId=${d.id}`}
+                />
               </Flex>
             ))}
           </VStack>

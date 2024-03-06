@@ -1,9 +1,11 @@
+import { DeleteIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
   Divider,
   HStack,
   Heading,
+  IconButton,
   Link,
   Stat,
   StatLabel,
@@ -14,18 +16,20 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { Link as RemixLink, useLoaderData } from "@remix-run/react";
+import { json, redirect } from "@remix-run/node";
+import { Link as RemixLink, useFetcher, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
+import { MyAlertDialog } from "~/components/AlertDialog";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import {
+  deleteBuildingSite,
   editBuildingSite,
   getBuildingSite,
 } from "~/models/buildingSite.server";
@@ -37,6 +41,7 @@ import {
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
+import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
 import { DeliveyModal } from "../../components/DeliveyModal";
@@ -63,8 +68,6 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
     })),
   };
-
-  console.log(buildingSiteWithFormatedDate.deliveries.map((d) => d.date));
 
   return json({
     buildingSite: buildingSiteWithFormatedDate,
@@ -179,6 +182,16 @@ export async function action({ request }: ActionFunctionArgs) {
       return null;
     }
 
+    case "delete-building-site": {
+      const id = formData.get("buildingId");
+
+      if (typeof id === "string") {
+        await deleteBuildingSite(id);
+      }
+
+      return redirect("/building-sites");
+    }
+
     default:
       throw new Error("Invalid action");
   }
@@ -187,10 +200,24 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
+  const user = useUser();
+
+  const fetcher = useFetcher();
+
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
+  const deleteModal = useDisclosure();
 
   const cardColor = useColorModeValue("gray.100", "gray.700");
+
+  const isAdmin = user?.role === "ADMIN";
+
+  function deleteBuildingSite() {
+    fetcher.submit(
+      { buildingId: buildingSite.id, _action: "delete-building-site" },
+      { method: "DELETE" },
+    );
+  }
 
   return (
     <>
@@ -211,6 +238,16 @@ export default function BuildingSite() {
             >
               Editar Obra
             </Button>
+
+            {isAdmin ? (
+              <IconButton
+                aria-label="Delete building site"
+                icon={<DeleteIcon />}
+                variant="outline"
+                colorScheme="red"
+                onClick={deleteModal.onOpen}
+              />
+            ) : null}
           </HStack>
         </VStack>
 
@@ -285,6 +322,14 @@ export default function BuildingSite() {
           client={buildingSite.client}
           values={buildingSite}
           onClose={() => setShowBuildingModal(false)}
+        />
+      ) : null}
+      {deleteModal.isOpen ? (
+        <MyAlertDialog
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.onClose}
+          onDelete={deleteBuildingSite}
+          title="Deletar Obra"
         />
       ) : null}
     </>

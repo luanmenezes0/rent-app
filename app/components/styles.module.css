@@ -1,0 +1,26 @@
+.container :global {
+  width: 100%;
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  td,
+  th {
+    border: solid 1px #000;
+  }
+
+  td {
+    padding: 5px;
+  }
+}
+
+.box {
+  border: solid 1px #000;
+  width: 120px;
+  height: 30px;
+  text-align: left;
+  vertical-align: middle;
+  padding: 2px;
+}
