@@ -3,6 +3,7 @@ import {
   Button,
   Container,
   Divider,
+  Grid,
   HStack,
   Heading,
   IconButton,
@@ -278,7 +279,7 @@ export default function BuildingSite() {
           >
             Materiais
           </Heading>
-          <HStack>
+          <Grid templateColumns="repeat(auto-fit, minmax(12rem, 1fr))" gap={3}>
             {inventory.map((rentable) => (
               <Stat
                 key={rentable.rentableId}
@@ -292,7 +293,7 @@ export default function BuildingSite() {
                 <StatNumber>{rentable.count}</StatNumber>
               </Stat>
             ))}
-          </HStack>
+          </Grid>
         </VStack>
         <Divider />
         <VStack align="stretch" as="section">

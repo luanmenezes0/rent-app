@@ -53,7 +53,6 @@ export default function Index() {
           <table>
             <thead>
               <tr>
-                <th>Código</th>
                 <th>Item</th>
                 <th>Quantidade</th>
                 <th>Status</th>
@@ -63,7 +62,6 @@ export default function Index() {
             <tbody>
               {delivery.units.map((unit) => (
                 <tr key={unit.id}>
-                  <td>{unit.id}</td>
                   <td>{unit.rentable.name}</td>
                   <td>{Math.abs(unit.count)}</td>
                   <td>{unit.deliveryType === 1 ? "Entrega" : "Devolução"}</td>
