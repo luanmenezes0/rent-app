@@ -1,14 +1,4 @@
-import {
-  Container,
-  Heading,
-  Table,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  VStack,
-} from "@chakra-ui/react";
+import { Box, Flex, Heading, VStack } from "@chakra-ui/react";
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -18,8 +8,9 @@ import invariant from "tiny-invariant";
 import { getDelivery } from "~/models/delivery.server";
 import { requireUserId } from "~/session.server";
 
+import styles from "../../components/styles.module.css";
+
 export async function loader({ request, params }: LoaderFunctionArgs) {
-  console.log(request);
   await requireUserId(request);
 
   invariant(params.deliveryId, "buldingId not found");
@@ -37,7 +28,7 @@ export default function Index() {
   const { delivery } = useLoaderData<typeof loader>();
 
   return (
-    <Container fontSize="14px">
+    <Box mx="100px" my="50px">
       <VStack gap={8} paddingTop={10} align="start">
         <VStack alignSelf="center">
           <Heading fontSize="20">Ordem de Entrega</Heading>
@@ -45,41 +36,66 @@ export default function Index() {
         </VStack>
 
         <VStack align="start" gap={0}>
-          <div>Nome: {delivery.buildingSite.client.name}</div>
-          <div>Endereço da Obra: {delivery.buildingSite.address}</div>
-          <div>Telefone: {delivery.buildingSite.client.phoneNumber}</div>
-          <div>Data: {dayjs(delivery.date).format("DD/MM/YYYY")}</div>
+          <div>
+            <b>Nome:</b> {delivery.buildingSite.client.name}
+          </div>
+          <div>
+            <b>Endereço da Obra:</b> {delivery.buildingSite.address}
+          </div>
+          <div>
+            <b>Telefone:</b> {delivery.buildingSite.client.phoneNumber}
+          </div>
+          <div>
+            <b>Data:</b> {dayjs(delivery.date).format("DD/MM/YYYY")}
+          </div>
         </VStack>
 
-        <Table size="sm" colorScheme="black" variant="striped">
-          <Thead>
-            <Tr>
-              <Th>Código</Th>
-              <Th>Item</Th>
-              <Th>Quantidade</Th>
-              <Th>Status</Th>
-            </Tr>
-          </Thead>
-          <Tbody>
-            {delivery.units.map((unit) => (
-              <Tr key={unit.id}>
-                <Td>{unit.id}</Td>
-                <Td>{unit.rentable.name}</Td>
-                <Td>{Math.abs(unit.count)}</Td>
-                <Td>{unit.deliveryType === 1 ? "Entrega" : "Devolução"}</Td>
-              </Tr>
-            ))}
-          </Tbody>
-        </Table>
-        {/* <pre>{JSON.stringify(delivery, null, 2)}</pre> */}
+        <div className={styles.container}>
+          <table>
+            <thead>
+              <tr>
+                <th>Código</th>
+                <th>Item</th>
+                <th>Quantidade</th>
+                <th>Status</th>
+                <th>Valor</th>
+              </tr>
+            </thead>
+            <tbody>
+              {delivery.units.map((unit) => (
+                <tr key={unit.id}>
+                  <td>{unit.id}</td>
+                  <td>{unit.rentable.name}</td>
+                  <td>{Math.abs(unit.count)}</td>
+                  <td>{unit.deliveryType === 1 ? "Entrega" : "Devolução"}</td>
+                  <td></td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <Flex justifyContent="space-between">
+            <div>Não vale como recibo</div>
+            <Flex alignItems="center" gap={1}>
+              <b>Valor Total:</b>
 
-        <p>Assinatura do cliente: _____________________________________</p>
-        <footer>
-          <span>Naldo Locações - </span>
-          <span> Rua 121, 122, Planalto Caucaia - </span>
-          <span>Telefone: 85 33427462</span>
-        </footer>
+              <div className={styles.box}>
+                <div>R$</div>
+              </div>
+            </Flex>
+          </Flex>
+        </div>
+
+        <p>
+          Assinatura: _______________________________________________
+        </p>
+        <Box alignSelf="center">
+          <footer>
+            <span>Naldo Locações - </span>
+            <span> Rua 121, 122, Planalto Caucaia - </span>
+            <span>Telefone: (85) 9 96439851</span>
+          </footer>
+        </Box>
       </VStack>
-    </Container>
+    </Box>
   );
 }

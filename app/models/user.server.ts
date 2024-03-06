@@ -41,6 +41,10 @@ export async function editUser(id: string, role: string) {
   });
 }
 
+export async function deleteUser(id: User["id"]) {
+  return prisma.user.delete({ where: { id } });
+}
+
 export async function deleteUserByEmail(email: User["email"]) {
   return prisma.user.delete({ where: { email } });
 }
