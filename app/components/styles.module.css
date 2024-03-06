@@ -17,9 +17,8 @@
 }
 
 .box {
-  margin: 10px;
   border: solid 1px #000;
-  width: 150px;
+  width: 120px;
   height: 30px;
   text-align: left;
   vertical-align: middle;

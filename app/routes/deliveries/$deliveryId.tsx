@@ -6,12 +6,11 @@ import dayjs from "dayjs";
 import invariant from "tiny-invariant";
 
 import { getDelivery } from "~/models/delivery.server";
-import { requireUserId } from "~/session.server";
 
 import styles from "../../components/styles.module.css";
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
-  await requireUserId(request);
+export async function loader({ params }: LoaderFunctionArgs) {
+  // await requireUserId(request);
 
   invariant(params.deliveryId, "buldingId not found");
 
@@ -73,7 +72,7 @@ export default function Index() {
               ))}
             </tbody>
           </table>
-          <Flex justifyContent="space-between">
+          <Flex justifyContent="space-between" pt={2}>
             <div>Não vale como recibo</div>
             <Flex alignItems="center" gap={1}>
               <b>Valor Total:</b>
@@ -85,9 +84,7 @@ export default function Index() {
           </Flex>
         </div>
 
-        <p>
-          Assinatura: _______________________________________________
-        </p>
+        <p>Assinatura: _______________________________________________</p>
         <Box alignSelf="center">
           <footer>
             <span>Naldo Locações - </span>
