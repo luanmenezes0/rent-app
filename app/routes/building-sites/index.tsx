@@ -1,66 +1,91 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
+import {
+  Container,
+  Heading,
+  Table,
+  TableContainer,
+  Tbody,
+  Td,
+  Th,
+  Thead,
+  Tr,
+  VisuallyHidden,
+} from "@chakra-ui/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import { Table } from "flowbite-react";
 
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import Header from "~/components/Header";
+import { PaginationBar } from "~/components/PaginationBar";
 import { getBuildingSites } from "~/models/buildingSite.server";
 import { requireUserId } from "~/session.server";
+import { PAGINATION_LIMIT } from "~/utils";
 
-export async function loader({ request }: LoaderArgs) {
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
-  return json({ buildingSites: await getBuildingSites() });
+  const url = new URL(request.url);
+  const top = Number(url.searchParams.get("$top")) || PAGINATION_LIMIT;
+  const skip = Number(url.searchParams.get("$skip")) || 0;
+  const search = url.searchParams.get("search") ?? undefined;
+
+  const { data, count } = await getBuildingSites({
+    top,
+    skip,
+    search,
+  });
+
+  return json({ buildingSites: data, count });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   return null;
 }
 
 export default function BuildingSites() {
-  const { buildingSites } = useLoaderData<typeof loader>();
+  const { buildingSites, count } = useLoaderData<typeof loader>();
 
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-6 p-8">
-        <h1 className="text-6xl font-bold">Obras</h1>
-
-        <Table striped>
-          <Table.Head>
-            <Table.HeadCell>Id</Table.HeadCell>
-            <Table.HeadCell>Nome</Table.HeadCell>
-            <Table.HeadCell>Endereço</Table.HeadCell>
-            <Table.HeadCell>
-              <span className="sr-only">Ações</span>
-            </Table.HeadCell>
-          </Table.Head>
-          <Table.Body className="divide-y">
-            {buildingSites.map((bs) => (
-              <Table.Row
-                key={bs.id}
-                className="bg-white dark:border-gray-700 dark:bg-gray-800"
-              >
-                <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
-                  {bs.id}
-                </Table.Cell>
-                <Table.Cell>{bs.name}</Table.Cell>
-                <Table.Cell>{bs.address}</Table.Cell>
-                <Table.Cell>
-                  <Link
-                    className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
-                    to={`/building-sites/${bs.id}`}
-                  >
-                    Ver detalhes
-                  </Link>
-                </Table.Cell>
-              </Table.Row>
-            ))}
-          </Table.Body>
-        </Table>
-      </main>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <Heading as="h1" size="2xl">
+          Obras
+        </Heading>
+        <TableContainer>
+          <Table>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Endereço</Th>
+                <Th>Status</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {buildingSites.map((bs) => (
+                <Tr key={bs.id}>
+                  <Td>{bs.id}</Td>
+                  <Td>{bs.name}</Td>
+                  <Td>{bs.address.slice(0, 46)}</Td>
+                  <Td>
+                    <BuildingSiteStatusLabel status={bs.status} />
+                  </Td>
+                  <Td>
+                    <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+        <PaginationBar total={count} />
+      </Container>
     </>
   );
 }

@@ -1,6 +1,9 @@
 import { PassThrough } from "stream";
-import type { EntryContext } from "@remix-run/node";
-import { Response } from "@remix-run/node";
+
+import createEmotionCache from "@emotion/cache";
+import { CacheProvider as EmotionCacheProvider } from "@emotion/react";
+import createEmotionServer from "@emotion/server/create-instance";
+import { createReadableStreamFromReadable, type EntryContext } from "@remix-run/node";
 import { RemixServer } from "@remix-run/react";
 import isbot from "isbot";
 import { renderToPipeableStream } from "react-dom/server";
@@ -11,31 +14,40 @@ export default function handleRequest(
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
-  remixContext: EntryContext
+  remixContext: EntryContext,
 ) {
-  const callbackName = isbot(request.headers.get("user-agent"))
+  const callbackMethod = isbot(request.headers.get("user-agent"))
     ? "onAllReady"
     : "onShellReady";
 
   return new Promise((resolve, reject) => {
     let didError = false;
 
+    const emotionCache = createEmotionCache({ key: "css" });
+
     const { pipe, abort } = renderToPipeableStream(
-      <RemixServer context={remixContext} url={request.url} />,
+      <EmotionCacheProvider value={emotionCache}>
+        <RemixServer context={remixContext} url={request.url} />
+      </EmotionCacheProvider>,
       {
-        [callbackName]: () => {
-          const body = new PassThrough();
+        [callbackMethod]() {
+          const reactBody = new PassThrough();
+          const emotionServer = createEmotionServer(emotionCache);
+
+          const bodyWithStyles = emotionServer.renderStylesToNodeStream();
+          reactBody.pipe(bodyWithStyles);
 
           responseHeaders.set("Content-Type", "text/html");
 
           resolve(
-            new Response(body, {
+            // @ts-expect-error - Remix types are incorrect?
+            new Response(createReadableStreamFromReadable(bodyWithStyles), {
               headers: responseHeaders,
               status: didError ? 500 : responseStatusCode,
-            })
+            }),
           );
 
-          pipe(body);
+          pipe(reactBody);
         },
         onShellError: (err: unknown) => {
           reject(err);
@@ -45,7 +57,7 @@ export default function handleRequest(
 
           console.error(error);
         },
-      }
+      },
     );
 
     setTimeout(abort, ABORT_DELAY);

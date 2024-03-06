@@ -1,60 +1,148 @@
+import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
+import {
+  Box,
+  Container,
+  Flex,
+  HStack,
+  Heading,
+  Icon,
+  IconButton,
+  VStack,
+  useColorModeValue,
+} from "@chakra-ui/react";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
-import type { LoaderArgs } from "@remix-run/server-runtime";
+import type {
+  ActionFunctionArgs,
+  LoaderFunctionArgs,
+} from "@remix-run/server-runtime";
 import dayjs from "dayjs";
-import { Card } from "flowbite-react";
-import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
-import Header from "~/components/Header";
-import { getDeliveries } from "~/models/delivery.server";
-import { requireUserId } from "~/session.server";
+import { GrDeliver, GrPrint } from "react-icons/gr";
 
-export async function loader({ request }: LoaderArgs) {
+import Header from "~/components/Header";
+import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
+import { requireUserId } from "~/session.server";
+import { groupBy } from "~/utils";
+
+export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
 
-  return json({ deliveries: await getDeliveries() });
+  const deliveries = await getDeliveries();
+
+  const deliveriesGroupedByDate = Object.entries(
+    groupBy(
+      deliveries.map((d) => ({
+        ...d,
+        date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
+        day: dayjs(d.date).tz("America/Fortaleza").startOf("day"),
+      })),
+      (d) => d.day,
+    ),
+  ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
+
+  return json({ deliveries: deliveriesGroupedByDate });
+}
+
+export async function action({ request }: ActionFunctionArgs) {
+  await requireUserId(request);
+
+  const formData = await request.formData();
+  const action = formData.get("_action");
+
+  switch (action) {
+    case "delete-delivery": {
+      const id = formData.get("id");
+
+      if (typeof id === "string") {
+        await deleteDelivery(id);
+      }
+
+      return null;
+    }
+
+    default:
+      throw new Error("Invalid action");
+  }
 }
 
 export default function Deliveries() {
   const { deliveries } = useLoaderData<typeof loader>();
 
+  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const iconBgColor = useColorModeValue("gray.200", "gray.600");
+
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-4 p-8">
-        <h1 className="text-6xl font-bold">Remessas</h1>
-        <>
-          {deliveries.map((d) => (
-            <Card key={d.id}>
-              <h5 className="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-                {d.buildingSite.name} -{" "}
-                {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-              </h5>
-              {d.units.map((u) => (
-                <p
-                  key={u.id}
-                  className="font-normal text-gray-700 dark:text-gray-400"
-                >
-                  <div className="flex items-center gap-2">
-                    {u.rentable.name} - {u.count}
-                    {u.deliveryType === 1 ? (
-                      <HiOutlineArrowUp color="green" />
-                    ) : (
-                      <HiOutlineArrowDown color="red" />
-                    )}
-                  </div>
-                </p>
-              ))}
-
-              <Link
-                className="font-medium text-blue-600 hover:underline dark:text-blue-500"
-                to={`/building-sites/${d.buildingSiteId}`}
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <Heading as="h1" size="2xl">
+          Remessas
+        </Heading>
+        {deliveries.map(([date, data]) => (
+          <VStack key={date} align="strech" gap="2">
+            <Heading as="h2" size="md">
+              {dayjs(date).tz("America/Fortaleza").format("DD/MM/YYYY")}
+            </Heading>
+            {data.map((d) => (
+              <Flex
+                bgColor={cardColor}
+                gap={4}
+                key={d.id}
+                p="4"
+                borderRadius="8"
+                flexDirection={{ base: "column", md: "row" }}
               >
-                Ver Obra
-              </Link>
-            </Card>
-          ))}
-        </>
-      </main>
+                <Flex
+                  justify="center"
+                  align="center"
+                  borderRadius="8"
+                  display={{ base: "none", md: "flex" }}
+                  p="2"
+                  bgColor={iconBgColor}
+                  h="min-content"
+                >
+                  <Icon color="gray.500" w={8} h={8} as={GrDeliver} />
+                </Flex>
+                <Box justifySelf="start" flexGrow={1}>
+                  <HStack pb="2" fontSize="14">
+                    <Heading as="h3" fontSize="14">
+                      {d.date}
+                    </Heading>
+                    {d.buildingSite ? (
+                      <Link to={`/building-sites/${d.buildingSite.id}`}>
+                        - {d.buildingSite.name}
+                      </Link>
+                    ) : null}
+                  </HStack>
+
+                  {d.units.map((u) => (
+                    <Flex align="center" gap="2" borderRadius="8" key={u.id}>
+                      {u.deliveryType === 1 ? (
+                        <TriangleUpIcon color="green" />
+                      ) : (
+                        <TriangleDownIcon color="red" />
+                      )}
+                      {u.rentable.name} - {Math.abs(u.count)}{" "}
+                    </Flex>
+                  ))}
+                </Box>
+
+                <IconButton
+                  variant={"outline"}
+                  size={"sm"}
+                  aria-label={"Imprimir"}
+                  icon={<GrPrint />}
+                  name="_action"
+                  value="print-pdf"
+                  as="a"
+                  target="_blank"
+                  href={`/print-pdf?deliveryId=${d.id}`}
+                />
+              </Flex>
+            ))}
+          </VStack>
+        ))}
+      </Container>
     </>
   );
 }

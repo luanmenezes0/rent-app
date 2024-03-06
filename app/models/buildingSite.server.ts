@@ -1,8 +1,36 @@
 import type { BuildingSite } from "@prisma/client";
+
 import { prisma } from "~/db.server";
 
-export async function getBuildingSites() {
-  return prisma.buildingSite.findMany();
+export async function getBuildingSites({
+  search,
+  top,
+  skip,
+}: {
+  search?: string;
+  skip?: number;
+  top?: number;
+}) {
+  const [count, data] = await prisma.$transaction([
+    prisma.buildingSite.count({
+      where: {
+        name: {
+          contains: search,
+        },
+      },
+    }),
+    prisma.buildingSite.findMany({
+      skip,
+      take: top,
+      where: {
+        name: {
+          contains: search,
+        },
+      },
+    }),
+  ]);
+
+  return { count, data };
 }
 
 export async function getBuildingSitesByClientId(clientId: string) {
@@ -17,7 +45,7 @@ export async function getBuildingSite(id: string) {
     include: {
       client: true,
       deliveries: {
-        orderBy: { createdAt: "desc" },
+        orderBy: { date: "desc" },
         include: {
           units: {
             include: {
@@ -32,13 +60,13 @@ export async function getBuildingSite(id: string) {
 }
 
 export async function createBuildingSite(
-  buildingSite: Pick<BuildingSite, "address" | "name" | "clientId">
+  buildingSite: Pick<BuildingSite, "address" | "name" | "clientId">,
 ) {
   return prisma.buildingSite.create({ data: buildingSite });
 }
 
 export async function editBuildingSite(
-  buildingSite: Pick<BuildingSite, "address" | "name" | "id">
+  buildingSite: Omit<BuildingSite, "createdAt" | "updatedAt" | "clientId">,
 ) {
   return prisma.buildingSite.update({
     data: buildingSite,

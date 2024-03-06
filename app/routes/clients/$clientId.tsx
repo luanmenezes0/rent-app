@@ -1,24 +1,38 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import {
-  Link,
-  useActionData,
-  useCatch,
-  useLoaderData,
-  useTransition,
-} from "@remix-run/react";
-import { Button, Table } from "flowbite-react";
-import { useEffect, useState } from "react";
+  Button,
+  Container,
+  Heading,
+  Table,
+  TableCaption,
+  TableContainer,
+  Tbody,
+  Td,
+  Text,
+  Th,
+  Thead,
+  Tr,
+  useDisclosure,
+  VisuallyHidden,
+  VStack,
+} from "@chakra-ui/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { Link, useLoaderData } from "@remix-run/react";
+import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+
 import BuildingSiteModal from "~/components/BuildingSiteModal";
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
+import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
 import { createBuildingSite } from "~/models/buildingSite.server";
-import { getClient } from "~/models/client.server";
+import { editClient, getClient } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
+import { clientValidator } from "~/validators/clientValidation";
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
   invariant(params.clientId, "clientId not found");
 
@@ -31,7 +45,7 @@ export async function loader({ request, params }: LoaderArgs) {
   return json({ client });
 }
 
-export async function action({ request, params }: ActionArgs) {
+export async function action({ request, params }: ActionFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.clientId, "clientId not found");
@@ -56,6 +70,30 @@ export async function action({ request, params }: ActionArgs) {
       return null;
     }
 
+    case "edit": {
+      const result = await clientValidator.validate(formData);
+
+      if (result.error) {
+        return validationError(result.error);
+      }
+
+      await editClient({
+        address: result.data.address,
+        name: result.data.name,
+        phoneNumber: result.data.phoneNumber,
+        isLegalEntity: result.data.isLegalEntity === "true",
+        registrationNumber: result.data.registrationNumber ?? null,
+        id: Number(result.data.id),
+        city: result.data.city,
+        state: result.data.state,
+        neighborhood: result.data.neighborhood,
+        email: result.data.email ?? null,
+        streetCode: result.data.streetCode ?? null,
+      });
+
+      return null;
+    }
+
     default:
       throw new Error("unknown action");
   }
@@ -63,102 +101,106 @@ export async function action({ request, params }: ActionArgs) {
 
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
-  const actionData = useActionData();
-  const transition = useTransition();
+
+  const { isOpen, onClose, onOpen } = useDisclosure();
 
   const [show, setShow] = useState(false);
-
-  const isAdding = transition.state === "submitting";
-
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      setShow(false);
-    }
-  }, [isAdding, actionData]);
 
   return (
     <>
       <Header />
-      <main className="flex h-full flex-col gap-2 p-8">
-        <h2 className="text-2xl font-bold">{client.name}</h2>
-        <dl>
-          <dt className="font-bold">Endereço</dt>
-          <dd>{client.address}</dd>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <VStack>
+          <Text>Detalhes do Cliente</Text>
+          <Heading as="h1" size="xl">
+            {client.name}
+          </Heading>
+          <Button variant="outline" onClick={onOpen}>
+            Editar
+          </Button>
+        </VStack>
 
-          <dt className="font-bold">Telefone</dt>
-          <dd>{client.phoneNumber}</dd>
+        <VStack as="dl" align="flex-start">
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Endereço
+            </Text>
+            <dd>
+              {client.address}, {client.neighborhood}
+            </dd>
+            <dd>
+              {client.city} - {client.state}
+            </dd>
+          </div>
+
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Telefone
+            </Text>
+            <dd>{client.phoneNumber}</dd>
+          </div>
 
           {client.isLegalEntity ? (
-            <>
-              <dt className="font-bold">CNPJ</dt>
+            <div>
+              <Text fontWeight="bold" as="dt">
+                CNPJ
+              </Text>
               <dd>{client.registrationNumber || "-"}</dd>
-            </>
+            </div>
           ) : (
-            <>
-              <dt className="font-bold">CPF</dt>
+            <div>
+              <Text fontWeight="bold" as="dt">
+                CPF
+              </Text>
               <dd>{client.registrationNumber || "-"}</dd>
-            </>
+            </div>
           )}
-        </dl>
-        <Button onClick={() => setShow(true)}>Adicionar Obra</Button>
-        <div>
-          <Table striped>
-            <caption>
-              <h3 className="p-2 text-left text-xl font-bold">Obras</h3>
-            </caption>
-            <Table.Head>
-              <Table.HeadCell>Id</Table.HeadCell>
-              <Table.HeadCell>Nome</Table.HeadCell>
-              <Table.HeadCell>Endereço</Table.HeadCell>
-              <Table.HeadCell>
-                <span className="sr-only">Ações</span>
-              </Table.HeadCell>
-            </Table.Head>
-            <Table.Body className="divide-y">
+        </VStack>
+        <Button maxW="fit-content" onClick={() => setShow(true)}>
+          Adicionar Obra
+        </Button>
+        <TableContainer>
+          <Table>
+            <TableCaption>Obras</TableCaption>
+            <Thead>
+              <Tr>
+                <Th>Id</Th>
+                <Th>Nome</Th>
+                <Th>Endereço</Th>
+                <Th>Status</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
               {client.buildingSites.map((bs) => (
-                <Table.Row
-                  key={bs.id}
-                  className="bg-white dark:border-gray-700 dark:bg-gray-800"
-                >
-                  <Table.Cell className="whitespace-nowrap font-medium text-gray-900 dark:text-white">
+                <Tr key={bs.id}>
+                  <Td>
                     <Link to={`/building-sites/${bs.id}`}>{bs.id}</Link>
-                  </Table.Cell>
-                  <Table.Cell>{bs.name}</Table.Cell>
-                  <Table.Cell>{bs.address}</Table.Cell>
-                  <Table.Cell>
-                    <Link
-                      className="px-2 font-medium text-blue-600 hover:underline dark:text-blue-500"
-                      to={`/building-sites/${bs.id}`}
-                    >
-                      Ver detalhes
-                    </Link>
-                  </Table.Cell>
-                </Table.Row>
+                  </Td>
+                  <Td>{bs.name}</Td>
+                  <Td>{bs.address}</Td>
+                  <Td>
+                    <BuildingSiteStatusLabel status={bs.status} />
+                  </Td>
+                  <Td>
+                    <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                  </Td>
+                </Tr>
               ))}
-            </Table.Body>
+            </Tbody>
           </Table>
-        </div>
-        <hr className="my-4" />
-      </main>
-      {show && (
+        </TableContainer>
+      </Container>
+      {show ? (
         <BuildingSiteModal client={client} onClose={() => setShow(false)} />
-      )}
+      ) : null}
+      {isOpen ? (
+        <ClientModal onClose={onClose} editionMode values={client} />
+      ) : null}
     </>
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return <div>An unexpected error occurred: {error.message}</div>;
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 404) {
-    return <div>Cliente não encontrado</div>;
-  }
-
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
-}
+export { ErrorBoundary } from "~/components/ErrorBoundary";

@@ -1,34 +1,53 @@
-import type { ActionArgs, LoaderArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { DeleteIcon } from "@chakra-ui/icons";
 import {
-  Form,
-  useActionData,
-  useCatch,
-  useFetcher,
-  useLoaderData,
-  useTransition,
-} from "@remix-run/react";
+  Button,
+  Container,
+  Divider,
+  Grid,
+  HStack,
+  Heading,
+  IconButton,
+  Link,
+  Stat,
+  StatLabel,
+  StatNumber,
+  Text,
+  VStack,
+  useColorModeValue,
+  useDisclosure,
+} from "@chakra-ui/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
+import { Link as RemixLink, useFetcher, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
-import { Button, Label, Modal, Select, Timeline } from "flowbite-react";
-import { useEffect, useState } from "react";
-import { HiOutlineArrowDown, HiOutlineArrowUp } from "react-icons/hi";
+import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
+
+import { MyAlertDialog } from "~/components/AlertDialog";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
+import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
+import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import {
+  deleteBuildingSite,
   editBuildingSite,
   getBuildingSite,
 } from "~/models/buildingSite.server";
 import {
   createDeliveries,
+  deleteDelivery,
+  editDelivery,
   getBuildingSiteInventory,
 } from "~/models/delivery.server";
-import type { Rentable } from "~/models/inventory.server.";
+import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
+import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
-export async function loader({ request, params }: LoaderArgs) {
+import { DeliveyModal } from "../../components/DeliveyModal";
+
+export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
 
   invariant(params.buildingId, "buldingId not found");
@@ -40,11 +59,25 @@ export async function loader({ request, params }: LoaderArgs) {
   }
 
   const inventory = await getBuildingSiteInventory(params.buildingId);
-  
-  return json({ buildingSite, inventory });
+
+  const rentables = await getRentables();
+
+  const buildingSiteWithFormatedDate = {
+    ...buildingSite,
+    deliveries: buildingSite.deliveries.map((d) => ({
+      ...d,
+      date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
+    })),
+  };
+
+  return json({
+    buildingSite: buildingSiteWithFormatedDate,
+    inventory,
+    rentables,
+  });
 }
 
-export async function action({ request }: ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   await requireUserId(request);
 
   const formData = await request.formData();
@@ -62,12 +95,16 @@ export async function action({ request }: ActionArgs) {
         address: result.data.address,
         name: result.data.name,
         id: Number(result.data.id),
+        status: Number(result.data.status ?? 1),
       });
+
+      return null;
     }
 
     case "create-delivery": {
       const rentableIds = formData.getAll("rentableId") as string[];
       const buildingSiteId = formData.get("buildingSiteId") as string;
+      const date = formData.get("date") as string;
 
       const units = rentableIds
         .map((id) => {
@@ -83,189 +120,221 @@ export async function action({ request }: ActionArgs) {
         })
         .filter((u) => u.count !== 0);
 
-      await createDeliveries(units, buildingSiteId);
+      if (!units.length) {
+        return validationError({
+          fieldErrors: {
+            count: "É necessário informar a quantidade de pelo menos um item",
+          },
+        });
+      }
+
+      await createDeliveries(units, buildingSiteId, dayjs(date).toDate());
 
       return null;
+    }
+
+    case "edit-delivery": {
+      const rentableIds = formData.getAll("rentableId") as string[];
+      const buildingSiteId = formData.get("buildingSiteId") as string;
+      const date = formData.get("date") as string;
+      const id = formData.get("id") as string;
+
+      const units = rentableIds
+        .map((id) => {
+          const count = formData.get(`${id}_count`) as string;
+          const deliveryType = formData.get(`${id}_delivery_type`) as string;
+
+          return {
+            id: Number(id),
+            count: Number(deliveryType) === 1 ? Number(count) : -Number(count),
+            deliveryType: Number(deliveryType),
+            buildingSiteId: Number(buildingSiteId),
+          };
+        })
+        .filter((u) => u.count !== 0);
+
+      if (!units.length) {
+        return validationError({
+          fieldErrors: {
+            count: "É necessário informar a quantidade de pelo menos um item",
+          },
+        });
+      }
+
+      await editDelivery(
+        {
+          buildingSiteId: Number(buildingSiteId),
+          id: Number(id),
+          date: new Date(date),
+        },
+        units,
+      );
+
+      return null;
+    }
+
+    case "delete-delivery": {
+      const id = formData.get("id");
+
+      if (typeof id === "string") {
+        await deleteDelivery(id);
+      }
+
+      return null;
+    }
+
+    case "delete-building-site": {
+      const id = formData.get("buildingId");
+
+      if (typeof id === "string") {
+        await deleteBuildingSite(id);
+      }
+
+      return redirect("/building-sites");
     }
 
     default:
       throw new Error("Invalid action");
   }
 }
-interface DeliveryModalProps {
-  onClose: () => void;
-  buildingSiteId: number;
-}
-
-function DeliveyModal({ onClose, buildingSiteId }: DeliveryModalProps) {
-  const fetcher = useFetcher<{ rentables: Rentable[] }>();
-
-  useEffect(() => {
-    if (fetcher.type === "init") {
-      fetcher.load("/inventory");
-    }
-  }, [fetcher]);
-
-  return (
-    <Modal show onClose={onClose} size="md">
-      <Modal.Header>Nova Remessa</Modal.Header>
-      <Modal.Body>
-        <Form method="post" id="delivery-form" className="flex flex-col gap-4">
-          <input type="hidden" name="buildingSiteId" value={buildingSiteId} />
-          {fetcher.data?.rentables.map((rentable) => (
-            <div key={rentable.id}>
-              <input type="hidden" name="rentableId" value={rentable.id} />
-              <div className="grid grid-cols-3 items-center gap-2">
-                <Label htmlFor={`${rentable.id}_count`} value={rentable.name} />
-                <input
-                  min={0}
-                  type="number"
-                  name={`${rentable.id}_count`}
-                  id={`${rentable.id}_count`}
-                  className="block w-full rounded-lg border border-gray-300 bg-gray-50 p-2.5 text-sm text-gray-900 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 dark:focus:border-blue-500 dark:focus:ring-blue-500"
-                  placeholder=""
-                  defaultValue={0}
-                  required
-                />
-                <Select name={`${rentable.id}_delivery_type`}>
-                  <option value="1">Entrega</option>
-                  <option value="2">Retirada</option>
-                </Select>
-              </div>
-            </div>
-          ))}
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          name="_action"
-          value="create-delivery"
-          type="submit"
-          form="delivery-form"
-        >
-          Criar
-        </Button>
-        <Button onClick={onClose} color="gray">
-          Cancelar
-        </Button>
-      </Modal.Footer>
-    </Modal>
-  );
-}
 
 export default function BuildingSite() {
-  const { buildingSite, inventory } = useLoaderData<typeof loader>();
+  const { buildingSite, inventory, rentables } = useLoaderData<typeof loader>();
 
-  const transition = useTransition();
-  const actionData = useActionData();
+  const user = useUser();
 
-  const [show, setShow] = useState(false);
+  const fetcher = useFetcher();
+
+  const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
+  const deleteModal = useDisclosure();
 
-  const isAdding = transition.state === "submitting";
+  const cardColor = useColorModeValue("gray.100", "gray.700");
 
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      setShow(false);
-      setShowBuildingModal(false);
-    }
-  }, [isAdding, actionData]);
+  const isAdmin = user?.role === "ADMIN";
+
+  function deleteBuildingSite() {
+    fetcher.submit(
+      { buildingId: buildingSite.id, _action: "delete-building-site" },
+      { method: "DELETE" },
+    );
+  }
 
   return (
     <>
       <Header />
-      <main className="h-full p-8">
-        <h2 className="text-2xl font-bold">{buildingSite.name}</h2>
-        <div className="flex justify-between">
-          <div>
-            <dl>
-              <dt className="font-bold">Endereço</dt>
-              <dd>{buildingSite.address}</dd>
-
-              <dt className="font-bold">Cliente</dt>
-              <dd>{buildingSite.client.name}</dd>
-            </dl>
-            <Button onClick={() => setShow(true)}>Adicionar Remessa</Button>
-            <Button onClick={() => setShowBuildingModal(true)}>
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="7">
+        <VStack>
+          <Text>Detalhes da Obra</Text>
+          <Heading as="h1" size="xl">
+            {buildingSite.name}
+          </Heading>
+          <HStack py={6}>
+            <Button variant="outline" onClick={onOpen}>
+              Adicionar Remessa
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowBuildingModal(true)}
+            >
               Editar Obra
             </Button>
-            {inventory.map((rentable) => (
-              <div key={rentable.rentableId}>
-                <h3>{rentable.rentableId}</h3>
-                <div>{rentable.count}</div>
-              </div>
-            ))}
-          </div>
-          <div className="px-8 py-4">
-            <h3 className="text-black-400 p-4 text-left text-xl font-bold">
-              Remessas
-            </h3>
 
-            <Timeline>
-              {buildingSite.deliveries.map((d) => (
-                <Timeline.Item key={d.id}>
-                  <Timeline.Point color="red" />
-                  <Timeline.Content>
-                    <Timeline.Time>
-                      {dayjs(d.createdAt).format("DD/MM/YYYY HH:mm")}
-                    </Timeline.Time>
-                    {/* <Timeline.Title>{d.buildingSiteId}</Timeline.Title> */}
-                    <Timeline.Body>
-                      <div className="flex items-center gap-2">
-                        {d.units.map((u) => (
-                          <p
-                            key={u.id}
-                            className="font-normal text-gray-700 dark:text-gray-400"
-                          >
-                            <div className="flex items-center gap-2">
-                              {u.rentable.name} - {u.count}
-                              {u.deliveryType === 1 ? (
-                                <HiOutlineArrowUp color="green" />
-                              ) : (
-                                <HiOutlineArrowDown color="red" />
-                              )}
-                            </div>
-                          </p>
-                        ))}
-                      </div>
-                    </Timeline.Body>
-                  </Timeline.Content>
-                </Timeline.Item>
-              ))}
-            </Timeline>
+            {isAdmin ? (
+              <IconButton
+                aria-label="Delete building site"
+                icon={<DeleteIcon />}
+                variant="outline"
+                colorScheme="red"
+                onClick={deleteModal.onOpen}
+              />
+            ) : null}
+          </HStack>
+        </VStack>
+
+        <VStack as="dl" align="flex-start">
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Endereço
+            </Text>
+            <dd>{buildingSite.address}</dd>
           </div>
-        </div>
-      </main>
-      {show && (
+
+          <div>
+            <Text fontWeight="bold" as="dt">
+              Cliente
+            </Text>
+            <Link to={`/clients/${buildingSite.client.id}`} as={RemixLink}>
+              <dd>{buildingSite.client.name}</dd>
+            </Link>
+          </div>
+          <BuildingSiteStatusLabel status={buildingSite.status} />
+        </VStack>
+        <Divider />
+        <VStack align="stretch" as="section">
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Materiais
+          </Heading>
+          <Grid templateColumns="repeat(auto-fit, minmax(12rem, 1fr))" gap={3}>
+            {inventory.map((rentable) => (
+              <Stat
+                key={rentable.rentableId}
+                bgColor={cardColor}
+                padding="4"
+                borderRadius="16"
+              >
+                <StatLabel>
+                  {rentables.find((i) => i.id === rentable.rentableId)?.name}
+                </StatLabel>
+                <StatNumber>{rentable.count}</StatNumber>
+              </Stat>
+            ))}
+          </Grid>
+        </VStack>
+        <Divider />
+        <VStack align="stretch" as="section">
+          <Heading
+            as="h2"
+            size="lg"
+            color={useColorModeValue("green.600", "green.100")}
+          >
+            Remessas
+          </Heading>
+          {buildingSite.deliveries.map((d) => (
+            <DeliveryCard key={d.id} delivery={d} rentables={rentables} />
+          ))}
+        </VStack>
+      </Container>
+      {/* delivery creation */}
+      {isOpen ? (
         <DeliveyModal
-          onClose={() => setShow(false)}
+          onClose={onClose}
           buildingSiteId={buildingSite.id}
+          rentables={rentables}
         />
-      )}
-      {showBuildingModal && (
+      ) : null}
+      {showBuildingModal ? (
         <BuildingSiteModal
           editionMode
           client={buildingSite.client}
           values={buildingSite}
           onClose={() => setShowBuildingModal(false)}
         />
-      )}
+      ) : null}
+      {deleteModal.isOpen ? (
+        <MyAlertDialog
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.onClose}
+          onDelete={deleteBuildingSite}
+          title="Deletar Obra"
+        />
+      ) : null}
     </>
   );
 }
 
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return <div>An unexpected error occurred: {error.message}</div>;
-}
-
-export function CatchBoundary() {
-  const caught = useCatch();
-
-  if (caught.status === 404) {
-    return <div>Obra não encontrada</div>;
-  }
-
-  throw new Error(`Unexpected caught response with status: ${caught.status}`);
-}
+export { ErrorBoundary } from "~/components/ErrorBoundary";

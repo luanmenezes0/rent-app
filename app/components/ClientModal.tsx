@@ -1,141 +1,251 @@
+import {
+  Button,
+  FormControl,
+  FormErrorMessage,
+  FormLabel,
+  HStack,
+  Input,
+  Modal,
+  ModalBody,
+  ModalCloseButton,
+  ModalContent,
+  ModalFooter,
+  ModalHeader,
+  ModalOverlay,
+  Radio,
+  RadioGroup,
+  VStack,
+} from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
-import { Form, useActionData } from "@remix-run/react";
-import { Button, Label, Modal, TextInput } from "flowbite-react";
-import FormFieldError from "./FormFieldError";
+import { useFetcher } from "@remix-run/react";
+import { SerializeFrom } from "@remix-run/server-runtime";
+import { useEffect, useState } from "react";
 
 interface ClientModalProps {
   onClose: () => void;
   editionMode?: boolean;
-  values?: Omit<Client, "createdAt" | "updatedAt">;
+  values?: SerializeFrom<Client>;
 }
 
 export function ClientModal(props: ClientModalProps) {
   const { onClose, editionMode, values } = props;
 
-  const actionData = useActionData<{ fieldErrors: Partial<Client> }>();
+  const fetcher = useFetcher<{ fieldErrors: Record<keyof Client, string> }>();
 
-  function hasError(field: keyof Client) {
-    return actionData?.fieldErrors?.[field] ? { border: "2px solid red" } : {};
-  }
+  const [label, setLabel] = useState<"CNPJ" | "CPF">(() => {
+    if (editionMode && values) {
+      return values.isLegalEntity ? "CNPJ" : "CPF";
+    }
+
+    return "CPF";
+  });
+
+  useEffect(() => {
+    if (fetcher.data === null) {
+      onClose();
+    }
+  }, [fetcher.data, onClose]);
 
   return (
-    <Modal show onClose={onClose}>
-      <Modal.Header>{editionMode ? "Editar" : "Criar"} Cliente</Modal.Header>
-      <Modal.Body>
-        <Form method="post" id="client-form" className="flex flex-col gap-4">
-          <input type="hidden" name="id" defaultValue={values?.id} />
-          <div>
-            <Label htmlFor="name" value="Nome" />
-            <TextInput
-              id="name"
-              name="name"
-              required
-              defaultValue={values?.name}
-              style={hasError("name")}
-            />
-            {actionData?.fieldErrors?.name && (
-              <FormFieldError>{actionData?.fieldErrors?.name}</FormFieldError>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="address" value="Endereço" />
-            <TextInput
-              id="address"
-              name="address"
-              required
-              defaultValue={values?.address}
-              style={hasError("address")}
-            />
-            {actionData?.fieldErrors?.address && (
-              <FormFieldError>
-                {actionData?.fieldErrors?.address}
-              </FormFieldError>
-            )}
-          </div>
-          <div>
-            <Label htmlFor="phoneNumber" value="Telefone" />
-            <TextInput
-              id="phoneNumber"
-              name="phoneNumber"
-              defaultValue={values?.phoneNumber ?? ''}
-              minLength={10}
-              required
-              style={hasError("phoneNumber")}
-            />
-            {actionData?.fieldErrors?.phoneNumber && (
-              <FormFieldError>
-                {actionData?.fieldErrors?.phoneNumber}
-              </FormFieldError>
-            )}
-          </div>
-          <fieldset>
-            <legend className="mb-2 block text-sm font-medium text-gray-900 dark:text-gray-300">
-              Pessoa Jurídica
-            </legend>
-            <div className="flex gap-4">
-              <div className="flex items-center">
-                <input
-                  id="isLegalEntity-option-1"
-                  type="radio"
-                  name="isLegalEntity"
-                  value="true"
-                  className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:bg-blue-600 dark:focus:ring-blue-600"
+    <Modal size="xl" isOpen onClose={onClose}>
+      <ModalOverlay />
+      <ModalContent>
+        <ModalHeader>{editionMode ? "Editar" : "Criar"} Cliente</ModalHeader>
+        <ModalCloseButton />
+        <ModalBody>
+          <fetcher.Form method="PUT" id="client-form">
+            <FormControl as="fieldset">
+              <FormLabel as="legend">Pessoa Jurídica</FormLabel>
+              <RadioGroup
+                name="isLegalEntity"
+                defaultValue={
+                  editionMode ? values?.isLegalEntity.toString() : "false"
+                }
+                onChange={(value) => {
+                  value === "true" ? setLabel("CNPJ") : setLabel("CPF");
+                }}
+              >
+                <HStack spacing={4}>
+                  <Radio value="true">Sim</Radio>
+                  <Radio value="false" defaultChecked>
+                    Não
+                  </Radio>
+                </HStack>
+              </RadioGroup>
+            </FormControl>
+
+            <FormControl
+              isInvalid={Boolean(fetcher.data?.fieldErrors?.registrationNumber)}
+            >
+              <FormLabel htmlFor="registrationNumber">{label}</FormLabel>
+              <Input
+                id="registrationNumber"
+                name="registrationNumber"
+                defaultValue={values?.registrationNumber ?? ""}
+                minLength={11}
+                onBlur={async (e) => {
+                  const form = e.target.form;
+
+                  const legalEntityChecked =
+                    form?.isLegalEntity.value === "true";
+
+                  const inputValue = e.target.value
+                    .replaceAll(".", "")
+                    .replaceAll("/", "")
+                    .replaceAll("-", "");
+
+                  if (inputValue.length === 14 && legalEntityChecked) {
+                    const res = await fetch(
+                      `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
+                        .replaceAll(".", "")
+                        .replaceAll("/", "")
+                        .replaceAll("-", "")}`,
+                    );
+
+                    const data = await res.json();
+
+                    if (res.ok && form) {
+                      const name = form.elements.namedItem(
+                        "name",
+                      ) as HTMLInputElement | null;
+                      if (name) name.value = data["RAZAO SOCIAL"];
+                      form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
+                      form.phoneNumber.value = data.TELEFONE;
+                      form.neighborhood.value = data.BAIRRO;
+                      form.city.value = data.MUNICIPIO;
+                      form.state.value = data.UF;
+                    }
+                  }
+                }}
+              />
+              {fetcher.data?.fieldErrors?.registrationNumber ? (
+                <FormErrorMessage>
+                  {fetcher.data?.fieldErrors?.registrationNumber}
+                </FormErrorMessage>
+              ) : null}
+            </FormControl>
+            <VStack spacing={2}>
+              <input type="hidden" name="id" defaultValue={values?.id} />
+              <FormControl isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}>
+                <FormLabel htmlFor="name">Nome</FormLabel>
+                <Input
+                  id="name"
+                  name="name"
+                  required
+                  defaultValue={values?.name}
                 />
-                <label
-                  htmlFor="isLegalEntity-option-1"
-                  className="ml-2 block text-sm font-medium text-gray-900 dark:text-gray-300"
-                >
-                  Sim
-                </label>
-              </div>
-              <div className="flex items-center">
-                <input
-                  id="isLegalEntity-option-2"
-                  type="radio"
-                  name="isLegalEntity"
-                  value="false"
-                  className="h-4 w-4 border-gray-300 focus:ring-2 focus:ring-blue-300 dark:border-gray-600 dark:bg-gray-700 dark:focus:bg-blue-600 dark:focus:ring-blue-600"
-                  defaultChecked
+                {fetcher.data?.fieldErrors?.name ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.name}
+                  </FormErrorMessage>
+                ) : null}
+              </FormControl>
+              <FormControl
+                isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
+              >
+                <FormLabel htmlFor="address">Endereço</FormLabel>
+                <Input
+                  id="address"
+                  name="address"
+                  required
+                  defaultValue={values?.address}
                 />
-                <label
-                  htmlFor="isLegalEntity-option-2"
-                  className="ml-2 block text-sm font-medium text-gray-900 dark:text-gray-300"
+                {fetcher.data?.fieldErrors?.address ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.address}
+                  </FormErrorMessage>
+                ) : null}
+              </FormControl>
+              <HStack>
+                <FormControl
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.neighborhood)}
                 >
-                  Não
-                </label>
-              </div>
-            </div>
-          </fieldset>
-          <div>
-            <Label htmlFor="registrationNumber" value="CNPJ/CPF" />
-            <TextInput
-              id="registrationNumber"
-              name="registrationNumber"
-              defaultValue={values?.registrationNumber ?? ""}
-              style={hasError("registrationNumber")}
-              minLength={11}
-            />
-            {actionData?.fieldErrors?.registrationNumber && (
-              <FormFieldError>
-                {actionData?.fieldErrors?.registrationNumber}
-              </FormFieldError>
-            )}
-          </div>
-        </Form>
-      </Modal.Body>
-      <Modal.Footer>
-        <Button
-          type="submit"
-          form="client-form"
-          name="_action"
-          value={editionMode ? "edit" : "create"}
-        >
-          Salvar
-        </Button>
-        <Button onClick={onClose} color="gray">
-          Cancelar
-        </Button>
-      </Modal.Footer>
+                  <FormLabel htmlFor="neighborhood">Bairro</FormLabel>
+                  <Input
+                    id="neighborhood"
+                    name="neighborhood"
+                    required
+                    defaultValue={values?.neighborhood}
+                  />
+                  {fetcher.data?.fieldErrors?.neighborhood ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.neighborhood}
+                    </FormErrorMessage>
+                  ) : null}
+                </FormControl>
+
+                <FormControl
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.city)}
+                >
+                  <FormLabel htmlFor="city">Cidade</FormLabel>
+                  <Input
+                    id="city"
+                    name="city"
+                    required
+                    defaultValue={values?.city ?? ""}
+                  />
+                  {fetcher.data?.fieldErrors?.city ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.city}
+                    </FormErrorMessage>
+                  ) : null}
+                </FormControl>
+              </HStack>
+              <HStack>
+                <FormControl
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.phoneNumber)}
+                >
+                  <FormLabel htmlFor="phoneNumber">Telefone</FormLabel>
+                  <Input
+                    id="phoneNumber"
+                    name="phoneNumber"
+                    defaultValue={values?.phoneNumber ?? ""}
+                    minLength={10}
+                    required
+                    type="tel"
+                  />
+                  {fetcher.data?.fieldErrors?.phoneNumber ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.phoneNumber}
+                    </FormErrorMessage>
+                  ) : null}
+                </FormControl>
+
+                <FormControl
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.state)}
+                >
+                  <FormLabel htmlFor="state">UF</FormLabel>
+                  <Input
+                    id="state"
+                    name="state"
+                    defaultValue={values?.state ?? ""}
+                    required
+                  />
+                  {fetcher.data?.fieldErrors?.state ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.state}
+                    </FormErrorMessage>
+                  ) : null}
+                </FormControl>
+              </HStack>
+            </VStack>
+          </fetcher.Form>
+        </ModalBody>
+
+        <ModalFooter>
+          <Button onClick={onClose} variant="ghost" mx="4">
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            form="client-form"
+            name="_action"
+            value={editionMode ? "edit" : "create"}
+          >
+            Salvar
+          </Button>
+        </ModalFooter>
+      </ModalContent>
     </Modal>
   );
 }
