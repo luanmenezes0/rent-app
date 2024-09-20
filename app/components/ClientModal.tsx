@@ -61,9 +61,9 @@ export function ClientModal(props: ClientModalProps) {
                 defaultValue={
                   editionMode ? values?.isLegalEntity.toString() : "false"
                 }
-                onChange={(value) => {
-                  value === "true" ? setLabel("CNPJ") : setLabel("CPF");
-                }}
+                onChange={(value) =>
+                  value === "true" ? setLabel("CNPJ") : setLabel("CPF")
+                }
               >
                 <HStack spacing={4}>
                   <Radio value="true">Sim</Radio>
