@@ -20,7 +20,6 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
   Link as RemixLink,
-  useActionData,
   useFetchers,
   useLoaderData,
 } from "@remix-run/react";
@@ -51,6 +50,7 @@ import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
+import ItemBalance from "~/components/ItemBalance";
 import { DeliveyModal } from "../../components/DeliveyModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -211,43 +211,15 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function BuildingSite() {
   const { buildingSite, inventory, rentables, deliveryUnits } =
     useLoaderData<typeof loader>();
-  const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
+
   const fetcher = useFetchers();
 
   const user = useUser();
-
   const cardColor = useColorModeValue("gray.100", "gray.700");
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
   const deleteModal = useDisclosure();
 
-  console.table(deliveryUnits["Andaime"]);
-
-  function getBalance(arr: any[], i: number) {
-    return arr.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
-  }
-
-  function getDiffInDays(arr: any[], i: number, date: any) {
-    const isLast = arr.length === i + 1;
-
-    const formatedDate = dayjs(date).toISOString();
-
-    /*     console.log("formatedDate", formatedDate);
-    console.log("formatedDate with dayjs", dayjs(formatedDate).format()); */
-
-    if (isLast) {
-      return dayjs().diff(dayjs(formatedDate), "day");
-    }
-
-    return dayjs(arr[i + 1].date).diff(dayjs(formatedDate), "day");
-  }
-
-  /*  console.log("DATAAAA", deliveryUnits["Andaime"][3].date); */
-  /*   console.log(
-    "DATAAAA",
-    dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"),
-  );
- */
   const isAdmin = user?.role === "ADMIN";
 
   function deleteBuildingSite() {
@@ -347,50 +319,7 @@ export default function BuildingSite() {
           ))}
         </VStack>
         <Divider />
-        {/*         <VStack align="stretch" as="section" gap={2}>
-          <Heading
-            as="h2"
-            size="lg"
-            color={useColorModeValue("green.600", "green.100")}
-          >
-            Balanço Financeiro
-          </Heading>
-          {Object.entries(deliveryUnits).map(([name, unit]) => (
-            <VStack key={name}>
-              <Text fontWeight="bold">{name}</Text>
-              <Table size="sm">
-                <Thead>
-                  <Tr>
-                    <Th>Data</Th>
-                    <Th>Movimentação</Th>
-                    <Th>Saldo</Th>
-                    <Th>Dias</Th>
-                    <Th>RM * DIAS</Th>
-                    <Th>VALOR</Th>
-                  </Tr>
-                </Thead>
-                <Tbody>
-                  {unit.map((d, i, arr) => (
-                    <Tr key={d.id}>
-                      <Td>{dayjs(d.date).format("DD/MM/YYYY")}</Td>
-                      <Td>{d.count}</Td>
-                      <Td>{getBalance(arr, i)}</Td>
-                      <Td>{getDiffInDays(arr, i, d.date)}</Td>
-                      <Td>
-                        {getBalance(arr, i) * getDiffInDays(arr, i, d.date)}
-                      </Td>
-                      <Td>
-                        {getBalance(arr, i) *
-                          getDiffInDays(arr, i, d.date) *
-                          d.rentable.unitPrice}
-                      </Td>
-                    </Tr>
-                  ))}
-                </Tbody>
-              </Table>
-            </VStack>
-          ))}
-        </VStack> */}
+        <ItemBalance deliveryUnits={deliveryUnits} />
       </Container>
       {/* delivery creation */}
       {isOpen ? (
