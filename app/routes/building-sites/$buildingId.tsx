@@ -70,8 +70,16 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const deliveryUnits = await getDeliveryUnits(params.buildingId);
 
+  const buildingSiteWithFormatedDate = {
+    ...buildingSite,
+    deliveries: buildingSite.deliveries.map((d) => ({
+      ...d,
+      date: dayjs(d.date).tz("America/Fortaleza").format("DD/MM/YYYY HH:mm"),
+    })),
+  };
+
   return json({
-    buildingSite,
+    buildingSite: buildingSiteWithFormatedDate,
     inventory,
     rentables,
     deliveryUnits,
