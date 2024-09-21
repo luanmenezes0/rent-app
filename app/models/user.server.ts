@@ -2,8 +2,14 @@ import type { Password, User } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
 import { prisma } from "~/db.server";
-
+import { userRoles } from "~/utils";
 export type { User } from "@prisma/client";
+
+export type UserRole = (typeof userRoles)[keyof typeof userRoles];
+
+export async function getUsers() {
+  return prisma.user.findMany();
+}
 
 export async function getUserById(id: User["id"]) {
   return prisma.user.findUnique({ where: { id } });
@@ -26,6 +32,17 @@ export async function createUser(email: User["email"], password: string) {
       },
     },
   });
+}
+
+export async function editUser(id: string, role: string) {
+  return prisma.user.update({
+    where: { id },
+    data: { role },
+  });
+}
+
+export async function deleteUser(id: User["id"]) {
+  return prisma.user.delete({ where: { id } });
 }
 
 export async function deleteUserByEmail(email: User["email"]) {
@@ -59,4 +76,10 @@ export async function verifyLogin(
   const { password, ...userWithoutPassword } = userWithPassword;
 
   return userWithoutPassword;
+}
+
+export const SERVER_SECRET = process.env.USER_SECRET!;
+
+export async function verifyToken(token: string) {
+  return bcrypt.compare(SERVER_SECRET, token);
 }

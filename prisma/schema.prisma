@@ -8,8 +8,9 @@ generator client {
 }
 
 model User {
-  id    String @id @default(cuid())
-  email String @unique
+  id    String  @id @default(cuid())
+  email String  @unique
+  role  String? @default("USER")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -59,7 +60,7 @@ model BuildingSite {
 
 model Delivery {
   id             Int            @id @default(autoincrement())
-  buildingSite   BuildingSite   @relation(fields: [buildingSiteId], references: [id])
+  buildingSite   BuildingSite   @relation(fields: [buildingSiteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   buildingSiteId Int
   date           DateTime       @default("2022-12-31T00:00:00+03:00")
   units          DeliveryUnit[]
@@ -73,9 +74,9 @@ model DeliveryUnit {
   deliveryType   Int
   rentable       Rentable     @relation(fields: [rentableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   rentableId     Int
-  Delivery       Delivery?    @relation(fields: [deliveryId], references: [id] , onDelete: Cascade, onUpdate: Cascade)
+  Delivery       Delivery?    @relation(fields: [deliveryId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   deliveryId     Int?
-  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
+  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   buildingSiteId Int
   date           DateTime?    @default("2022-12-31T00:00:00+03:00")
   createdAt      DateTime     @default(now())
@@ -98,7 +99,7 @@ model Inventory {
   id    Int @id @default(autoincrement())
   count Int
 
-  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id])
+  buildingSite   BuildingSite @relation(fields: [buildingSiteId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   buildingSiteId Int
 
   rentable   Rentable @relation(fields: [rentableId], references: [id], onDelete: Cascade, onUpdate: Cascade)

@@ -1,26 +1,23 @@
+import { DeleteIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
   Divider,
+  Grid,
   HStack,
   Heading,
+  IconButton,
   Link,
   Stat,
   StatLabel,
   StatNumber,
-  Table,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   VStack,
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import { json, redirect } from "@remix-run/node";
 import {
   Link as RemixLink,
   useActionData,
@@ -28,15 +25,17 @@ import {
   useLoaderData,
 } from "@remix-run/react";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
+import { MyAlertDialog } from "~/components/AlertDialog";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
 import Header from "~/components/Header";
 import {
+  deleteBuildingSite,
   editBuildingSite,
   getBuildingSite,
 } from "~/models/buildingSite.server";
@@ -49,6 +48,7 @@ import {
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
+import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
 import { DeliveyModal } from "../../components/DeliveyModal";
@@ -70,7 +70,12 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const deliveryUnits = await getDeliveryUnits(params.buildingId);
 
-  return json({ buildingSite, inventory, rentables, deliveryUnits });
+  return json({
+    buildingSite,
+    inventory,
+    rentables,
+    deliveryUnits,
+  });
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -180,6 +185,16 @@ export async function action({ request }: ActionFunctionArgs) {
       return null;
     }
 
+    case "delete-building-site": {
+      const id = formData.get("buildingId");
+
+      if (typeof id === "string") {
+        await deleteBuildingSite(id);
+      }
+
+      return redirect("/building-sites");
+    }
+
     default:
       throw new Error("Invalid action");
   }
@@ -191,18 +206,12 @@ export default function BuildingSite() {
   const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
   const fetcher = useFetchers();
 
+  const user = useUser();
+
   const cardColor = useColorModeValue("gray.100", "gray.700");
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
-
-  const isAdding = fetcher.some((f) => f.state === "submitting");
-
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      onClose();
-      setShowBuildingModal(false);
-    }
-  }, [isAdding, actionData, onClose]);
+  const deleteModal = useDisclosure();
 
   console.table(deliveryUnits["Andaime"]);
 
@@ -231,6 +240,15 @@ export default function BuildingSite() {
     dayjs(deliveryUnits["Andaime"][3].date).format("DD/MM/YYYY"),
   );
  */
+  const isAdmin = user?.role === "ADMIN";
+
+  function deleteBuildingSite() {
+    fetcher.submit(
+      { buildingId: buildingSite.id, _action: "delete-building-site" },
+      { method: "DELETE" },
+    );
+  }
+
   return (
     <>
       <Header />
@@ -250,6 +268,16 @@ export default function BuildingSite() {
             >
               Editar Obra
             </Button>
+
+            {isAdmin ? (
+              <IconButton
+                aria-label="Delete building site"
+                icon={<DeleteIcon />}
+                variant="outline"
+                colorScheme="red"
+                onClick={deleteModal.onOpen}
+              />
+            ) : null}
           </HStack>
         </VStack>
 
@@ -280,7 +308,7 @@ export default function BuildingSite() {
           >
             Materiais
           </Heading>
-          <HStack>
+          <Grid templateColumns="repeat(auto-fit, minmax(12rem, 1fr))" gap={3}>
             {inventory.map((rentable) => (
               <Stat
                 key={rentable.rentableId}
@@ -294,7 +322,7 @@ export default function BuildingSite() {
                 <StatNumber>{rentable.count}</StatNumber>
               </Stat>
             ))}
-          </HStack>
+          </Grid>
         </VStack>
         <Divider />
 
@@ -311,7 +339,7 @@ export default function BuildingSite() {
           ))}
         </VStack>
         <Divider />
-{/*         <VStack align="stretch" as="section" gap={2}>
+        {/*         <VStack align="stretch" as="section" gap={2}>
           <Heading
             as="h2"
             size="lg"
@@ -370,6 +398,14 @@ export default function BuildingSite() {
           client={buildingSite.client}
           values={buildingSite}
           onClose={() => setShowBuildingModal(false)}
+        />
+      ) : null}
+      {deleteModal.isOpen ? (
+        <MyAlertDialog
+          isOpen={deleteModal.isOpen}
+          onClose={deleteModal.onClose}
+          onDelete={deleteBuildingSite}
+          title="Deletar Obra"
         />
       ) : null}
     </>

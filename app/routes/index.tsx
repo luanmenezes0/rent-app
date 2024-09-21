@@ -38,7 +38,14 @@ function Card({ rentable }: { rentable: SerializeFrom<Rentable> }) {
   const color = useColorModeValue("green.300", "green.600");
 
   return (
-    <VStack borderRadius="4" as="article" minW="200" bgColor={color} p="4">
+    <VStack
+      borderRadius="4"
+      as="article"
+      minW="200"
+      bgColor={color}
+      p="4"
+      flexGrow={{ base: 1, md: "0" }}
+    >
       <Heading as="h2" size="md">
         {rentable.name}
       </Heading>
@@ -71,7 +78,7 @@ export default function Index() {
   return (
     <>
       <Header />
-      <Container as="main" maxW="container.xl" py="50" display="grid" gap="20">
+      <Container as="main" maxW="container.xl" py="50" display="grid" gap="10">
         <Heading as="h1" size="2xl">
           Dashboard
         </Heading>

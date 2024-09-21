@@ -30,23 +30,21 @@ interface ClientModalProps {
 export function ClientModal(props: ClientModalProps) {
   const { onClose, editionMode, values } = props;
 
-  const [label, setLabel] = useState<"CNPJ" | "CPF">("CPF");
+  const fetcher = useFetcher<{ fieldErrors: Record<keyof Client, string> }>();
 
-  const fetcher = useFetcher<{ fieldErrors: Record<string, string> }>();
+  const [label, setLabel] = useState<"CNPJ" | "CPF">(() => {
+    if (editionMode && values) {
+      return values.isLegalEntity ? "CNPJ" : "CPF";
+    }
 
-  const { data: actionData } = fetcher;
-
-  console.log(actionData);
-
-  const isSubmitting = fetcher.state === "submitting";
-
-  const isEdition = fetcher.formData?.get("_action") === "edit";
+    return "CPF";
+  });
 
   useEffect(() => {
-    if (!isSubmitting && isEdition && !actionData?.fieldErrors) {
+    if (fetcher.data === null) {
       onClose();
     }
-  }, [isSubmitting, actionData, onClose, isEdition]);
+  }, [fetcher.data, onClose]);
 
   return (
     <Modal size="xl" isOpen onClose={onClose}>
@@ -60,10 +58,12 @@ export function ClientModal(props: ClientModalProps) {
               <FormLabel as="legend">Pessoa Jurídica</FormLabel>
               <RadioGroup
                 name="isLegalEntity"
-                defaultValue="false"
-                onChange={(value) => {
-                  value === "true" ? setLabel("CNPJ") : setLabel("CPF");
-                }}
+                defaultValue={
+                  editionMode ? values?.isLegalEntity.toString() : "false"
+                }
+                onChange={(value) =>
+                  value === "true" ? setLabel("CNPJ") : setLabel("CPF")
+                }
               >
                 <HStack spacing={4}>
                   <Radio value="true">Sim</Radio>
@@ -75,7 +75,7 @@ export function ClientModal(props: ClientModalProps) {
             </FormControl>
 
             <FormControl
-              isInvalid={Boolean(actionData?.fieldErrors?.registrationNumber)}
+              isInvalid={Boolean(fetcher.data?.fieldErrors?.registrationNumber)}
             >
               <FormLabel htmlFor="registrationNumber">{label}</FormLabel>
               <Input
@@ -118,13 +118,15 @@ export function ClientModal(props: ClientModalProps) {
                   }
                 }}
               />
-              {actionData?.fieldErrors?.registrationNumber ? <FormErrorMessage>
-                  {actionData?.fieldErrors?.registrationNumber}
-                </FormErrorMessage> : null}
+              {fetcher.data?.fieldErrors?.registrationNumber ? (
+                <FormErrorMessage>
+                  {fetcher.data?.fieldErrors?.registrationNumber}
+                </FormErrorMessage>
+              ) : null}
             </FormControl>
             <VStack spacing={2}>
               <input type="hidden" name="id" defaultValue={values?.id} />
-              <FormControl isInvalid={Boolean(actionData?.fieldErrors?.name)}>
+              <FormControl isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}>
                 <FormLabel htmlFor="name">Nome</FormLabel>
                 <Input
                   id="name"
@@ -132,12 +134,14 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.name}
                 />
-                {actionData?.fieldErrors?.name ? <FormErrorMessage>
-                    {actionData?.fieldErrors?.name}
-                  </FormErrorMessage> : null}
+                {fetcher.data?.fieldErrors?.name ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.name}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <FormControl
-                isInvalid={Boolean(actionData?.fieldErrors?.address)}
+                isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
               >
                 <FormLabel htmlFor="address">Endereço</FormLabel>
                 <Input
@@ -146,13 +150,15 @@ export function ClientModal(props: ClientModalProps) {
                   required
                   defaultValue={values?.address}
                 />
-                {actionData?.fieldErrors?.address ? <FormErrorMessage>
-                    {actionData?.fieldErrors?.address}
-                  </FormErrorMessage> : null}
+                {fetcher.data?.fieldErrors?.address ? (
+                  <FormErrorMessage>
+                    {fetcher.data?.fieldErrors?.address}
+                  </FormErrorMessage>
+                ) : null}
               </FormControl>
               <HStack>
                 <FormControl
-                  isInvalid={Boolean(actionData?.fieldErrors?.neighborhood)}
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.neighborhood)}
                 >
                   <FormLabel htmlFor="neighborhood">Bairro</FormLabel>
                   <Input
@@ -161,12 +167,16 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.neighborhood}
                   />
-                  {actionData?.fieldErrors?.neighborhood ? <FormErrorMessage>
-                      {actionData?.fieldErrors?.neighborhood}
-                    </FormErrorMessage> : null}
+                  {fetcher.data?.fieldErrors?.neighborhood ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.neighborhood}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
 
-                <FormControl isInvalid={Boolean(actionData?.fieldErrors?.city)}>
+                <FormControl
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.city)}
+                >
                   <FormLabel htmlFor="city">Cidade</FormLabel>
                   <Input
                     id="city"
@@ -174,14 +184,16 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     defaultValue={values?.city ?? ""}
                   />
-                  {actionData?.fieldErrors?.city ? <FormErrorMessage>
-                      {actionData?.fieldErrors?.city}
-                    </FormErrorMessage> : null}
+                  {fetcher.data?.fieldErrors?.city ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.city}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
               </HStack>
               <HStack>
                 <FormControl
-                  isInvalid={Boolean(actionData?.fieldErrors?.phoneNumber)}
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.phoneNumber)}
                 >
                   <FormLabel htmlFor="phoneNumber">Telefone</FormLabel>
                   <Input
@@ -192,13 +204,15 @@ export function ClientModal(props: ClientModalProps) {
                     required
                     type="tel"
                   />
-                  {actionData?.fieldErrors?.phoneNumber ? <FormErrorMessage>
-                      {actionData?.fieldErrors?.phoneNumber}
-                    </FormErrorMessage> : null}
+                  {fetcher.data?.fieldErrors?.phoneNumber ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.phoneNumber}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
 
                 <FormControl
-                  isInvalid={Boolean(actionData?.fieldErrors?.state)}
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.state)}
                 >
                   <FormLabel htmlFor="state">UF</FormLabel>
                   <Input
@@ -207,9 +221,11 @@ export function ClientModal(props: ClientModalProps) {
                     defaultValue={values?.state ?? ""}
                     required
                   />
-                  {actionData?.fieldErrors?.state ? <FormErrorMessage>
-                      {actionData?.fieldErrors?.state}
-                    </FormErrorMessage> : null}
+                  {fetcher.data?.fieldErrors?.state ? (
+                    <FormErrorMessage>
+                      {fetcher.data?.fieldErrors?.state}
+                    </FormErrorMessage>
+                  ) : null}
                 </FormControl>
               </HStack>
             </VStack>

@@ -77,7 +77,7 @@ export default function Deliveries() {
         {deliveries.map(([date, data]) => (
           <VStack key={date} align="strech" gap="2">
             <Heading as="h2" size="md">
-              {dayjs(date).format("DD/MM/YYYY")}
+              {dayjs(date).tz("America/Fortaleza").format("DD/MM/YYYY")}
             </Heading>
             {data.map((d) => (
               <Flex
@@ -102,7 +102,7 @@ export default function Deliveries() {
                 <Box justifySelf="start" flexGrow={1}>
                   <HStack pb="2" fontSize="14">
                     <Heading as="h3" fontSize="14">
-                      {dayjs(d.date).format("DD/MM/YYYY HH:mm")}
+                      {d.date}
                     </Heading>
                     {d.buildingSite ? (
                       <Link to={`/building-sites/${d.buildingSite.id}`}>
@@ -122,17 +122,18 @@ export default function Deliveries() {
                     </Flex>
                   ))}
                 </Box>
-                <div>
-                  <IconButton
-                    variant={"outline"}
-                    size={"sm"}
-                    aria-label={"Imprimir"}
-                    icon={<GrPrint />}
-                    as="a"
-                    target="_blank"
-                    href={`/print-pdf?deliveryId=${d.id}`}
-                  />
-                </div>
+
+                <IconButton
+                  variant={"outline"}
+                  size={"sm"}
+                  aria-label={"Imprimir"}
+                  icon={<GrPrint />}
+                  name="_action"
+                  value="print-pdf"
+                  as="a"
+                  target="_blank"
+                  href={`/print-pdf?deliveryId=${d.id}`}
+                />
               </Flex>
             ))}
           </VStack>

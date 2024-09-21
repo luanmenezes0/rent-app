@@ -25,12 +25,9 @@ import { json, redirect } from "@remix-run/node";
 import {
   Form,
   Link as RemixLink,
-  useActionData,
   useLoaderData,
-  useNavigation,
   useSearchParams,
 } from "@remix-run/react";
-import { useEffect } from "react";
 import { validationError } from "remix-validated-form";
 
 import { ClientModal } from "~/components/ClientModal";
@@ -87,17 +84,15 @@ export async function action({ request }: ActionFunctionArgs) {
 
         return redirect(`/clients/${client.id}`);
       } catch (e) {
-        if (e instanceof PrismaClientKnownRequestError) {
-          if (e.code === "P2002") {
-            const errors = e.meta?.target as string[];
-            if (errors.includes("registrationNumber")) {
-              return validationError({
-                fieldErrors: {
-                  registrationNumber:
-                    "Já existe um cliente cadastrado com este CPF ou CNPJ.",
-                },
-              });
-            }
+        if (e instanceof PrismaClientKnownRequestError && e.code === "P2002") {
+          const errors = e.meta?.target as string[];
+          if (errors.includes("registrationNumber")) {
+            return validationError({
+              fieldErrors: {
+                registrationNumber:
+                  "Já existe um cliente cadastrado com este CPF ou CNPJ.",
+              },
+            });
           }
         }
       }
@@ -116,20 +111,6 @@ export default function Clients() {
   const [searchParams] = useSearchParams();
 
   const { onClose, isOpen, onOpen } = useDisclosure();
-  const actionData = useActionData<{
-    fieldErrors: Record<string, string>;
-  }>();
-  const navigation = useNavigation();
-
-  const isAdding = navigation.state === "submitting";
-
-  useEffect(() => {
-    if (!isAdding && !actionData?.fieldErrors) {
-      onClose();
-    }
-  }, [isAdding, actionData, onClose]);
-
-  const data = clients;
 
   function onChange(e: React.FormEvent<HTMLInputElement>) {
     const value = e.currentTarget.value;
@@ -178,7 +159,7 @@ export default function Clients() {
               </Tr>
             </Thead>
             <Tbody>
-              {data.map((c) => (
+              {clients.map((c) => (
                 <Tr key={c.id}>
                   <Td>
                     <Link as={RemixLink} to={`/clients/${c.id}`}>
