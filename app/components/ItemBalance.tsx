@@ -46,7 +46,7 @@ export default function ItemBalance({ deliveryUnits }: ItemBalanceProps) {
     return unit.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
   }
 
-  function getDiffInDays(unit: DeliveryUnit[], i: number, date: string) {
+  function getDiffInDays(unit: DeliveryUnit[], i: number, date: string | null) {
     const isLast = unit.length === i + 1;
 
     const formatedDate = dayjs(date).toISOString();
