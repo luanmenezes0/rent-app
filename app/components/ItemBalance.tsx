@@ -25,11 +25,9 @@ interface DeliveryUnit {
   count: number;
   deliveryType: number;
   rentableId: number;
-  deliveryId: number;
+  deliveryId: number | null;
   buildingSiteId: number;
-  date: string;
-  createdAt: string;
-  updatedAt: string;
+  date: string | null;
   rentable: Rentable;
 }
 
@@ -38,19 +36,18 @@ interface Rentable {
   name: string;
   count: number;
   unitPrice: number;
-  description: string;
-  createdAt: string;
-  updatedAt: string;
+  description: string | null;
 }
+
 export default function ItemBalance({ deliveryUnits }: ItemBalanceProps) {
   console.table(deliveryUnits["MATERIAL TESTE 1"]);
 
-  function getBalance(arr: any[], i: number) {
-    return arr.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
+  function getBalance(unit: DeliveryUnit[], i: number) {
+    return unit.slice(0, i + 1).reduce((p, c) => p + c.count, 0);
   }
 
-  function getDiffInDays(arr: any[], i: number, date: any) {
-    const isLast = arr.length === i + 1;
+  function getDiffInDays(unit: DeliveryUnit[], i: number, date: string) {
+    const isLast = unit.length === i + 1;
 
     const formatedDate = dayjs(date).toISOString();
 
@@ -58,7 +55,7 @@ export default function ItemBalance({ deliveryUnits }: ItemBalanceProps) {
       return dayjs().diff(dayjs(formatedDate), "day");
     }
 
-    return dayjs(arr[i + 1].date).diff(dayjs(formatedDate), "day");
+    return dayjs(unit[i + 1].date).diff(dayjs(formatedDate), "day");
   }
 
   return (
@@ -85,16 +82,18 @@ export default function ItemBalance({ deliveryUnits }: ItemBalanceProps) {
               </Tr>
             </Thead>
             <Tbody>
-              {unit.map((d, i, arr) => (
+              {unit.map((d, i) => (
                 <Tr key={d.id}>
                   <Td>{dayjs(d.date).format("DD/MM/YYYY")}</Td>
                   <Td>{d.count}</Td>
-                  <Td>{getBalance(arr, i)}</Td>
-                  <Td>{getDiffInDays(arr, i, d.date)}</Td>
-                  <Td>{getBalance(arr, i) * getDiffInDays(arr, i, d.date)}</Td>
+                  <Td>{getBalance(unit, i)}</Td>
+                  <Td>{getDiffInDays(unit, i, d.date)}</Td>
                   <Td>
-                    {getBalance(arr, i) *
-                      getDiffInDays(arr, i, d.date) *
+                    {getBalance(unit, i) * getDiffInDays(unit, i, d.date)}
+                  </Td>
+                  <Td>
+                    {getBalance(unit, i) *
+                      getDiffInDays(unit, i, d.date) *
                       d.rentable.unitPrice}
                   </Td>
                 </Tr>

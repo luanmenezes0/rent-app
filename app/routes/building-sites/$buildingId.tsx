@@ -18,11 +18,7 @@ import {
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import {
-  Link as RemixLink,
-  useFetchers,
-  useLoaderData,
-} from "@remix-run/react";
+import { Link as RemixLink, useFetcher, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
 import { validationError } from "remix-validated-form";
@@ -32,7 +28,9 @@ import { MyAlertDialog } from "~/components/AlertDialog";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
+import { DeliveyModal } from "~/components/DeliveyModal";
 import Header from "~/components/Header";
+import ItemBalance from "~/components/ItemBalance";
 import {
   deleteBuildingSite,
   editBuildingSite,
@@ -49,9 +47,6 @@ import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
-
-import ItemBalance from "~/components/ItemBalance";
-import { DeliveyModal } from "../../components/DeliveyModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -212,13 +207,15 @@ export default function BuildingSite() {
   const { buildingSite, inventory, rentables, deliveryUnits } =
     useLoaderData<typeof loader>();
 
-  const fetcher = useFetchers();
-
   const user = useUser();
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+
+  const fetcher = useFetcher();
+
   const { onOpen, onClose, isOpen } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
   const deleteModal = useDisclosure();
+
+  const cardColor = useColorModeValue("gray.100", "gray.700");
 
   const isAdmin = user?.role === "ADMIN";
 
