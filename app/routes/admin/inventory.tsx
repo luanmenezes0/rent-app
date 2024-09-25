@@ -233,6 +233,7 @@ export default function Index() {
   useEffect(() => {
     if (!isAdding && !actionData?.fieldErrors) {
       onClose();
+      setEditData(null);
     }
   }, [isAdding, actionData, onClose]);
 

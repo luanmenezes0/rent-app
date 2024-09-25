@@ -132,17 +132,19 @@ export default function Clients() {
             Criar Cliente
           </Button>
           <Form>
-            <InputGroup width="auto">
-              <InputLeftAddon>
+            <Flex gap={1}>
+              <InputGroup width="auto">
+                <Input
+                  onChange={onChange}
+                  type="search"
+                  placeholder="Buscar cliente"
+                  name="search"
+                />
+              </InputGroup>
+              <Button type="submit">
                 <SearchIcon />
-              </InputLeftAddon>
-              <Input
-                onChange={onChange}
-                type="search"
-                placeholder="Buscar cliente"
-                name="search"
-              />
-            </InputGroup>
+              </Button>
+            </Flex>
           </Form>
         </Flex>
 
