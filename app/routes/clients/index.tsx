@@ -7,7 +7,6 @@ import {
   HStack,
   Input,
   InputGroup,
-  InputLeftAddon,
   Link,
   Table,
   TableContainer,
@@ -17,7 +16,7 @@ import {
   Thead,
   Tr,
   useDisclosure,
-  VisuallyHidden,
+  VisuallyHidden
 } from "@chakra-ui/react";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -132,17 +131,19 @@ export default function Clients() {
             Criar Cliente
           </Button>
           <Form>
-            <InputGroup width="auto">
-              <InputLeftAddon>
+            <Flex gap={1}>
+              <InputGroup width="auto">
+                <Input
+                  onChange={onChange}
+                  type="search"
+                  placeholder="Buscar cliente"
+                  name="search"
+                />
+              </InputGroup>
+              <Button type="submit" variant="outline">
                 <SearchIcon />
-              </InputLeftAddon>
-              <Input
-                onChange={onChange}
-                type="search"
-                placeholder="Buscar cliente"
-                name="search"
-              />
-            </InputGroup>
+              </Button>
+            </Flex>
           </Form>
         </Flex>
 
