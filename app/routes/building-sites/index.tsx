@@ -28,11 +28,13 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const top = Number(url.searchParams.get("$top")) || PAGINATION_LIMIT;
   const skip = Number(url.searchParams.get("$skip")) || 0;
   const search = url.searchParams.get("search") ?? undefined;
+  const status = url.searchParams.get("status") || "active";
 
   const { data, count } = await getBuildingSites({
     top,
     skip,
     search,
+    status,
   });
 
   return json({ buildingSites: data, count });

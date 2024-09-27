@@ -23,6 +23,9 @@ import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
+import customParseFormat from "dayjs/plugin/customParseFormat.js";
+
+dayjs.extend(customParseFormat);
 
 import type { Rentable } from "~/models/inventory.server";
 
@@ -111,7 +114,7 @@ export function DeliveyModal({
   }
 
   const initialDateValue = values
-    ? dayjs(values.date).format("YYYY-MM-DDTHH:mm")
+    ? dayjs(values.date, "DD-MM-YYYY HH:mm").format("YYYY-MM-DDTHH:mm")
     : dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (

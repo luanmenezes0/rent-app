@@ -6,10 +6,12 @@ export async function getBuildingSites({
   search,
   top,
   skip,
+  status,
 }: {
   search?: string;
   skip?: number;
   top?: number;
+  status?: string;
 }) {
   const [count, data] = await prisma.$transaction([
     prisma.buildingSite.count({
@@ -26,6 +28,10 @@ export async function getBuildingSites({
         name: {
           contains: search,
         },
+        status: status === "all" ? undefined : { equals: 1 },
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     }),
   ]);
