@@ -8,6 +8,7 @@
     "dev": "remix dev --manual",
     "dev:serve": "binode --require ./mocks -- @remix-run/serve:remix-serve ./build/index.js",
     "format": "prettier --write .",
+    "prisma:studio": "prisma studio",
     "lint": "eslint --cache --cache-location ./node_modules/.cache/eslint . --fix",
     "setup": "prisma generate && prisma migrate deploy && prisma db seed",
     "start": "remix-serve ./build/index.js",
