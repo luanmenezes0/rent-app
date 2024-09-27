@@ -21,6 +21,7 @@ const saveAsPdf = async (url: string, cookie: string | null) => {
 
   const result = await page.pdf({
     format: "a4",
+    landscape: true,
   });
 
   await browser.close();
