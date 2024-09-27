@@ -1,5 +1,5 @@
 import { Box, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
+import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
@@ -8,8 +8,12 @@ import invariant from "tiny-invariant";
 import styles from "~/components/styles.module.css";
 import { getDelivery } from "~/models/delivery.server";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function Info({ delivery, text }: { delivery: any; text: string }) {
+interface InfroProps {
+  delivery: SerializeFrom<typeof loader>["delivery"];
+  text: string;
+}
+
+function Info({ delivery, text }: InfroProps) {
   return (
     <VStack gap={8} paddingTop={8} align="start">
       <VStack alignSelf="center">
