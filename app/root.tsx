@@ -1,10 +1,8 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import {
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
@@ -14,7 +12,7 @@ import dayjs from "dayjs";
 import utc from "dayjs/plugin/timezone.js";
 import timezone from "dayjs/plugin/utc.js";
 
-import styles from "~/styles/index.css";
+import styles from "~/styles/index.css?url";
 
 import { getUser } from "./session.server";
 import theme from "./theme";
@@ -24,10 +22,7 @@ dayjs.extend(timezone);
 
 dayjs.tz.setDefault("America/Fortaleza");
 
-export const links: LinksFunction = () => [
-  { rel: "stylesheet", href: styles },
-  ...(cssBundleHref ? [{ rel: "stylesheet", href: cssBundleHref }] : []),
-];
+export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export async function loader({ request }: LoaderFunctionArgs) {
   return json({
@@ -55,7 +50,6 @@ function Document({
         {children}
         <ScrollRestoration />
         <Scripts />
-        <LiveReload />
       </body>
     </html>
   );
