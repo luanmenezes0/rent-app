@@ -10,7 +10,6 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import type {
   ActionFunctionArgs,
@@ -40,7 +39,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     ),
   ).sort(([a], [b]) => (dayjs(a).isBefore(dayjs(b)) ? 1 : -1));
 
-  return json({ deliveries: deliveriesGroupedByDate });
+  return { deliveries: deliveriesGroupedByDate };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

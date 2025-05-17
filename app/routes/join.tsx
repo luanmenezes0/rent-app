@@ -10,7 +10,7 @@ import {
   useColorModeValue,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import {
   Form,
   Link,
@@ -29,7 +29,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
   if (userId) return redirect("/");
 
-  return json({});
+  return {};
 }
 
 export async function action({ request }: ActionFunctionArgs) {

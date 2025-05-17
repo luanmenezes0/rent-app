@@ -1,6 +1,5 @@
 import { ChakraProvider } from "@chakra-ui/react";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import {
   Links,
   Meta,
@@ -25,9 +24,9 @@ dayjs.tz.setDefault("America/Fortaleza");
 export const links: LinksFunction = () => [{ rel: "stylesheet", href: styles }];
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  return json({
+  return {
     user: await getUser(request),
-  });
+  };
 }
 
 function Document({

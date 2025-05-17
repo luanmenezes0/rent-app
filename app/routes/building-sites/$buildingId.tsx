@@ -17,7 +17,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import { Link as RemixLink, useFetcher, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
@@ -44,7 +44,6 @@ import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
-
 import { DeliveyModal } from "../../components/DeliveyModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -70,11 +69,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
   };
 
-  return json({
+  return {
     buildingSite: buildingSiteWithFormatedDate,
     inventory,
     rentables,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
