@@ -1,65 +1,28 @@
-import { PassThrough } from "stream";
+import type { EntryContext } from "@remix-run/node"
+import { RemixServer } from "@remix-run/react"
+import { createEmotion } from "./emotion/emotion-server"
 
-import createEmotionCache from "@emotion/cache";
-import { CacheProvider as EmotionCacheProvider } from "@emotion/react";
-import createEmotionServer from "@emotion/server/create-instance";
-import { createReadableStreamFromReadable, type EntryContext } from "@remix-run/node";
-import { RemixServer } from "@remix-run/react";
-import isbot from "isbot";
-import { renderToPipeableStream } from "react-dom/server";
-
-const ABORT_DELAY = 5000;
-
-export default function handleRequest(
+const handleRequest = (
   request: Request,
   responseStatusCode: number,
   responseHeaders: Headers,
   remixContext: EntryContext,
-) {
-  const callbackMethod = isbot(request.headers.get("user-agent"))
-    ? "onAllReady"
-    : "onShellReady";
+) =>
+  new Promise((resolve) => {
+    const { renderToString, injectStyles } = createEmotion()
 
-  return new Promise((resolve, reject) => {
-    let didError = false;
+    const html = renderToString(
+      <RemixServer context={remixContext} url={request.url} />,
+    )
 
-    const emotionCache = createEmotionCache({ key: "css" });
+    responseHeaders.set("Content-Type", "text/html")
 
-    const { pipe, abort } = renderToPipeableStream(
-      <EmotionCacheProvider value={emotionCache}>
-        <RemixServer context={remixContext} url={request.url} />
-      </EmotionCacheProvider>,
-      {
-        [callbackMethod]() {
-          const reactBody = new PassThrough();
-          const emotionServer = createEmotionServer(emotionCache);
+    const response = new Response(`<!DOCTYPE html>${injectStyles(html)}`, {
+      status: responseStatusCode,
+      headers: responseHeaders,
+    })
 
-          const bodyWithStyles = emotionServer.renderStylesToNodeStream();
-          reactBody.pipe(bodyWithStyles);
+    resolve(response)
+  })
 
-          responseHeaders.set("Content-Type", "text/html");
-
-          resolve(
-            // @ts-expect-error - Remix types are incorrect?
-            new Response(createReadableStreamFromReadable(bodyWithStyles), {
-              headers: responseHeaders,
-              status: didError ? 500 : responseStatusCode,
-            }),
-          );
-
-          pipe(reactBody);
-        },
-        onShellError: (err: unknown) => {
-          reject(err);
-        },
-        onError: (error: unknown) => {
-          didError = true;
-
-          console.error(error);
-        },
-      },
-    );
-
-    setTimeout(abort, ABORT_DELAY);
-  });
-}
+export default handleRequest

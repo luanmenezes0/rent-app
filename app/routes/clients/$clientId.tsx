@@ -4,13 +4,7 @@ import {
   Heading,
   Table,
   TableCaption,
-  TableContainer,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   useDisclosure,
   VisuallyHidden,
   VStack,
@@ -102,7 +96,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 export default function Client() {
   const { client } = useLoaderData<typeof loader>();
 
-  const { isOpen, onClose, onOpen } = useDisclosure();
+  const { open, onClose, onOpen } = useDisclosure();
 
   const [show, setShow] = useState(false);
 
@@ -159,44 +153,44 @@ export default function Client() {
         <Button maxW="fit-content" onClick={() => setShow(true)}>
           Adicionar Obra
         </Button>
-        <TableContainer>
-          <Table>
+        <>
+          <Table.Root>
             <TableCaption>Obras</TableCaption>
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>Nome</Th>
-                <Th>Endereço</Th>
-                <Th>Status</Th>
-                <Th>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>Id</Table.ColumnHeader>
+                <Table.ColumnHeader>Nome</Table.ColumnHeader>
+                <Table.ColumnHeader>Endereço</Table.ColumnHeader>
+                <Table.ColumnHeader>Status</Table.ColumnHeader>
+                <Table.ColumnHeader>
                   <VisuallyHidden>Ações</VisuallyHidden>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {client.buildingSites.map((bs) => (
-                <Tr key={bs.id}>
-                  <Td>
+                <Table.Row key={bs.id}>
+                  <Table.Cell>
                     <Link to={`/building-sites/${bs.id}`}>{bs.id}</Link>
-                  </Td>
-                  <Td>{bs.name}</Td>
-                  <Td>{bs.address}</Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>{bs.name}</Table.Cell>
+                  <Table.Cell>{bs.address}</Table.Cell>
+                  <Table.Cell>
                     <BuildingSiteStatusLabel status={bs.status} />
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
-                  </Td>
-                </Tr>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </>
       </Container>
       {show ? (
         <BuildingSiteModal client={client} onClose={() => setShow(false)} />
       ) : null}
-      {isOpen ? (
+      {open ? (
         <ClientModal onClose={onClose} editionMode values={client} />
       ) : null}
     </>

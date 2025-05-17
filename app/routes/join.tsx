@@ -1,14 +1,4 @@
-import {
-  Button,
-  Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
-  Heading,
-  Input,
-  VStack,
-  useColorModeValue,
-} from "@chakra-ui/react";
+import { Button, Field, Flex, Heading, Input, VStack } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
 import {
@@ -19,6 +9,7 @@ import {
   type MetaFunction,
 } from "@remix-run/react";
 import { validationError } from "remix-validated-form";
+import { useTheme } from "src/components/ui/color-mode";
 
 import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
@@ -96,19 +87,19 @@ export default function Join() {
       h="full"
       justifyContent="center"
       alignItems="center"
-      bgColor={useColorModeValue("gray.100", "gray.700")}
+      bgColor={useTheme("gray.100", "gray.700")}
     >
       <Form method="POST" style={{ width: "380px" }}>
         <VStack
           spacing="4"
           maxW="container.md"
           p="6"
-          bgColor={useColorModeValue("white", "gray.800")}
+          bgColor={useTheme("white", "gray.800")}
           borderRadius="lg"
         >
           <Heading fontSize="20">Primeiro acesso</Heading>
-          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.email)}>
-            <FormLabel htmlFor="email">E-mail</FormLabel>
+          <Field.Root isInvalid={Boolean(actionData?.fieldErrors?.email)}>
+            <Field.Label htmlFor="email">E-mail</Field.Label>
             <Input
               id="email"
               required
@@ -116,10 +107,10 @@ export default function Join() {
               type="email"
               autoComplete="email"
             />
-            <FormErrorMessage>{actionData?.fieldErrors.email}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.password)}>
-            <FormLabel htmlFor="password">Senha</FormLabel>
+            <Field.ErrorText>{actionData?.fieldErrors.email}</Field.ErrorText>
+          </Field.Root>
+          <Field.Root isInvalid={Boolean(actionData?.fieldErrors?.password)}>
+            <Field.Label htmlFor="password">Senha</Field.Label>
             <Input
               id="password"
               name="password"
@@ -127,10 +118,10 @@ export default function Join() {
               required
               autoComplete="new-password"
             />
-            <FormErrorMessage>
+            <Field.ErrorText>
               {actionData?.fieldErrors.password}
-            </FormErrorMessage>
-          </FormControl>
+            </Field.ErrorText>
+          </Field.Root>
           <input type="hidden" name="redirectTo" value={redirectTo} />
           {token ? <input type="hidden" name="token" value={token} /> : null}
           <Button w="full" type="submit">

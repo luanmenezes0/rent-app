@@ -1,4 +1,4 @@
-import { Box, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
+import { Box, Separator, Flex, Heading, VStack } from "@chakra-ui/react";
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
@@ -102,7 +102,7 @@ export default function Index() {
   return (
     <Flex fontSize="12px" mx="50px" my="40px" gap={10}>
       <Info delivery={delivery} text="VIA EMPRESA" />
-      <Divider orientation="vertical" />
+      <Separator orientation="vertical" />
       <Info delivery={delivery} text="VIA CLIENTE" />
     </Flex>
   );

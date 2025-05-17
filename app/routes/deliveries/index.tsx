@@ -8,7 +8,6 @@ import {
   Icon,
   IconButton,
   VStack,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -18,6 +17,7 @@ import type {
 } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
 import { GrDeliver, GrPrint } from "react-icons/gr";
+import { useTheme } from "src/components/ui/color-mode";
 
 import Header from "~/components/Header";
 import { deleteDelivery, getDeliveries } from "~/models/delivery.server";
@@ -68,8 +68,8 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Deliveries() {
   const { deliveries } = useLoaderData<typeof loader>();
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
-  const iconBgColor = useColorModeValue("gray.200", "gray.600");
+  const cardColor = useTheme("gray.100", "gray.700");
+  const iconBgColor = useTheme("gray.200", "gray.600");
 
   return (
     <>

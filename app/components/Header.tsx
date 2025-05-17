@@ -8,17 +8,13 @@ import {
   IconButton,
   Link,
   Menu,
-  MenuButton,
-  MenuDivider,
-  MenuItem,
-  MenuList,
+  Portal,
   VStack,
   chakra,
-  useColorMode,
-  useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import { Form, NavLink } from "@remix-run/react";
+import { useColorMode, useTheme } from "src/components/ui/color-mode";
 
 import { useUser } from "~/utils";
 
@@ -27,13 +23,13 @@ export default function Header() {
 
   const isAdmin = user?.role === "ADMIN";
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   const { colorMode, toggleColorMode } = useColorMode();
 
   const darkMode = colorMode === "dark";
 
-  const navColor = useColorModeValue("gray.700", "gray.700");
+  const navColor = useTheme("gray.700", "gray.700");
 
   return (
     <chakra.header id="header">
@@ -47,39 +43,40 @@ export default function Header() {
       >
         <IconButton
           size={"md"}
-          icon={isOpen ? <CloseIcon /> : <HamburgerIcon />}
           aria-label={"Open Menu"}
           display={{ md: "none" }}
-          onClick={isOpen ? onClose : onOpen}
-        />
+          onClick={open ? onClose : onOpen}
+        >
+          {open ? <CloseIcon /> : <HamburgerIcon />}
+        </IconButton>
         <NavLink to="/">
           <Box h="50px" />
         </NavLink>
         <HStack
           as="nav"
-          spacing="8"
+          gap="8"
           color="white"
           display={{ base: "none", md: "flex" }}
         >
-          <Link as={NavLink} to="/">
+          <Link as={NavLink} href="/">
             Início
           </Link>
-          <Link as={NavLink} to="/clients">
+          <Link as={NavLink} href="/clients">
             Clientes
           </Link>
-          <Link as={NavLink} to="/building-sites">
+          <Link as={NavLink} href="/building-sites">
             Obras
           </Link>
-          <Link as={NavLink} to="/deliveries">
+          <Link as={NavLink} href="/deliveries">
             Remessas
           </Link>
           {isAdmin ? (
-            <Link as={NavLink} to="/admin/inventory">
+            <Link as={NavLink} href="/admin/inventory">
               Estoque
             </Link>
           ) : null}
           {isAdmin ? (
-            <Link as={NavLink} to="/admin/users">
+            <Link as={NavLink} href="/admin/users">
               Usuários
             </Link>
           ) : null}
@@ -116,50 +113,49 @@ export default function Header() {
               </svg>
             )}
           </Button>
-          <Menu>
-            <MenuButton
-              as={Button}
-              rounded={"full"}
-              variant={"link"}
-              cursor={"pointer"}
-              minW={0}
-            >
-              <Avatar size="sm" />
-            </MenuButton>
-            <MenuList>
-              <MenuItem>{user.email}</MenuItem>
-              <MenuDivider />
-              <Form action="/logout" method="POST">
-                <MenuItem type="submit" className="w-full">
-                  Sair
-                </MenuItem>
-              </Form>
-            </MenuList>
-          </Menu>
+          <Menu.Root>
+            <Menu.Trigger>
+              <Avatar.Root>
+                <Avatar.Fallback />
+                <Avatar.Image />
+              </Avatar.Root>
+            </Menu.Trigger>
+            <Portal>
+              <Menu.Positioner>
+                <Menu.Content>
+                  <Menu.Item>{user.email}</Menu.Item>
+                  <Menu.Separator />
+                  <Form action="/logout" method="POST">
+                    <Menu.Item>Sair</Menu.Item>
+                  </Form>
+                </Menu.Content>
+              </Menu.Positioner>
+            </Portal>
+          </Menu.Root>
         </HStack>
       </Flex>
-      {isOpen ? (
+      {open ? (
         <Box pb={4} display={{ md: "none" }} bgColor={navColor} color="white">
           <VStack as={"nav"} gap={4} py={4}>
-            <Link as={NavLink} to="/">
+            <Link as={NavLink} href="/">
               Início
             </Link>
-            <Link as={NavLink} to="/clients">
+            <Link as={NavLink} href="/clients">
               Clientes
             </Link>
-            <Link as={NavLink} to="/building-sites">
+            <Link as={NavLink} href="/building-sites">
               Obras
             </Link>
-            <Link as={NavLink} to="/deliveries">
+            <Link as={NavLink} href="/deliveries">
               Remessas
             </Link>
             {isAdmin ? (
-              <Link as={NavLink} to="/admin/inventory">
+              <Link as={NavLink} href="/admin/inventory">
                 Estoque
               </Link>
             ) : null}
             {isAdmin ? (
-              <Link as={NavLink} to="/admin/users">
+              <Link as={NavLink} href="/admin/users">
                 Usuários
               </Link>
             ) : null}

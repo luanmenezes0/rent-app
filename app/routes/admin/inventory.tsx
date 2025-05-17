@@ -2,30 +2,16 @@ import { EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
+  Dialog,
+  Field,
   Flex,
-  FormControl,
-  FormLabel,
   Grid,
   Heading,
   IconButton,
   Input,
   InputGroup,
-  InputLeftAddon,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
   Textarea,
-  Th,
-  Thead,
-  Tr,
   VisuallyHidden,
   useDisclosure,
 } from "@chakra-ui/react";
@@ -128,63 +114,66 @@ function RentableModal({
   values: SerializeFrom<Rentable> | null;
 }) {
   return (
-    <Modal size="md" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>
-          {editionMode ? "Editar" : "Novo"} item de Estoque
-        </ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Form method={editionMode ? "PUT" : "POST"} id="rentable-form">
-            <Grid gap={2}>
-              <input type="hidden" name="id" defaultValue={values?.id} />
-              <FormControl>
-                <FormLabel htmlFor="name">Nome</FormLabel>
-                <Input
-                  id="name"
-                  required
-                  name="name"
-                  defaultValue={values?.name}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor="description">Descrição</FormLabel>
-                <Textarea
-                  id="description"
-                  name="description"
-                  defaultValue={values?.description ?? ""}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor="count">Quantidade</FormLabel>
-                <Input
-                  id="count"
-                  required
-                  name="count"
-                  type="number"
-                  defaultValue={values?.count}
-                />
-              </FormControl>
-              <FormControl>
-                <FormLabel htmlFor="unitPrice">Valor Unitário</FormLabel>
-                <InputGroup>
-                  <InputLeftAddon>R$</InputLeftAddon>
+    <Dialog.Root size="md" open onClose={onClose}>
+      <Dialog.Trigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.CloseTrigger />
+          <Dialog.Header>
+            <Dialog.Title>
+              {editionMode ? "Editar" : "Novo"} item de Estoque
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <Form method={editionMode ? "PUT" : "POST"} id="rentable-form">
+              <Grid gap={2}>
+                <input type="hidden" name="id" defaultValue={values?.id} />
+                <Field.Root>
+                  <Field.Label htmlFor="name">Nome</Field.Label>
                   <Input
-                    id="unitPrice"
+                    id="name"
                     required
-                    name="unitPrice"
-                    type="number"
-                    defaultValue={values?.unitPrice}
+                    name="name"
+                    defaultValue={values?.name}
                   />
-                </InputGroup>
-              </FormControl>
-            </Grid>
-          </Form>
-        </ModalBody>
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label htmlFor="description">Descrição</Field.Label>
+                  <Textarea
+                    id="description"
+                    name="description"
+                    defaultValue={values?.description ?? ""}
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label htmlFor="count">Quantidade</Field.Label>
+                  <Input
+                    id="count"
+                    required
+                    name="count"
+                    type="number"
+                    defaultValue={values?.count}
+                  />
+                </Field.Root>
+                <Field.Root>
+                  <Field.Label htmlFor="unitPrice">Valor Unitário</Field.Label>
+                  <InputGroup startElement="R$">
+                    <Input
+                      id="unitPrice"
+                      required
+                      name="unitPrice"
+                      type="number"
+                      defaultValue={values?.unitPrice}
+                    />
+                  </InputGroup>
+                </Field.Root>
+              </Grid>
+            </Form>
+          </Dialog.Body>
 
-        <ModalFooter gap="2">
-          {/* <Form method="delete">
+          <Dialog.Footer gap="2">
+            {/* <Form method="delete">
             <input type="hidden" name="id" value={values?.id} />
             <input type="hidden" name="_action" value="delete" />
             <IconButton
@@ -199,20 +188,21 @@ function RentableModal({
               rounded="full"
             />
           </Form> */}
-          <Button onClick={onClose} variant="outline">
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="rentable-form"
-            name="_action"
-            value={editionMode ? "edit" : "create"}
-          >
-            Salvar
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+            <Button onClick={onClose} variant="outline">
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="rentable-form"
+              name="_action"
+              value={editionMode ? "edit" : "create"}
+            >
+              Salvar
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }
 
@@ -223,7 +213,7 @@ export default function Index() {
   }>();
   const navigation = useNavigation();
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
   const [editData, setEditData] = useState<SerializeFrom<Rentable> | null>(
     null,
   );
@@ -247,48 +237,49 @@ export default function Index() {
         <Button maxW="fit-content" onClick={onOpen}>
           Criar novo item
         </Button>
-        <TableContainer>
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>Nome</Th>
-                <Th>Descrição</Th>
-                <Th>Quantidade</Th>
-                <Th>Preço unitário</Th>
-                <Th>
-                  <VisuallyHidden>Edit</VisuallyHidden>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
-              {rentables.map((rentable) => (
-                <Tr key={rentable.id}>
-                  <Td>{rentable.id}</Td>
-                  <Td> {rentable.name}</Td>
-                  <Td> {rentable.description}</Td>
-                  <Td>{rentable.count}</Td>
-                  <Td>R$ {rentable.unitPrice}</Td>
-                  <Td>
-                    <Flex>
-                      <IconButton
-                        aria-label="Editar"
-                        icon={<EditIcon />}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setEditData(rentable);
-                          onOpen();
-                        }}
-                      />
-                    </Flex>
-                  </Td>
-                </Tr>
-              ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
-        {isOpen ? (
+
+        <Table.Root size="sm">
+          <Table.Header>
+            <Table.Row>
+              <Table.ColumnHeader>Id</Table.ColumnHeader>
+              <Table.ColumnHeader>Nome</Table.ColumnHeader>
+              <Table.ColumnHeader>Descrição</Table.ColumnHeader>
+              <Table.ColumnHeader>Quantidade</Table.ColumnHeader>
+              <Table.ColumnHeader>Preço unitário</Table.ColumnHeader>
+              <Table.ColumnHeader>
+                <VisuallyHidden>Edit</VisuallyHidden>
+              </Table.ColumnHeader>
+            </Table.Row>
+          </Table.Header>
+          <Table.Body>
+            {rentables.map((rentable) => (
+              <Table.Row key={rentable.id}>
+                <Table.Cell>{rentable.id}</Table.Cell>
+                <Table.Cell> {rentable.name}</Table.Cell>
+                <Table.Cell> {rentable.description}</Table.Cell>
+                <Table.Cell>{rentable.count}</Table.Cell>
+                <Table.Cell>R$ {rentable.unitPrice}</Table.Cell>
+                <Table.Cell>
+                  <Flex>
+                    <IconButton
+                      aria-label="Editar"
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setEditData(rentable);
+                        onOpen();
+                      }}
+                    >
+                      <EditIcon />
+                    </IconButton>
+                  </Flex>
+                </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table.Root>
+
+        {open ? (
           <RentableModal
             onClose={onClose}
             values={editData}

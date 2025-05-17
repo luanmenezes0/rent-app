@@ -3,28 +3,15 @@ import {
   Box,
   Button,
   Container,
+  Dialog,
+  Field,
   Flex,
-  FormControl,
-  FormLabel,
   Heading,
   IconButton,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Switch,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   VisuallyHidden,
   useClipboard,
   useDisclosure,
@@ -44,7 +31,7 @@ import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
 
-import { MyAlertDialog } from "~/components/AlertDialog";
+import { AlertDialog } from "~/components/AlertDialog";
 import Header from "~/components/Header";
 import {
   SERVER_SECRET,
@@ -119,48 +106,53 @@ function UserModal({ onClose }: { onClose: () => void }) {
   }, [actionData?.link, setValue]);
 
   return (
-    <Modal size="lg" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>Novo usuário</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Form method="POST" id="user-form">
-            <input type="hidden" name="id" />
-            <FormControl>
-              <FormLabel htmlFor="name">E-mail</FormLabel>
-              <Input id="email" required name="email" type="email" />
-            </FormControl>
-          </Form>
-          {actionData?.link ? (
-            <Flex alignItems="center" gap={2}>
-              <Box bgColor="teal.800" p={2} my={2} borderRadius={4}>
-                <Text wordBreak="break-all" fontSize="12px">
-                  {actionData?.link}
-                </Text>
-              </Box>
-              <Button type="button" onClick={onCopy}>
-                {hasCopied ? "Copied!" : "Copy"}
-              </Button>
-            </Flex>
-          ) : null}
-        </ModalBody>
-        <ModalFooter gap="2">
-          <Button onClick={onClose} variant="outline">
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="user-form"
-            name="_action"
-            value="create"
-            disabled={Boolean(actionData?.link)}
-          >
-            Criar Link
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root size="lg" open onClose={onClose}>
+      <Dialog.Trigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.CloseTrigger />
+          <Dialog.Header>
+            <Dialog.Title>Novo usuário</Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <Form method="POST" id="user-form">
+              <input type="hidden" name="id" />
+              <Field.Root>
+                <Field.Label htmlFor="name">E-mail</Field.Label>
+                <Input id="email" required name="email" type="email" />
+              </Field.Root>
+            </Form>
+            {actionData?.link ? (
+              <Flex alignItems="center" gap={2}>
+                <Box bgColor="teal.800" p={2} my={2} borderRadius={4}>
+                  <Text wordBreak="break-all" fontSize="12px">
+                    {actionData?.link}
+                  </Text>
+                </Box>
+                <Button type="button" onClick={onCopy}>
+                  {hasCopied ? "Copied!" : "Copy"}
+                </Button>
+              </Flex>
+            ) : null}
+          </Dialog.Body>
+          <Dialog.Footer gap="2">
+            <Button onClick={onClose} variant="outline">
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="user-form"
+              name="_action"
+              value="create"
+              disabled={Boolean(actionData?.link)}
+            >
+              Criar Link
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }
 
@@ -171,7 +163,7 @@ export default function Users() {
   const user = useUser();
 
   const deleteModal = useDisclosure();
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   const [idToDelete, setIdToDelete] = useState<string | null>(null);
 
@@ -206,42 +198,41 @@ export default function Users() {
         <Button maxW="fit-content" onClick={onOpen}>
           Novo usuário
         </Button>
-        <TableContainer>
-          <Table size="sm">
-            <Thead>
-              <Tr>
-                <Th>ID</Th>
-                <Th>Email</Th>
-                <Th>Administrador?</Th>
-                <Th>Data de criação</Th>
+        <>
+          <Table.Root size="sm">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>ID</Table.ColumnHeader>
+                <Table.ColumnHeader>Email</Table.ColumnHeader>
+                <Table.ColumnHeader>Administrador?</Table.ColumnHeader>
+                <Table.ColumnHeader>Data de criação</Table.ColumnHeader>
                 {isAdmin ? (
-                  <Th>
+                  <Table.ColumnHeader>
                     <VisuallyHidden>Ações</VisuallyHidden>
-                  </Th>
+                  </Table.ColumnHeader>
                 ) : null}
-              </Tr>
-            </Thead>
-            <Tbody>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {users.map((user) => (
-                <Tr key={user.id}>
-                  <Td>{user.id}</Td>
-                  <Td>{user.email}</Td>
-                  <Td>
+                <Table.Row key={user.id}>
+                  <Table.Cell>{user.id}</Table.Cell>
+                  <Table.Cell>{user.email}</Table.Cell>
+                  <Table.Cell>
                     <Switch
                       defaultChecked={user.role === userRoles.ADMIN}
                       onChange={(e) => onChangeRole(e.target.checked, user.id)}
                     />
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     {dayjs(user.createdAt)
                       .tz("America/Fortaleza")
                       .format("DD/MM/YYYY")}
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     {isAdmin ? (
                       <IconButton
                         aria-label="Excluir Usuário"
-                        icon={<DeleteIcon />}
                         onClick={() => {
                           setIdToDelete(user.id);
                           deleteModal.onOpen();
@@ -250,18 +241,20 @@ export default function Users() {
                         colorScheme="red"
                         isRound
                         size="sm"
-                      />
+                      >
+                        <DeleteIcon />
+                      </IconButton>
                     ) : null}
-                  </Td>
-                </Tr>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </>
       </Container>
-      {isOpen ? <UserModal onClose={onClose} /> : null}
-      <MyAlertDialog
-        isOpen={deleteModal.isOpen}
+      {open ? <UserModal onClose={onClose} /> : null}
+      <AlertDialog
+        isOpen={deleteModal.open}
         onClose={() => {
           setIdToDelete(null);
           deleteModal.onClose();

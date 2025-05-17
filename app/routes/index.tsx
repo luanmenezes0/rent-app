@@ -6,12 +6,12 @@ import {
   Text,
   VStack,
   Wrap,
-  useColorModeValue,
 } from "@chakra-ui/react";
 import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
+import { useTheme } from "src/components/ui/color-mode";
 
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
@@ -35,7 +35,7 @@ function Card({ rentable }: { rentable: SerializeFrom<Rentable> }) {
 
   const totalRented = data?.inventory ?? 0;
 
-  const color = useColorModeValue("green.300", "green.600");
+  const color = useTheme("green.300", "green.600");
 
   return (
     <VStack

@@ -2,18 +2,15 @@ import { DeleteIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
-  Divider,
   Grid,
   HStack,
   Heading,
   IconButton,
   Link,
+  Separator,
   Stat,
-  StatLabel,
-  StatNumber,
   Text,
   VStack,
-  useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -24,7 +21,7 @@ import { useState } from "react";
 import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
-import { MyAlertDialog } from "~/components/AlertDialog";
+import { AlertDialog } from "~/components/AlertDialog";
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import DeliveryCard from "~/components/DeliveryCard";
@@ -45,6 +42,7 @@ import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
 
+import { useTheme } from "src/components/ui/color-mode";
 import { DeliveyModal } from "../../components/DeliveyModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -205,11 +203,11 @@ export default function BuildingSite() {
 
   const fetcher = useFetcher();
 
-  const { onOpen, onClose, isOpen } = useDisclosure();
+  const { onOpen, onClose, open } = useDisclosure();
   const [showBuildingModal, setShowBuildingModal] = useState(false);
   const deleteModal = useDisclosure();
 
-  const cardColor = useColorModeValue("gray.100", "gray.700");
+  const cardColor = useTheme("gray.100", "gray.700");
 
   const isAdmin = user?.role === "ADMIN";
 
@@ -243,11 +241,12 @@ export default function BuildingSite() {
             {isAdmin ? (
               <IconButton
                 aria-label="Delete building site"
-                icon={<DeleteIcon />}
                 variant="outline"
                 colorScheme="red"
                 onClick={deleteModal.onOpen}
-              />
+              >
+                <DeleteIcon />
+              </IconButton>
             ) : null}
           </HStack>
         </VStack>
@@ -264,44 +263,36 @@ export default function BuildingSite() {
             <Text fontWeight="bold" as="dt">
               Cliente
             </Text>
-            <Link to={`/clients/${buildingSite.client.id}`} as={RemixLink}>
+            <Link href={`/clients/${buildingSite.client.id}`} as={RemixLink}>
               <dd>{buildingSite.client.name}</dd>
             </Link>
           </div>
           <BuildingSiteStatusLabel status={buildingSite.status} />
         </VStack>
-        <Divider />
+        <Separator />
         <VStack align="stretch" as="section">
-          <Heading
-            as="h2"
-            size="lg"
-            color={useColorModeValue("green.600", "green.100")}
-          >
+          <Heading as="h2" size="lg" color={useTheme("green.600", "green.100")}>
             Materiais
           </Heading>
           <Grid templateColumns="repeat(auto-fit, minmax(12rem, 1fr))" gap={3}>
             {inventory.map((rentable) => (
-              <Stat
+              <Stat.Root
                 key={rentable.rentableId}
                 bgColor={cardColor}
                 padding="4"
                 borderRadius="16"
               >
-                <StatLabel>
+                <Stat.Label>
                   {rentables.find((i) => i.id === rentable.rentableId)?.name}
-                </StatLabel>
-                <StatNumber>{rentable.count}</StatNumber>
-              </Stat>
+                </Stat.Label>
+                <Stat.ValueText>{rentable.count}</Stat.ValueText>
+              </Stat.Root>
             ))}
           </Grid>
         </VStack>
-        <Divider />
+        <Separator />
         <VStack align="stretch" as="section">
-          <Heading
-            as="h2"
-            size="lg"
-            color={useColorModeValue("green.600", "green.100")}
-          >
+          <Heading as="h2" size="lg" color={useTheme("green.600", "green.100")}>
             Remessas
           </Heading>
           {buildingSite.deliveries.map((d) => (
@@ -310,7 +301,7 @@ export default function BuildingSite() {
         </VStack>
       </Container>
       {/* delivery creation */}
-      {isOpen ? (
+      {open ? (
         <DeliveyModal
           onClose={onClose}
           buildingSiteId={buildingSite.id}
@@ -325,9 +316,9 @@ export default function BuildingSite() {
           onClose={() => setShowBuildingModal(false)}
         />
       ) : null}
-      {deleteModal.isOpen ? (
-        <MyAlertDialog
-          isOpen={deleteModal.isOpen}
+      {deleteModal.open ? (
+        <AlertDialog
+          isOpen={deleteModal.open}
           onClose={deleteModal.onClose}
           onDelete={deleteBuildingSite}
           title="Deletar Obra"

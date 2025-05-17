@@ -1,15 +1,4 @@
-import {
-  Container,
-  Heading,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
-  VisuallyHidden,
-} from "@chakra-ui/react";
+import { Container, Heading, Table, VisuallyHidden } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
@@ -56,36 +45,36 @@ export default function BuildingSites() {
         <Heading as="h1" size="2xl">
           Obras
         </Heading>
-        <TableContainer>
-          <Table>
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>Nome</Th>
-                <Th>Endereço</Th>
-                <Th>Status</Th>
-                <Th>
+        <>
+          <Table.Root>
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>Id</Table.ColumnHeader>
+                <Table.ColumnHeader>Nome</Table.ColumnHeader>
+                <Table.ColumnHeader>Endereço</Table.ColumnHeader>
+                <Table.ColumnHeader>Status</Table.ColumnHeader>
+                <Table.ColumnHeader>
                   <VisuallyHidden>Ações</VisuallyHidden>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {buildingSites.map((bs) => (
-                <Tr key={bs.id}>
-                  <Td>{bs.id}</Td>
-                  <Td>{bs.name}</Td>
-                  <Td>{bs.address.slice(0, 46)}</Td>
-                  <Td>
+                <Table.Row key={bs.id}>
+                  <Table.Cell>{bs.id}</Table.Cell>
+                  <Table.Cell>{bs.name}</Table.Cell>
+                  <Table.Cell>{bs.address.slice(0, 46)}</Table.Cell>
+                  <Table.Cell>
                     <BuildingSiteStatusLabel status={bs.status} />
-                  </Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>
                     <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
-                  </Td>
-                </Tr>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </>
         <PaginationBar total={count} />
       </Container>
     </>

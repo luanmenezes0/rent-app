@@ -11,7 +11,6 @@ import {
   Heading,
   Icon,
   IconButton,
-  useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit, Rentable } from "@prisma/client";
@@ -20,8 +19,9 @@ import { SerializeFrom } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { GrDeliver, GrPrint } from "react-icons/gr";
 
-import { MyAlertDialog } from "./AlertDialog";
+import { AlertDialog } from "./AlertDialog";
 import { DeliveyModal } from "./DeliveyModal";
+import { useTheme } from "src/components/ui/color-mode";
 
 interface DeliveryCardProps {
   delivery: SerializeFrom<Delivery> & {
@@ -42,8 +42,8 @@ export default function DeliveryCard({
   delivery,
   rentables,
 }: DeliveryCardProps) {
-  const cardColor = useColorModeValue("gray.100", "gray.700");
-  const iconBgColor = useColorModeValue("gray.200", "gray.600");
+  const cardColor = useTheme("gray.100", "gray.700");
+  const iconBgColor = useTheme("gray.200", "gray.600");
 
   const navigation = useNavigation();
   const actionData = useActionData<{
@@ -53,7 +53,7 @@ export default function DeliveryCard({
   const [deliveryModal, setDeliveryModal] = useState<State>(initialState);
   const [idToDelete, setIdToDelete] = useState<number | null>(null);
 
-  const { isOpen, onOpen, onClose } = useDisclosure();
+  const { open, onOpen, onClose } = useDisclosure();
 
   const fetcher = useFetcher();
 
@@ -160,8 +160,8 @@ export default function DeliveryCard({
         />
       ) : null}
       {idToDelete ? (
-        <MyAlertDialog
-          isOpen={isOpen}
+        <AlertDialog
+          open={open}
           onClose={onClose}
           onDelete={() => handleDelete(idToDelete)}
           title="Deletar Remessa"

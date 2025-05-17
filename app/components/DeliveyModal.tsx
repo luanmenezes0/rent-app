@@ -2,19 +2,11 @@ import { TriangleDownIcon, TriangleUpIcon } from "@chakra-ui/icons";
 import {
   Alert,
   AlertDescription,
-  AlertIcon,
   Button,
-  FormControl,
-  FormLabel,
+  Dialog,
+  Field,
   HStack,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Select,
   VStack,
 } from "@chakra-ui/react";
@@ -22,8 +14,8 @@ import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
 import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { useEffect, useState } from "react";
 
 dayjs.extend(customParseFormat);
 
@@ -118,92 +110,104 @@ export function DeliveyModal({
     : dayjs().format("YYYY-MM-DDTHH:mm");
 
   return (
-    <Modal size="lg" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{editionMode ? "Editar" : "Nova"} Remessa</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <Form
-            method={editionMode ? "PUT" : "POST"}
-            id="delivery-form"
-            key={values?.id}
-          >
-            <input type="hidden" name="id" value={values?.id} />
-            <VStack>
-              <FormControl>
-                <FormLabel htmlFor="notes">Data</FormLabel>
-                <Input
-                  name="date"
-                  placeholder="Select Date and Time"
-                  size="md"
-                  defaultValue={initialDateValue}
-                  type="datetime-local"
-                />
-              </FormControl>
-              <input
-                type="hidden"
-                name="buildingSiteId"
-                value={buildingSiteId}
-              />
-              {actionData?.fieldErrors?.count ? (
-                <Alert status="error" borderRadius="16">
-                  <AlertIcon />
-                  <AlertDescription>
-                    {actionData?.fieldErrors?.count}
-                  </AlertDescription>
-                </Alert>
-              ) : null}
-              {mappedRentables.map((rentable) => (
-                <FormControl
-                  display="grid"
-                  gridTemplateColumns="1fr 70px auto"
-                  gap={4}
-                  key={rentable.id}
-                >
-                  <input type="hidden" name="rentableId" value={rentable.id} />
-                  <FormLabel
-                    htmlFor={`${rentable.id}_count`}
-                    alignSelf="center"
-                  >
-                    {rentable.name}
-                  </FormLabel>
+    <Dialog.Root size="lg" isOpen onClose={onClose}>
+      <Dialog.Trigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.CloseTrigger />
+          <Dialog.Header>
+            <Dialog.Title>
+              {editionMode ? "Editar" : "Nova"} Remessa
+            </Dialog.Title>
+          </Dialog.Header>
+
+          <Dialog.Body>
+            <Form
+              method={editionMode ? "PUT" : "POST"}
+              id="delivery-form"
+              key={values?.id}
+            >
+              <input type="hidden" name="id" value={values?.id} />
+              <VStack>
+                <Field.Root>
+                  <Field.Label htmlFor="notes">Data</Field.Label>
                   <Input
-                    min={0}
-                    type="number"
-                    name={`${rentable.id}_count`}
-                    id={`${rentable.id}_count`}
-                    placeholder=""
-                    defaultValue={rentable.count}
-                    required
+                    name="date"
+                    placeholder="Select Date and Time"
+                    size="md"
+                    defaultValue={initialDateValue}
+                    type="datetime-local"
                   />
-                  <HStack>
-                    <SelectArea
-                      rentableId={rentable.id}
-                      initialType={
-                        rentable.type === 1 ? "delivery" : "withdrawal"
-                      }
+                </Field.Root>
+                <input
+                  type="hidden"
+                  name="buildingSiteId"
+                  value={buildingSiteId}
+                />
+                {actionData?.fieldErrors?.count ? (
+                  <Alert status="error" borderRadius="16">
+                    <AlertIcon />
+                    <AlertDescription>
+                      {actionData?.fieldErrors?.count}
+                    </AlertDescription>
+                  </Alert>
+                ) : null}
+                {mappedRentables.map((rentable) => (
+                  <Field.Root
+                    display="grid"
+                    gridTemplateColumns="1fr 70px auto"
+                    gap={4}
+                    key={rentable.id}
+                  >
+                    <input
+                      type="hidden"
+                      name="rentableId"
+                      value={rentable.id}
                     />
-                  </HStack>
-                </FormControl>
-              ))}
-            </VStack>
-          </Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose} variant="outline" mx={2}>
-            Cancelar
-          </Button>
-          <Button
-            name="_action"
-            value={editionMode ? "edit-delivery" : "create-delivery"}
-            type="submit"
-            form="delivery-form"
-          >
-            Salvar
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                    <Field.Label
+                      htmlFor={`${rentable.id}_count`}
+                      alignSelf="center"
+                    >
+                      {rentable.name}
+                    </Field.Label>
+                    <Input
+                      min={0}
+                      type="number"
+                      name={`${rentable.id}_count`}
+                      id={`${rentable.id}_count`}
+                      placeholder=""
+                      defaultValue={rentable.count}
+                      required
+                    />
+                    <HStack>
+                      <SelectArea
+                        rentableId={rentable.id}
+                        initialType={
+                          rentable.type === 1 ? "delivery" : "withdrawal"
+                        }
+                      />
+                    </HStack>
+                  </Field.Root>
+                ))}
+              </VStack>
+            </Form>
+          </Dialog.Body>
+          <Dialog.Footer>
+            <Button onClick={onClose} variant="outline" mx={2}>
+              Cancelar
+            </Button>
+            <Button
+              name="_action"
+              value={editionMode ? "edit-delivery" : "create-delivery"}
+              type="submit"
+              form="delivery-form"
+            >
+              Salvar
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }

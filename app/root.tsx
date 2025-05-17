@@ -1,4 +1,4 @@
-import { ChakraProvider } from "@chakra-ui/react";
+import { withEmotionCache } from "@emotion/react";
 import { cssBundleHref } from "@remix-run/css-bundle";
 import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -13,11 +13,13 @@ import {
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/timezone.js";
 import timezone from "dayjs/plugin/utc.js";
+import { ThemeProvider } from "next-themes";
+
+import { ChakraProvider } from "./components/chakra-provider";
+import { useInjectStyles } from "./emotion/emotion-client";
 
 import styles from "~/styles/index.css";
-
 import { getUser } from "./session.server";
-import theme from "./theme";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
@@ -35,21 +37,27 @@ export async function loader({ request }: LoaderFunctionArgs) {
   });
 }
 
-function Document({
-  children,
-  title = "Rent App",
-}: {
-  children: React.ReactNode;
+interface LayoutProps extends React.PropsWithChildren {
   title?: string;
-}) {
+}
+
+export const Layout = withEmotionCache((props: LayoutProps, cache) => {
+  const { children, title = "Rent App" } = props;
+
+  useInjectStyles(cache);
+
   return (
     <html lang="en">
-      <head>
+      <head suppressHydrationWarning>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
         <Meta />
         <title>{title}</title>
         <Links />
+        <meta
+          name="emotion-insertion-point"
+          content="emotion-insertion-point"
+        />
       </head>
       <body>
         {children}
@@ -59,17 +67,16 @@ function Document({
       </body>
     </html>
   );
-}
+});
 
 export default function App() {
   // throw new Error("💣💥 Booooom");
-
   return (
-    <Document>
-      <ChakraProvider theme={theme}>
+    <ChakraProvider>
+      <ThemeProvider disableTransitionOnChange attribute="class">
         <Outlet />
-      </ChakraProvider>
-    </Document>
+      </ThemeProvider>
+    </ChakraProvider>
   );
 }
 

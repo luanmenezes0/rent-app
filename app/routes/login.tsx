@@ -1,11 +1,9 @@
 import {
   Button,
+  Field,
   Flex,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
+
   Input,
-  useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -16,6 +14,7 @@ import {
   useSearchParams,
   type MetaFunction,
 } from "@remix-run/react";
+import { useTheme } from "next-themes";
 import { validationError } from "remix-validated-form";
 
 import { verifyLogin } from "~/models/user.server";
@@ -69,23 +68,25 @@ export default function LoginPage() {
 
   const actionData = useActionData<typeof action>();
 
+
+
   return (
     <Flex
       h="full"
       justifyContent="center"
       alignItems="center"
-      bgColor={useColorModeValue("gray.100", "gray.700")}
+      bgColor={useTheme("gray.100", "gray.700")}
     >
       <Form method="POST" style={{ width: "380px" }}>
         <VStack
           spacing="4"
           maxW="container.md"
           p="6"
-          bgColor={useColorModeValue("white", "gray.800")}
+          bgColor={useTheme("white", "gray.800")}
           borderRadius="lg"
         >
-          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.email)}>
-            <FormLabel htmlFor="email">E-mail</FormLabel>
+          <Field.Root isInvalid={Boolean(actionData?.fieldErrors?.email)}>
+            <Field.Label htmlFor="email">E-mail</Field.Label>
             <Input
               id="email"
               required
@@ -93,20 +94,20 @@ export default function LoginPage() {
               type="email"
               autoComplete="email"
             />
-            <FormErrorMessage>{actionData?.fieldErrors.email}</FormErrorMessage>
-          </FormControl>
-          <FormControl isInvalid={Boolean(actionData?.fieldErrors?.password)}>
-            <FormLabel htmlFor="password">Senha</FormLabel>
+            <Field.ErrorText>{actionData?.fieldErrors.email}</Field.ErrorText>
+          </Field.Root>
+          <Field.Root isInvalid={Boolean(actionData?.fieldErrors?.password)}>
+            <Field.Label htmlFor="password">Senha</Field.Label>
             <Input
               id="password"
               name="password"
               type="password"
               autoComplete="current-password"
             />
-            <FormErrorMessage>
+            <Field.ErrorText>
               {actionData?.fieldErrors.password}
-            </FormErrorMessage>
-          </FormControl>
+            </Field.ErrorText>
+          </Field.Root>
           <input type="hidden" name="redirectTo" value={redirectTo} />
           <Button w="full" type="submit">
             Entrar

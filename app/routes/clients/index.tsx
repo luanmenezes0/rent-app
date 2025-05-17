@@ -9,14 +9,8 @@ import {
   InputGroup,
   Link,
   Table,
-  TableContainer,
-  Tbody,
-  Td,
-  Th,
-  Thead,
-  Tr,
   useDisclosure,
-  VisuallyHidden
+  VisuallyHidden,
 } from "@chakra-ui/react";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
@@ -109,7 +103,7 @@ export default function Clients() {
 
   const [searchParams] = useSearchParams();
 
-  const { onClose, isOpen, onOpen } = useDisclosure();
+  const { onClose, open, onOpen } = useDisclosure();
 
   function onChange(e: React.FormEvent<HTMLInputElement>) {
     const value = e.currentTarget.value;
@@ -147,47 +141,47 @@ export default function Clients() {
           </Form>
         </Flex>
 
-        <TableContainer>
-          <Table size="md">
-            <Thead>
-              <Tr>
-                <Th>Id</Th>
-                <Th>Nome</Th>
-                <Th>Endereço</Th>
-                <Th>
+        <>
+          <Table.Root size="md">
+            <Table.Header>
+              <Table.Row>
+                <Table.ColumnHeader>Id</Table.ColumnHeader>
+                <Table.ColumnHeader>Nome</Table.ColumnHeader>
+                <Table.ColumnHeader>Endereço</Table.ColumnHeader>
+                <Table.ColumnHeader>
                   <VisuallyHidden>Ações</VisuallyHidden>
-                </Th>
-              </Tr>
-            </Thead>
-            <Tbody>
+                </Table.ColumnHeader>
+              </Table.Row>
+            </Table.Header>
+            <Table.Body>
               {clients.map((c) => (
-                <Tr key={c.id}>
-                  <Td>
-                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                <Table.Row key={c.id}>
+                  <Table.Cell>
+                    <Link as={RemixLink} href={`/clients/${c.id}`}>
                       {c.id}
                     </Link>
-                  </Td>
-                  <Td>
-                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                  </Table.Cell>
+                  <Table.Cell>
+                    <Link as={RemixLink} href={`/clients/${c.id}`}>
                       {c.name}
                     </Link>
-                  </Td>
-                  <Td>{c.address.slice(0, 46)}</Td>
-                  <Td>
+                  </Table.Cell>
+                  <Table.Cell>{c.address.slice(0, 46)}</Table.Cell>
+                  <Table.Cell>
                     <HStack>
-                      <Link as={RemixLink} to={`/clients/${c.id}`} px="4">
+                      <Link as={RemixLink} href={`/clients/${c.id}`} px="4">
                         Ver detalhes
                       </Link>
                     </HStack>
-                  </Td>
-                </Tr>
+                  </Table.Cell>
+                </Table.Row>
               ))}
-            </Tbody>
-          </Table>
-        </TableContainer>
+            </Table.Body>
+          </Table.Root>
+        </>
         <PaginationBar total={count} />
       </Container>
-      {isOpen ? <ClientModal onClose={onClose} /> : null}
+      {open ? <ClientModal onClose={onClose} /> : null}
     </>
   );
 }

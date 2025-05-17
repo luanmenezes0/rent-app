@@ -1,17 +1,9 @@
 import {
   Button,
   Checkbox,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
+  Dialog,
+  Field,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
   Textarea,
   VStack,
 } from "@chakra-ui/react";
@@ -54,80 +46,87 @@ export default function BuildingSiteModal(props: Props) {
   }
 
   return (
-    <Modal size="xl" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{editionMode ? "Editar" : "Nova"} Obra</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <fetcher.Form
-            method="POST"
-            id="buiding-site-form"
-            className="flex flex-col gap-4"
-          >
-            <VStack spacing={2}>
-              <input type="hidden" name="clientId" value={client.id} />
-              <input type="hidden" name="id" value={values?.id} />
-              <FormControl isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}>
-                <FormLabel htmlFor="name">Nome</FormLabel>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                  defaultValue={
-                    editionMode
-                      ? values?.name
-                      : `OBRA ${client.name.split(" ")[0]}`
-                  }
-                />
-                {fetcher.data?.fieldErrors?.name ? (
-                  <FormErrorMessage>
-                    {fetcher.data?.fieldErrors?.name}
-                  </FormErrorMessage>
-                ) : null}
-              </FormControl>
-              <FormControl
-                isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
-              >
-                <FormLabel htmlFor="address">Endereço</FormLabel>
-                <Textarea
-                  id="address"
-                  name="address"
-                  defaultValue={
-                    editionMode
-                      ? values?.address
-                      : `${client.address}, ${client.neighborhood} - ${client.city}`
-                  }
-                  required
-                />
-                {fetcher.data?.fieldErrors?.address ? (
-                  <FormErrorMessage>
-                    {fetcher.data?.fieldErrors?.address}
-                  </FormErrorMessage>
-                ) : null}
-              </FormControl>
-              <FormControl display="flex" alignItems="baseline">
-                <FormLabel htmlFor="status">Ativa</FormLabel>
-                <Checkbox
-                  name="status"
-                  id="status"
-                  onChange={({ target }) => setStatus(target.checked ? 1 : 2)}
-                  defaultChecked={status === BuildingSiteStatus.ACTIVE}
-                  value={status === BuildingSiteStatus.ACTIVE ? 1 : 2}
-                />
-              </FormControl>
-            </VStack>
-          </fetcher.Form>
-        </ModalBody>
-        <ModalFooter>
-          <Button onClick={onClose} variant="ghost" mx="4">
-            Cancelar
-          </Button>
-          <Button form="buiding-site-form" onClick={onSubmit}>
-            Salvar
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+    <Dialog.Root size="xl" isOpen onClose={onClose}>
+      <Dialog.Trigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.CloseTrigger />
+          <Dialog.Header>
+            <Dialog.Title>{editionMode ? "Editar" : "Nova"} Obra</Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <fetcher.Form
+              method="POST"
+              id="buiding-site-form"
+              className="flex flex-col gap-4"
+            >
+              <VStack spacing={2}>
+                <input type="hidden" name="clientId" value={client.id} />
+                <input type="hidden" name="id" value={values?.id} />
+                <Field.Root
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}
+                >
+                  <Field.Label htmlFor="name">Nome</Field.Label>
+                  <Input
+                    id="name"
+                    name="name"
+                    required
+                    defaultValue={
+                      editionMode
+                        ? values?.name
+                        : `OBRA ${client.name.split(" ")[0]}`
+                    }
+                  />
+                  {fetcher.data?.fieldErrors?.name ? (
+                    <Field.ErrorText>
+                      {fetcher.data?.fieldErrors?.name}
+                    </Field.ErrorText>
+                  ) : null}
+                </Field.Root>
+                <Field.Root
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
+                >
+                  <Field.Label htmlFor="address">Endereço</Field.Label>
+                  <Textarea
+                    id="address"
+                    name="address"
+                    defaultValue={
+                      editionMode
+                        ? values?.address
+                        : `${client.address}, ${client.neighborhood} - ${client.city}`
+                    }
+                    required
+                  />
+                  {fetcher.data?.fieldErrors?.address ? (
+                    <Field.ErrorText>
+                      {fetcher.data?.fieldErrors?.address}
+                    </Field.ErrorText>
+                  ) : null}
+                </Field.Root>
+                <Field.Root display="flex" alignItems="baseline">
+                  <Field.Label htmlFor="status">Ativa</Field.Label>
+                  <Checkbox
+                    name="status"
+                    id="status"
+                    onChange={({ target }) => setStatus(target.checked ? 1 : 2)}
+                    defaultChecked={status === BuildingSiteStatus.ACTIVE}
+                    value={status === BuildingSiteStatus.ACTIVE ? 1 : 2}
+                  />
+                </Field.Root>
+              </VStack>
+            </fetcher.Form>
+          </Dialog.Body>
+          <Dialog.Footer>
+            <Button onClick={onClose} variant="ghost" mx="4">
+              Cancelar
+            </Button>
+            <Button form="buiding-site-form" onClick={onSubmit}>
+              Salvar
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }

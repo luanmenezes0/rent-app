@@ -1,18 +1,9 @@
 import {
   Button,
-  FormControl,
-  FormErrorMessage,
-  FormLabel,
+  Dialog,
+  Field,
   HStack,
   Input,
-  Modal,
-  ModalBody,
-  ModalCloseButton,
-  ModalContent,
-  ModalFooter,
-  ModalHeader,
-  ModalOverlay,
-  Radio,
   RadioGroup,
   VStack,
 } from "@chakra-ui/react";
@@ -47,205 +38,220 @@ export function ClientModal(props: ClientModalProps) {
   }, [fetcher.data, onClose]);
 
   return (
-    <Modal size="xl" isOpen onClose={onClose}>
-      <ModalOverlay />
-      <ModalContent>
-        <ModalHeader>{editionMode ? "Editar" : "Criar"} Cliente</ModalHeader>
-        <ModalCloseButton />
-        <ModalBody>
-          <fetcher.Form method="PUT" id="client-form">
-            <FormControl as="fieldset">
-              <FormLabel as="legend">Pessoa Jurídica</FormLabel>
-              <RadioGroup
-                name="isLegalEntity"
-                defaultValue={
-                  editionMode ? values?.isLegalEntity.toString() : "false"
-                }
-                onChange={(value) =>
-                  value === "true" ? setLabel("CNPJ") : setLabel("CPF")
-                }
-              >
-                <HStack spacing={4}>
-                  <Radio value="true">Sim</Radio>
-                  <Radio value="false" defaultChecked>
-                    Não
-                  </Radio>
-                </HStack>
-              </RadioGroup>
-            </FormControl>
-
-            <FormControl
-              isInvalid={Boolean(fetcher.data?.fieldErrors?.registrationNumber)}
-            >
-              <FormLabel htmlFor="registrationNumber">{label}</FormLabel>
-              <Input
-                id="registrationNumber"
-                name="registrationNumber"
-                defaultValue={values?.registrationNumber ?? ""}
-                minLength={11}
-                onBlur={async (e) => {
-                  const form = e.target.form;
-
-                  const legalEntityChecked =
-                    form?.isLegalEntity.value === "true";
-
-                  const inputValue = e.target.value
-                    .replaceAll(".", "")
-                    .replaceAll("/", "")
-                    .replaceAll("-", "");
-
-                  if (inputValue.length === 14 && legalEntityChecked) {
-                    const res = await fetch(
-                      `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
-                        .replaceAll(".", "")
-                        .replaceAll("/", "")
-                        .replaceAll("-", "")}`,
-                    );
-
-                    const data = await res.json();
-
-                    if (res.ok && form) {
-                      const name = form.elements.namedItem(
-                        "name",
-                      ) as HTMLInputElement | null;
-                      if (name) name.value = data["RAZAO SOCIAL"];
-                      form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
-                      form.phoneNumber.value = data.TELEFONE;
-                      form.neighborhood.value = data.BAIRRO;
-                      form.city.value = data.MUNICIPIO;
-                      form.state.value = data.UF;
-                    }
+    <Dialog.Root size="xl" isOpen onClose={onClose}>
+      <Dialog.Trigger />
+      <Dialog.Backdrop />
+      <Dialog.Positioner>
+        <Dialog.Content>
+          <Dialog.CloseTrigger />
+          <Dialog.Header>
+            <Dialog.Title>
+              {editionMode ? "Editar" : "Criar"} Cliente
+            </Dialog.Title>
+          </Dialog.Header>
+          <Dialog.Body>
+            <fetcher.Form method="PUT" id="client-form">
+              <Field.Root as="fieldset">
+                <Field.Label as="legend">Pessoa Jurídica</Field.Label>
+                <RadioGroup.Root
+                  name="isLegalEntity"
+                  defaultValue={
+                    editionMode ? values?.isLegalEntity.toString() : "false"
                   }
-                }}
-              />
-              {fetcher.data?.fieldErrors?.registrationNumber ? (
-                <FormErrorMessage>
-                  {fetcher.data?.fieldErrors?.registrationNumber}
-                </FormErrorMessage>
-              ) : null}
-            </FormControl>
-            <VStack spacing={2}>
-              <input type="hidden" name="id" defaultValue={values?.id} />
-              <FormControl isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}>
-                <FormLabel htmlFor="name">Nome</FormLabel>
-                <Input
-                  id="name"
-                  name="name"
-                  required
-                  defaultValue={values?.name}
-                />
-                {fetcher.data?.fieldErrors?.name ? (
-                  <FormErrorMessage>
-                    {fetcher.data?.fieldErrors?.name}
-                  </FormErrorMessage>
-                ) : null}
-              </FormControl>
-              <FormControl
-                isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
+                  onChange={(value) =>
+                    value === "true" ? setLabel("CNPJ") : setLabel("CPF")
+                  }
+                >
+                  <HStack spacing={4}>
+                    <RadioGroup.Item value="true">
+                      {" "}
+                      <RadioGroup.ItemHiddenInput />
+                      <RadioGroup.ItemIndicator />
+                      <RadioGroup.ItemText>Sim</RadioGroup.ItemText>
+                    </RadioGroup.Item>
+                    <Radio value="false" defaultChecked>
+                      Não
+                    </Radio>
+                  </HStack>
+                </RadioGroup.Root>
+              </Field.Root>
+
+              <Field.Root
+                isInvalid={Boolean(
+                  fetcher.data?.fieldErrors?.registrationNumber,
+                )}
               >
-                <FormLabel htmlFor="address">Endereço</FormLabel>
+                <Field.Label htmlFor="registrationNumber">{label}</Field.Label>
                 <Input
-                  id="address"
-                  name="address"
-                  required
-                  defaultValue={values?.address}
+                  id="registrationNumber"
+                  name="registrationNumber"
+                  defaultValue={values?.registrationNumber ?? ""}
+                  minLength={11}
+                  onBlur={async (e) => {
+                    const form = e.target.form;
+
+                    const legalEntityChecked =
+                      form?.isLegalEntity.value === "true";
+
+                    const inputValue = e.target.value
+                      .replaceAll(".", "")
+                      .replaceAll("/", "")
+                      .replaceAll("-", "");
+
+                    if (inputValue.length === 14 && legalEntityChecked) {
+                      const res = await fetch(
+                        `https://api-publica.speedio.com.br/buscarcnpj?cnpj=${e.target.value
+                          .replaceAll(".", "")
+                          .replaceAll("/", "")
+                          .replaceAll("-", "")}`,
+                      );
+
+                      const data = await res.json();
+
+                      if (res.ok && form) {
+                        const name = form.elements.namedItem(
+                          "name",
+                        ) as HTMLInputElement | null;
+                        if (name) name.value = data["RAZAO SOCIAL"];
+                        form.address.value = `${data["TIPO LOGRADOURO"]} ${data.LOGRADOURO}, ${data.NUMERO}`;
+                        form.phoneNumber.value = data.TELEFONE;
+                        form.neighborhood.value = data.BAIRRO;
+                        form.city.value = data.MUNICIPIO;
+                        form.state.value = data.UF;
+                      }
+                    }
+                  }}
                 />
-                {fetcher.data?.fieldErrors?.address ? (
-                  <FormErrorMessage>
-                    {fetcher.data?.fieldErrors?.address}
-                  </FormErrorMessage>
+                {fetcher.data?.fieldErrors?.registrationNumber ? (
+                  <Field.ErrorText>
+                    {fetcher.data?.fieldErrors?.registrationNumber}
+                  </Field.ErrorText>
                 ) : null}
-              </FormControl>
-              <HStack>
-                <FormControl
-                  isInvalid={Boolean(fetcher.data?.fieldErrors?.neighborhood)}
+              </Field.Root>
+              <VStack spacing={2}>
+                <input type="hidden" name="id" defaultValue={values?.id} />
+                <Field.Root
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.name)}
                 >
-                  <FormLabel htmlFor="neighborhood">Bairro</FormLabel>
+                  <Field.Label htmlFor="name">Nome</Field.Label>
                   <Input
-                    id="neighborhood"
-                    name="neighborhood"
+                    id="name"
+                    name="name"
                     required
-                    defaultValue={values?.neighborhood}
+                    defaultValue={values?.name}
                   />
-                  {fetcher.data?.fieldErrors?.neighborhood ? (
-                    <FormErrorMessage>
-                      {fetcher.data?.fieldErrors?.neighborhood}
-                    </FormErrorMessage>
+                  {fetcher.data?.fieldErrors?.name ? (
+                    <Field.ErrorText>
+                      {fetcher.data?.fieldErrors?.name}
+                    </Field.ErrorText>
                   ) : null}
-                </FormControl>
+                </Field.Root>
+                <Field.Root
+                  isInvalid={Boolean(fetcher.data?.fieldErrors?.address)}
+                >
+                  <Field.Label htmlFor="address">Endereço</Field.Label>
+                  <Input
+                    id="address"
+                    name="address"
+                    required
+                    defaultValue={values?.address}
+                  />
+                  {fetcher.data?.fieldErrors?.address ? (
+                    <Field.ErrorText>
+                      {fetcher.data?.fieldErrors?.address}
+                    </Field.ErrorText>
+                  ) : null}
+                </Field.Root>
+                <HStack>
+                  <Field.Root
+                    isInvalid={Boolean(fetcher.data?.fieldErrors?.neighborhood)}
+                  >
+                    <Field.Label htmlFor="neighborhood">Bairro</Field.Label>
+                    <Input
+                      id="neighborhood"
+                      name="neighborhood"
+                      required
+                      defaultValue={values?.neighborhood}
+                    />
+                    {fetcher.data?.fieldErrors?.neighborhood ? (
+                      <Field.ErrorText>
+                        {fetcher.data?.fieldErrors?.neighborhood}
+                      </Field.ErrorText>
+                    ) : null}
+                  </Field.Root>
 
-                <FormControl
-                  isInvalid={Boolean(fetcher.data?.fieldErrors?.city)}
-                >
-                  <FormLabel htmlFor="city">Cidade</FormLabel>
-                  <Input
-                    id="city"
-                    name="city"
-                    required
-                    defaultValue={values?.city ?? ""}
-                  />
-                  {fetcher.data?.fieldErrors?.city ? (
-                    <FormErrorMessage>
-                      {fetcher.data?.fieldErrors?.city}
-                    </FormErrorMessage>
-                  ) : null}
-                </FormControl>
-              </HStack>
-              <HStack>
-                <FormControl
-                  isInvalid={Boolean(fetcher.data?.fieldErrors?.phoneNumber)}
-                >
-                  <FormLabel htmlFor="phoneNumber">Telefone</FormLabel>
-                  <Input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    defaultValue={values?.phoneNumber ?? ""}
-                    minLength={10}
-                    required
-                    type="tel"
-                  />
-                  {fetcher.data?.fieldErrors?.phoneNumber ? (
-                    <FormErrorMessage>
-                      {fetcher.data?.fieldErrors?.phoneNumber}
-                    </FormErrorMessage>
-                  ) : null}
-                </FormControl>
+                  <Field.Root
+                    isInvalid={Boolean(fetcher.data?.fieldErrors?.city)}
+                  >
+                    <Field.Label htmlFor="city">Cidade</Field.Label>
+                    <Input
+                      id="city"
+                      name="city"
+                      required
+                      defaultValue={values?.city ?? ""}
+                    />
+                    {fetcher.data?.fieldErrors?.city ? (
+                      <Field.ErrorText>
+                        {fetcher.data?.fieldErrors?.city}
+                      </Field.ErrorText>
+                    ) : null}
+                  </Field.Root>
+                </HStack>
+                <HStack>
+                  <Field.Root
+                    isInvalid={Boolean(fetcher.data?.fieldErrors?.phoneNumber)}
+                  >
+                    <Field.Label htmlFor="phoneNumber">Telefone</Field.Label>
+                    <Input
+                      id="phoneNumber"
+                      name="phoneNumber"
+                      defaultValue={values?.phoneNumber ?? ""}
+                      minLength={10}
+                      required
+                      type="tel"
+                    />
+                    {fetcher.data?.fieldErrors?.phoneNumber ? (
+                      <Field.ErrorText>
+                        {fetcher.data?.fieldErrors?.phoneNumber}
+                      </Field.ErrorText>
+                    ) : null}
+                  </Field.Root>
 
-                <FormControl
-                  isInvalid={Boolean(fetcher.data?.fieldErrors?.state)}
-                >
-                  <FormLabel htmlFor="state">UF</FormLabel>
-                  <Input
-                    id="state"
-                    name="state"
-                    defaultValue={values?.state ?? ""}
-                    required
-                  />
-                  {fetcher.data?.fieldErrors?.state ? (
-                    <FormErrorMessage>
-                      {fetcher.data?.fieldErrors?.state}
-                    </FormErrorMessage>
-                  ) : null}
-                </FormControl>
-              </HStack>
-            </VStack>
-          </fetcher.Form>
-        </ModalBody>
-
-        <ModalFooter>
-          <Button onClick={onClose} variant="ghost" mx="4">
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            form="client-form"
-            name="_action"
-            value={editionMode ? "edit" : "create"}
-          >
-            Salvar
-          </Button>
-        </ModalFooter>
-      </ModalContent>
-    </Modal>
+                  <Field.Root
+                    isInvalid={Boolean(fetcher.data?.fieldErrors?.state)}
+                  >
+                    <Field.Label htmlFor="state">UF</Field.Label>
+                    <Input
+                      id="state"
+                      name="state"
+                      defaultValue={values?.state ?? ""}
+                      required
+                    />
+                    {fetcher.data?.fieldErrors?.state ? (
+                      <Field.ErrorText>
+                        {fetcher.data?.fieldErrors?.state}
+                      </Field.ErrorText>
+                    ) : null}
+                  </Field.Root>
+                </HStack>
+              </VStack>
+            </fetcher.Form>
+          </Dialog.Body>
+          <Dialog.Footer>
+            <Button onClick={onClose} variant="ghost" mx="4">
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              form="client-form"
+              name="_action"
+              value={editionMode ? "edit" : "create"}
+            >
+              Salvar
+            </Button>
+          </Dialog.Footer>
+        </Dialog.Content>
+      </Dialog.Positioner>
+    </Dialog.Root>
   );
 }
