@@ -3,12 +3,7 @@
     "../node_modules/@types/jest",
     "../node_modules/@testing-library/jest-dom"
   ],
-  "include": [
-    "e2e/**/*",
-    "support/**/*",
-    "../node_modules/cypress",
-    "../node_modules/@testing-library/cypress"
-  ],
+  "include": ["tests/**/*", "support/**/*", "../node_modules/playwright"],
   "compilerOptions": {
     "baseUrl": ".",
     "noEmit": true,
@@ -21,7 +16,6 @@
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "typeRoots": ["../types", "../node_modules/@types"],
-
     "paths": {
       "~/*": ["../app/*"]
     }

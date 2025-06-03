@@ -4,8 +4,8 @@ node_modules
 /public/build
 .env
 
-/cypress/screenshots
-/cypress/videos
+/playwright-report
+/test-results
 /prisma/data.db
 /prisma/data.db-journal
 

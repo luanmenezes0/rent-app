@@ -2,7 +2,7 @@ import globals from "globals";
 import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
-import pluginCypress from "eslint-plugin-cypress/flat";
+import pluginPlaywright from "eslint-plugin-playwright";
 
 export default [
   {
@@ -18,9 +18,9 @@ export default [
       ],
     },
   },
-  { ignores: ["cypress/.eslintrc.js", "build", "public"] },
+  { ignores: ["playwright", "build", "public"] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
-  pluginCypress.configs.recommended,
+  pluginPlaywright.configs.recommended,
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat["jsx-runtime"],
