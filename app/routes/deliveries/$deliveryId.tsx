@@ -86,7 +86,7 @@ function Info({ delivery, text }: InfoProps) {
 export async function loader({ params }: LoaderFunctionArgs) {
   // await requireUserId(request);
 
-  invariant(params.deliveryId, "buldingId not found");
+  invariant(params.deliveryId, "deliveryId not found");
 
   const delivery = await getDelivery(params.deliveryId);
 

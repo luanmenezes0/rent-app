@@ -20,7 +20,7 @@ import { useEffect, useState } from "react";
 import { GrDeliver, GrPrint } from "react-icons/gr";
 
 import { MyAlertDialog } from "./AlertDialog";
-import { DeliveyModal } from "./DeliveyModal";
+import { DeliveyModal } from "./DeliveryModal";
 
 interface DeliveryCardProps {
   delivery: Omit<Delivery, "date"> & {

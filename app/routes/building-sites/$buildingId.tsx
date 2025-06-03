@@ -44,7 +44,7 @@ import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { useUser } from "~/utils";
 import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
-import { DeliveyModal } from "../../components/DeliveyModal";
+import { DeliveyModal } from "../../components/DeliveryModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
