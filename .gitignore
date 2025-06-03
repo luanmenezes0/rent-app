@@ -11,3 +11,7 @@ node_modules
 
 /app/styles/tailwind.css
 .cache
+
+# Playwright
+/blob-report/
+/playwright/.cache/

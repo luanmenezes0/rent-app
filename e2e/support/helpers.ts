@@ -10,7 +10,7 @@ export async function login(
   email: string = faker.internet.email(undefined, undefined, "example.com"),
 ) {
   const output = execSync(
-    `npx tsx --require tsconfig-paths/register ./playwright/support/create-user.ts "${email}"`,
+    `npx tsx --require tsconfig-paths/register ./e2e/support/create-user.ts "${email}"`,
   ).toString();
   const match = /<cookie>(?<cookieValue>.*)<\/cookie>/.exec(output);
   const cookieValue = match?.groups?.cookieValue.trim();
@@ -23,6 +23,6 @@ export async function login(
 
 export function cleanupUser(email: string) {
   execSync(
-    `npx tsx --require tsconfig-paths/register ./playwright/support/delete-user.ts "${email}"`,
+    `npx tsx --require tsconfig-paths/register ./e2e/support/delete-user.ts "${email}"`,
   );
 }
