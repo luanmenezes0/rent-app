@@ -1,5 +1,5 @@
 import { faker } from "@faker-js/faker";
-import bcrypt from "bcryptjs";
+import * as bcrypt from "bcryptjs";
 
 describe("Login", () => {
   afterEach(() => {

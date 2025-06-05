@@ -11,7 +11,6 @@ import {
   VisuallyHidden,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
@@ -37,7 +36,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
     status,
   });
 
-  return json({ buildingSites: data, count });
+  return { buildingSites: data, count };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

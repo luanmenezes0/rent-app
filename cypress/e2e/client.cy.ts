@@ -5,7 +5,7 @@ describe("Client", () => {
     cy.cleanupUser();
   });
 
-  it.only("should create client", () => {
+  it("should create client", () => {
     const client = {
       name: faker.name.fullName(),
       email: faker.internet.email(),

@@ -16,11 +16,11 @@ import {
   Thead,
   Tr,
   useDisclosure,
-  VisuallyHidden
+  VisuallyHidden,
 } from "@chakra-ui/react";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
+import { redirect } from "@remix-run/node";
 import {
   Form,
   Link as RemixLink,
@@ -50,7 +50,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const { count, data } = await getClients({ top, skip, search });
 
-  return json({ clients: data, count });
+  return { clients: data, count };
 }
 
 export async function action({ request }: ActionFunctionArgs) {

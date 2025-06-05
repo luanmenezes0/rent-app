@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+/// <reference types="cypress" />
 import { faker } from "@faker-js/faker";
 
 declare global {

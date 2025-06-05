@@ -17,16 +17,15 @@ import {
 } from "@chakra-ui/react";
 import type { BuildingSite, Client } from "@prisma/client";
 import { useFetcher } from "@remix-run/react";
-import { SerializeFrom } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 
 import { BuildingSiteStatus } from "~/utils";
 
 interface Props {
   onClose: () => void;
-  client: SerializeFrom<Client>;
+  client: Client;
   editionMode?: boolean;
-  values?: SerializeFrom<BuildingSite>;
+  values?: BuildingSite;
 }
 
 export default function BuildingSiteModal(props: Props) {

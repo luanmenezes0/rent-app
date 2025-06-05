@@ -8,8 +8,7 @@ import {
   Wrap,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useFetcher, useLoaderData } from "@remix-run/react";
 import { useEffect } from "react";
 
@@ -23,10 +22,10 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
   const rentables = await getRentables();
 
-  return json({ rentables });
+  return { rentables };
 }
 
-function Card({ rentable }: { rentable: SerializeFrom<Rentable> }) {
+function Card({ rentable }: { rentable: Rentable }) {
   const { load, data } = useFetcher<{ inventory: number | null }>();
 
   useEffect(() => {

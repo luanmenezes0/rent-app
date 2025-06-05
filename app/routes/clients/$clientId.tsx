@@ -16,7 +16,6 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { useState } from "react";
 import { validationError } from "remix-validated-form";
@@ -42,7 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return json({ client });
+  return { client };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {

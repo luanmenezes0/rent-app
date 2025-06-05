@@ -1,6 +1,5 @@
 import { Box, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
-import type { LoaderFunctionArgs, SerializeFrom } from "@remix-run/node";
-import { json } from "@remix-run/node";
+import type { LoaderFunctionArgs } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import invariant from "tiny-invariant";
@@ -8,12 +7,14 @@ import invariant from "tiny-invariant";
 import styles from "~/components/styles.module.css";
 import { getDelivery } from "~/models/delivery.server";
 
-interface InfroProps {
-  delivery: SerializeFrom<typeof loader>["delivery"];
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+interface InfoProps {
+  delivery: UnwrapPromise<ReturnType<typeof loader>>["delivery"];
   text: string;
 }
 
-function Info({ delivery, text }: InfroProps) {
+function Info({ delivery, text }: InfoProps) {
   return (
     <VStack gap={8} paddingTop={8} align="start">
       <VStack alignSelf="center">
@@ -85,7 +86,7 @@ function Info({ delivery, text }: InfroProps) {
 export async function loader({ params }: LoaderFunctionArgs) {
   // await requireUserId(request);
 
-  invariant(params.deliveryId, "buldingId not found");
+  invariant(params.deliveryId, "deliveryId not found");
 
   const delivery = await getDelivery(params.deliveryId);
 
@@ -93,7 +94,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
     throw new Response("Not Found", { status: 404 });
   }
 
-  return json({ delivery });
+  return { delivery };
 }
 
 export default function Index() {

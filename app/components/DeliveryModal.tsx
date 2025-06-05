@@ -20,10 +20,9 @@ import {
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit } from "@prisma/client";
 import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
+import { useEffect, useState } from "react";
 
 dayjs.extend(customParseFormat);
 
@@ -66,12 +65,13 @@ interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
   editionMode?: boolean;
-  values?: SerializeFrom<Delivery> & {
-    units: (SerializeFrom<DeliveryUnit> & {
-      rentable: SerializeFrom<Rentable>;
+  values?: Omit<Delivery, "date"> & {
+    units: (DeliveryUnit & {
+      rentable: Rentable;
     })[];
+    date: string;
   };
-  rentables: SerializeFrom<Rentable>[];
+  rentables: Rentable[];
 }
 
 export function DeliveyModal({
