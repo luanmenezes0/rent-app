@@ -37,7 +37,7 @@ import {
 } from "@remix-run/react";
 import type {
   ActionFunctionArgs,
-  LoaderFunctionArgs
+  LoaderFunctionArgs,
 } from "@remix-run/server-runtime";
 import { useEffect, useState } from "react";
 import { validationError } from "remix-validated-form";
