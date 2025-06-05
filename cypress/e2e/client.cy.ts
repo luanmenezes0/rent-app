@@ -7,14 +7,14 @@ describe("Client", () => {
 
   it("should create client", () => {
     const client = {
-      name: faker.name.fullName(),
+      name: faker.person.fullName(),
       email: faker.internet.email(),
       phone: faker.phone.number(),
-      address: faker.address.streetAddress(),
-      city: faker.address.city(),
-      registrationNumber: faker.random.numeric(9),
-      neighborhood: faker.address.county(),
-      state: faker.address.state(),
+      address: faker.location.streetAddress(),
+      city: faker.location.city(),
+      registrationNumber: faker.number.int(9),
+      neighborhood: faker.location.county(),
+      state: faker.location.state(),
     };
 
     cy.login();
@@ -27,7 +27,7 @@ describe("Client", () => {
 
     cy.findByRole("dialog").should("be.visible");
 
-    cy.findByRole("textbox", { name: /cpf/i }).type(client.registrationNumber);
+    cy.findByRole("textbox", { name: /cpf/i }).type(client.registrationNumber.toString());
     cy.findByRole("textbox", { name: /nome/i }).type(client.name);
     cy.findByRole("textbox", { name: /endereço/i }).type(client.address);
     cy.findByRole("textbox", { name: /bairro/i }).type(client.neighborhood);

@@ -14,7 +14,10 @@ export async function createRentable(
 }
 
 export async function editRentable(
-  rentable: Pick<Rentable, "name" | "count" | "description" | "unitPrice" | "id">,
+  rentable: Pick<
+    Rentable,
+    "name" | "count" | "description" | "unitPrice" | "id"
+  >,
 ) {
   return prisma.rentable.update({ data: rentable, where: { id: rentable.id } });
 }
