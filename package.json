@@ -29,7 +29,7 @@
     "@prisma/client": "^5.19.1",
     "@remix-run/css-bundle": "^2.12.1",
     "@remix-run/node": "^2.12.1",
-    "@remix-run/react": "^2.12.1",
+    "@remix-run/react": "^2.16.8",
     "@remix-run/serve": "^2.12.1",
     "@remix-run/server-runtime": "^2.12.1",
     "@remix-run/v1-route-convention": "^0.1.4",
