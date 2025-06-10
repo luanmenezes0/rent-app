@@ -7,11 +7,7 @@ export const LoginSchema = z.object({
   password: z.string().min(8, "A senha deve conter no mínimo 8 caracteres"),
 });
 
-export const loginValidator = LoginSchema;
-
 export const UserSchema = z.object({
   userId: z.string().min(1, "O userId é obrigatório"),
   role: z.enum([userRoles.USER, userRoles.ADMIN]),
 });
-
-export const userValidator = UserSchema;

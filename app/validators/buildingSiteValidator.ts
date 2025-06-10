@@ -7,5 +7,3 @@ export const BuildingSiteSchema = z.object({
   clientId: z.string(),
   status: z.string().optional(),
 });
-
-export const buildingSiteValidator = BuildingSiteSchema;

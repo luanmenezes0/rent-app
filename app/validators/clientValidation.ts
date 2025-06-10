@@ -14,5 +14,3 @@ export const ClientSchema = z.object({
   email: z.string().email().optional(),
   streetCode: z.string().optional(),
 });
-
-export const clientValidator = ClientSchema;

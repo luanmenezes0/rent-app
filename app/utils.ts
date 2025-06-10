@@ -1,8 +1,8 @@
-import { useMatches } from "react-router";
 import { useMemo } from "react";
+import { data, useMatches } from "react-router";
 
-import type { User } from "~/models/user.server";
 import { ZodError } from "zod";
+import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -100,12 +100,26 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
 
 export const userRoles = { USER: "USER", ADMIN: "ADMIN" } as const;
 
-export function validationError<T>(error: ZodError<T>) {
-  return {
-    status: 400,
-    data: {
-      fieldErrors: error.errors,
-      formErrors: error.formErrors,
+export function validationError(errors: Record<string, string>) {
+  return data(
+    {
+      fieldErrors: errors,
     },
-  };
+    {
+      status: 422,
+      headers: {
+        "Content-Type": "application/json; utf-8",
+      },
+    },
+  );
+}
+
+export function parseZodError<T>(error: ZodError<T>): Record<string, string> {
+  return error.issues.reduce(
+    (acc, issue) => {
+      acc[issue.path.join(".")] = issue.message;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
 }

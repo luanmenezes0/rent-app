@@ -45,7 +45,7 @@ import {
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
-import { useUser, validationError } from "~/utils";
+import { parseZodError, useUser, validationError } from "~/utils";
 import { BuildingSiteSchema } from "~/validators/buildingSiteValidator";
 import { DeliveyModal } from "../../components/DeliveryModal";
 
@@ -90,7 +90,7 @@ export async function action({ request }: ActionFunctionArgs) {
       const result = BuildingSiteSchema.safeParse(formData);
 
       if (!result.success) {
-        return validationError(result.error);
+        return validationError(parseZodError(result.error));
       }
 
       await editBuildingSite({
@@ -124,9 +124,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!units.length) {
         return validationError({
-          fieldErrors: {
-            count: "É necessário informar a quantidade de pelo menos um item",
-          },
+          count: "É necessário informar a quantidade de pelo menos um item",
         });
       }
 
@@ -157,9 +155,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!units.length) {
         return validationError({
-          fieldErrors: {
-            count: "É necessário informar a quantidade de pelo menos um item",
-          },
+          count: "É necessário informar a quantidade de pelo menos um item",
         });
       }
 

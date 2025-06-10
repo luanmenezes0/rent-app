@@ -21,8 +21,8 @@ import {
 
 import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect, validationError } from "~/utils";
-import { loginValidator } from "~/validators/userValidator";
+import { parseZodError, safeRedirect, validationError } from "~/utils";
+import { LoginSchema } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -38,31 +38,29 @@ export async function action({ request }: ActionFunctionArgs) {
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!token) {
-    return validationError({ fieldErrors: { token: "Token inválido" } });
+    return validationError({ token: "Token inválido" });
   }
 
   const tokenIsValid = await verifyToken(decodeURIComponent(token.toString()));
   if (!tokenIsValid) {
-    return validationError({
-      fieldErrors: { token: "Token inválido" },
-    });
+    return validationError({ token: "Token inválido" });
   }
 
-  const result = await loginValidator.validate(formData);
+  const result = LoginSchema.safeParse(Object.fromEntries(formData.entries()));
+
+  console.log("result", result);
+
   if (result.error) {
-    return validationError(result.error);
+    return validationError(parseZodError(result.error));
   }
 
   const { email, password } = result.data;
 
   const existingUser = await getUserByEmail(email);
+
+  console.log("existingUser", existingUser);
   if (existingUser) {
-    return validationError(
-      {
-        fieldErrors: { email: "E-mail já cadastrado." },
-      },
-      { email },
-    );
+    return validationError({ email: "E-mail já cadastrado." });
   }
 
   const user = await createUser(email, password);
@@ -87,6 +85,8 @@ export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
+
+  console.log("actionData", actionData);
 
   const token = searchParams.get("token");
 

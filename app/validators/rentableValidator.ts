@@ -6,5 +6,3 @@ export const RentableSchema = z.object({
   description: z.string(),
   unitPrice: z.string().min(1, "O preço é obrigatório"),
 });
-
-export const rentableValidator = RentableSchema;
