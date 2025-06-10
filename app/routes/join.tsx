@@ -48,8 +48,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const result = LoginSchema.safeParse(Object.fromEntries(formData.entries()));
 
-  console.log("result", result);
-
   if (result.error) {
     return validationError(parseZodError(result.error));
   }
@@ -58,7 +56,6 @@ export async function action({ request }: ActionFunctionArgs) {
 
   const existingUser = await getUserByEmail(email);
 
-  console.log("existingUser", existingUser);
   if (existingUser) {
     return validationError({ email: "E-mail já cadastrado." });
   }
@@ -85,8 +82,6 @@ export default function Join() {
   const [searchParams] = useSearchParams();
   const redirectTo = searchParams.get("redirectTo") ?? undefined;
   const actionData = useActionData<typeof action>();
-
-  console.log("actionData", actionData);
 
   const token = searchParams.get("token");
 
