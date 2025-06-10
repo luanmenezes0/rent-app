@@ -1,4 +1,4 @@
-import type { LoaderFunctionArgs } from "@remix-run/server-runtime";
+import type { LoaderFunctionArgs } from "react-router";
 import puppeteer from "puppeteer";
 
 const saveAsPdf = async (url: string, cookie: string | null) => {

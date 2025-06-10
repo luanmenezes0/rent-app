@@ -34,13 +34,9 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
-} from "@remix-run/react";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/server-runtime";
+} from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
-import { validationError } from "remix-validated-form";
 
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
@@ -52,6 +48,7 @@ import {
 } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { rentableValidator } from "~/validators/rentableValidator";
+import { validationError } from "~/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);

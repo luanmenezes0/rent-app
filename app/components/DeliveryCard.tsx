@@ -15,7 +15,7 @@ import {
   useDisclosure,
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit, Rentable } from "@prisma/client";
-import { useActionData, useFetcher, useNavigation } from "@remix-run/react";
+import { useActionData, useFetcher, useNavigation } from "react-router";
 import { useEffect, useState } from "react";
 import { GrDeliver, GrPrint } from "react-icons/gr";
 

@@ -15,10 +15,9 @@ import {
   VisuallyHidden,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { useState } from "react";
-import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
 import BuildingSiteModal from "~/components/BuildingSiteModal";
@@ -54,7 +53,7 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   switch (action) {
     case "create-bs": {
-      const result = await buildingSiteValidator.validate(formData);
+      const result = await BuildingSiteSchema(formData);
 
       if (result.error) {
         return validationError(result.error);

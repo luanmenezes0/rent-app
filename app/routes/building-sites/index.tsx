@@ -10,8 +10,8 @@ import {
   Tr,
   VisuallyHidden,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
 import Header from "~/components/Header";

@@ -18,7 +18,7 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import { Form, NavLink } from "@remix-run/react";
+import { Form, NavLink } from "react-router";
 
 import { useUser } from "~/utils";
 

@@ -1,7 +1,8 @@
-import { useMatches } from "@remix-run/react";
+import { useMatches } from "react-router";
 import { useMemo } from "react";
 
 import type { User } from "~/models/user.server";
+import { ZodError } from "zod";
 
 const DEFAULT_REDIRECT = "/";
 
@@ -98,3 +99,13 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
 };
 
 export const userRoles = { USER: "USER", ADMIN: "ADMIN" } as const;
+
+export function validationError<T>(error: ZodError<T>) {
+  return {
+    status: 400,
+    data: {
+      fieldErrors: error.errors,
+      formErrors: error.formErrors,
+    },
+  };
+}

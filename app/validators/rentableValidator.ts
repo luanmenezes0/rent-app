@@ -1,4 +1,3 @@
-import { withZod } from "@remix-validated-form/with-zod";
 import * as z from "zod";
 
 export const RentableSchema = z.object({
@@ -8,4 +7,4 @@ export const RentableSchema = z.object({
   unitPrice: z.string().min(1, "O preço é obrigatório"),
 });
 
-export const rentableValidator = withZod(RentableSchema);
+export const rentableValidator = RentableSchema;

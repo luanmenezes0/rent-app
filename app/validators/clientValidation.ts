@@ -1,4 +1,3 @@
-import { withZod } from "@remix-validated-form/with-zod";
 import * as z from "zod";
 
 export const ClientSchema = z.object({
@@ -16,4 +15,4 @@ export const ClientSchema = z.object({
   streetCode: z.string().optional(),
 });
 
-export const clientValidator = withZod(ClientSchema);
+export const clientValidator = ClientSchema;

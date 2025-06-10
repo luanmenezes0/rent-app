@@ -8,8 +8,8 @@ import {
   Wrap,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useFetcher, useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "react-router";
+import { useFetcher, useLoaderData } from "react-router";
 import { useEffect } from "react";
 
 import Header from "~/components/Header";

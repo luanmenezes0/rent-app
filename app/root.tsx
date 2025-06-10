@@ -1,12 +1,6 @@
 import { ChakraProvider } from "@chakra-ui/react";
-import type { LinksFunction, LoaderFunctionArgs } from "@remix-run/node";
-import {
-  Links,
-  Meta,
-  Outlet,
-  Scripts,
-  ScrollRestoration,
-} from "@remix-run/react";
+import type { LinksFunction, LoaderFunctionArgs } from "react-router";
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from "react-router";
 import dayjs from "dayjs";
 import timezone from "dayjs/plugin/timezone.js";
 import utc from "dayjs/plugin/utc.js";

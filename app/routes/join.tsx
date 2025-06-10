@@ -9,20 +9,19 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
   Form,
   Link,
+  redirect,
   useActionData,
   useSearchParams,
   type MetaFunction,
-} from "@remix-run/react";
-import { validationError } from "remix-validated-form";
+} from "react-router";
 
 import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect } from "~/utils";
+import { safeRedirect, validationError } from "~/utils";
 import { loginValidator } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {

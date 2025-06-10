@@ -19,15 +19,14 @@ import {
   VisuallyHidden,
 } from "@chakra-ui/react";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { redirect } from "react-router";
 import {
   Form,
   Link as RemixLink,
   useLoaderData,
   useSearchParams,
-} from "@remix-run/react";
-import { validationError } from "remix-validated-form";
+} from "react-router";
 
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
@@ -37,7 +36,7 @@ import {
 } from "~/components/PaginationBar";
 import { createClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
-import { PAGINATION_LIMIT } from "~/utils";
+import { PAGINATION_LIMIT, validationError } from "~/utils";
 import { clientValidator } from "~/validators/clientValidation";
 
 export async function loader({ request }: LoaderFunctionArgs) {
