@@ -29,21 +29,11 @@ import {
   useClipboard,
   useDisclosure,
 } from "@chakra-ui/react";
-import {
-  Form,
-  useActionData,
-  useFetcher,
-  useLoaderData,
-} from "@remix-run/react";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/server-runtime";
 import bcrypt from "bcryptjs";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
-import { validationError } from "remix-validated-form";
-
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Form, useActionData, useFetcher, useLoaderData } from "react-router";
 import { MyAlertDialog } from "~/components/AlertDialog";
 import Header from "~/components/Header";
 import {
@@ -53,8 +43,8 @@ import {
   getUsers,
 } from "~/models/user.server";
 import { requireUserId } from "~/session.server";
-import { useUser, userRoles } from "~/utils";
-import { userValidator } from "~/validators/userValidator";
+import { parseZodError, useUser, userRoles, validationError } from "~/utils";
+import { UserSchema } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -83,10 +73,12 @@ export async function action({ request }: ActionFunctionArgs) {
     }
 
     case "edit": {
-      const result = await userValidator.validate(formData);
+      const result = UserSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
       if (result.error) {
-        return validationError(result.error);
+        return validationError(parseZodError(result.error));
       }
 
       await editUser(result.data.userId, result.data.role);

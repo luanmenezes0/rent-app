@@ -34,13 +34,9 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
-} from "@remix-run/react";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/server-runtime";
+} from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
-import { validationError } from "remix-validated-form";
 
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
@@ -51,7 +47,8 @@ import {
   getRentables,
 } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
-import { rentableValidator } from "~/validators/rentableValidator";
+import { RentableSchema } from "~/validators/rentableValidator";
+import { parseZodError, validationError } from "~/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -70,10 +67,10 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (action) {
     case "create": {
-      const result = await rentableValidator.validate(formData);
+      const result = RentableSchema.safeParse(Object.fromEntries(formData.entries()));
 
-      if (result.error) {
-        return validationError(result.error);
+      if (!result.success) {
+        return validationError(parseZodError(result.error));
       }
 
       await createRentable({

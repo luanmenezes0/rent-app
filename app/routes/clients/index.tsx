@@ -19,15 +19,14 @@ import {
   VisuallyHidden,
 } from "@chakra-ui/react";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
   Form,
+  redirect,
   Link as RemixLink,
   useLoaderData,
   useSearchParams,
-} from "@remix-run/react";
-import { validationError } from "remix-validated-form";
+} from "react-router";
 
 import { ClientModal } from "~/components/ClientModal";
 import Header from "~/components/Header";
@@ -37,8 +36,8 @@ import {
 } from "~/components/PaginationBar";
 import { createClient, getClients } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
-import { PAGINATION_LIMIT } from "~/utils";
-import { clientValidator } from "~/validators/clientValidation";
+import { PAGINATION_LIMIT, parseZodError, validationError } from "~/utils";
+import { ClientSchema } from "~/validators/clientValidation";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -61,10 +60,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (action) {
     case "create": {
-      const result = await clientValidator.validate(formData);
+      const result = ClientSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
       if (result.error) {
-        return validationError(result.error);
+        return validationError(parseZodError(result.error));
       }
 
       try {
@@ -87,10 +88,8 @@ export async function action({ request }: ActionFunctionArgs) {
           const errors = e.meta?.target as string[];
           if (errors.includes("registrationNumber")) {
             return validationError({
-              fieldErrors: {
-                registrationNumber:
-                  "Já existe um cliente cadastrado com este CPF ou CNPJ.",
-              },
+              registrationNumber:
+                "Já existe um cliente cadastrado com este CPF ou CNPJ.",
             });
           }
         }

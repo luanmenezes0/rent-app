@@ -15,10 +15,9 @@ import {
   VisuallyHidden,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { Link, useLoaderData } from "react-router";
 import { useState } from "react";
-import { validationError } from "remix-validated-form";
 import invariant from "tiny-invariant";
 
 import BuildingSiteModal from "~/components/BuildingSiteModal";
@@ -28,8 +27,9 @@ import Header from "~/components/Header";
 import { createBuildingSite } from "~/models/buildingSite.server";
 import { editClient, getClient } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
-import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
-import { clientValidator } from "~/validators/clientValidation";
+import { BuildingSiteSchema } from "~/validators/buildingSiteValidator";
+import { ClientSchema } from "~/validators/clientValidation";
+import { parseZodError, validationError } from "~/utils";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -54,10 +54,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   switch (action) {
     case "create-bs": {
-      const result = await buildingSiteValidator.validate(formData);
+      const result = BuildingSiteSchema.safeParse(Object.fromEntries(formData.entries()));
 
-      if (result.error) {
-        return validationError(result.error);
+      if (!result.success) {
+        return validationError(parseZodError(result.error));
       }
 
       await createBuildingSite({
@@ -70,10 +70,10 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     case "edit": {
-      const result = await clientValidator.validate(formData);
+      const result = ClientSchema.safeParse(Object.fromEntries(formData.entries()));
 
-      if (result.error) {
-        return validationError(result.error);
+      if (!result.success) {
+        return validationError(parseZodError(result.error));
       }
 
       await editClient({

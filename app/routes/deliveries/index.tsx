@@ -10,11 +10,8 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import { Link, useLoaderData } from "@remix-run/react";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-} from "@remix-run/server-runtime";
+import { Link, useLoaderData } from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import dayjs from "dayjs";
 import { GrDeliver, GrPrint } from "react-icons/gr";
 

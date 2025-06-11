@@ -8,20 +8,19 @@ import {
   useColorModeValue,
   VStack,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import { redirect } from "react-router";
 import {
   Form,
   useActionData,
   useSearchParams,
   type MetaFunction,
-} from "@remix-run/react";
-import { validationError } from "remix-validated-form";
+} from "react-router";
 
 import { verifyLogin } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect } from "~/utils";
-import { loginValidator } from "~/validators/userValidator";
+import { parseZodError, safeRedirect, validationError } from "~/utils";
+import { LoginSchema } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -33,17 +32,17 @@ export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/notes");
 
-  const result = await loginValidator.validate(formData);
+  const result = LoginSchema.safeParse(Object.fromEntries(formData.entries()));
 
   if (result.error) {
-    return validationError(result.error);
+    return validationError(parseZodError(result.error));
   }
 
   const user = await verifyLogin(result.data.email, result.data.password);
 
   if (!user) {
     return validationError({
-      fieldErrors: { email: "Email ou senha incorretos." },
+      email: "Email ou senha incorretos.",
     });
   }
 

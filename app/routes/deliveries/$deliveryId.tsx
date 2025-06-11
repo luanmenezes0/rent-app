@@ -1,6 +1,6 @@
 import { Box, Divider, Flex, Heading, VStack } from "@chakra-ui/react";
-import type { LoaderFunctionArgs } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import type { LoaderFunctionArgs } from "react-router";
+import { useLoaderData } from "react-router";
 import dayjs from "dayjs";
 import invariant from "tiny-invariant";
 

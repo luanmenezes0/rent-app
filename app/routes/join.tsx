@@ -9,21 +9,20 @@ import {
   VStack,
   useColorModeValue,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { redirect } from "@remix-run/node";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
   Form,
   Link,
+  redirect,
   useActionData,
   useSearchParams,
   type MetaFunction,
-} from "@remix-run/react";
-import { validationError } from "remix-validated-form";
+} from "react-router";
 
 import { createUser, getUserByEmail, verifyToken } from "~/models/user.server";
 import { createUserSession, getUserId } from "~/session.server";
-import { safeRedirect } from "~/utils";
-import { loginValidator } from "~/validators/userValidator";
+import { parseZodError, safeRedirect, validationError } from "~/utils";
+import { LoginSchema } from "~/validators/userValidator";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const userId = await getUserId(request);
@@ -39,31 +38,26 @@ export async function action({ request }: ActionFunctionArgs) {
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
 
   if (!token) {
-    return validationError({ fieldErrors: { token: "Token inválido" } });
+    return validationError({ token: "Token inválido" });
   }
 
   const tokenIsValid = await verifyToken(decodeURIComponent(token.toString()));
   if (!tokenIsValid) {
-    return validationError({
-      fieldErrors: { token: "Token inválido" },
-    });
+    return validationError({ token: "Token inválido" });
   }
 
-  const result = await loginValidator.validate(formData);
+  const result = LoginSchema.safeParse(Object.fromEntries(formData.entries()));
+
   if (result.error) {
-    return validationError(result.error);
+    return validationError(parseZodError(result.error));
   }
 
   const { email, password } = result.data;
 
   const existingUser = await getUserByEmail(email);
+
   if (existingUser) {
-    return validationError(
-      {
-        fieldErrors: { email: "E-mail já cadastrado." },
-      },
-      { email },
-    );
+    return validationError({ email: "E-mail já cadastrado." });
   }
 
   const user = await createUser(email, password);
