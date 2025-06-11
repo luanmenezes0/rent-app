@@ -27,7 +27,7 @@ export function MyAlertDialog({
   return (
     <AlertDialog
       isOpen={isOpen}
-      leastDestructiveRef={cancelRef}
+      leastDestructiveRef={cancelRef as React.RefObject<HTMLButtonElement>}
       onClose={onClose}
     >
       <AlertDialogOverlay>

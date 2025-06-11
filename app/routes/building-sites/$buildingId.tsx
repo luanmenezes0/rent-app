@@ -87,7 +87,9 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (action) {
     case "edit-bs": {
-      const result = BuildingSiteSchema.safeParse(formData);
+      const result = BuildingSiteSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
       if (!result.success) {
         return validationError(parseZodError(result.error));

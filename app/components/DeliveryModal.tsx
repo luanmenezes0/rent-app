@@ -19,14 +19,14 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit } from "@prisma/client";
-import { Form, useActionData, useNavigation } from "react-router";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
 import { useEffect, useState } from "react";
-
-dayjs.extend(customParseFormat);
+import { Form, useActionData, useNavigation } from "react-router";
 
 import type { Rentable } from "~/models/inventory.server";
+
+dayjs.extend(customParseFormat);
 
 function SelectArea({
   rentableId,
@@ -87,13 +87,13 @@ export function DeliveyModal({
 
   const navigation = useNavigation();
 
-  const isSubmitting = navigation.state === "loading";
+  const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
-    if (actionData === null && isSubmitting) {
+    if (actionData === null && !isAdding) {
       onClose();
     }
-  }, [actionData, isSubmitting, onClose]);
+  }, [actionData, isAdding, onClose]);
 
   let mappedRentables = [];
 
