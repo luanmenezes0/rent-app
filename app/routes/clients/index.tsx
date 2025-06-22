@@ -23,7 +23,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import {
   Form,
   redirect,
-  Link as RemixLink,
+  Link as RouterLink,
   useLoaderData,
   useSearchParams,
 } from "react-router";
@@ -162,19 +162,19 @@ export default function Clients() {
               {clients.map((c) => (
                 <Tr key={c.id}>
                   <Td>
-                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                    <Link as={RouterLink} to={`/clients/${c.id}`}>
                       {c.id}
                     </Link>
                   </Td>
                   <Td>
-                    <Link as={RemixLink} to={`/clients/${c.id}`}>
+                    <Link as={RouterLink} to={`/clients/${c.id}`}>
                       {c.name}
                     </Link>
                   </Td>
                   <Td>{c.address.slice(0, 46)}</Td>
                   <Td>
                     <HStack>
-                      <Link as={RemixLink} to={`/clients/${c.id}`} px="4">
+                      <Link as={RouterLink} to={`/clients/${c.id}`} px="4">
                         Ver detalhes
                       </Link>
                     </HStack>

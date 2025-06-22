@@ -38,6 +38,7 @@ model Client {
   isLegalEntity      Boolean        @default(false)
   registrationNumber String?        @unique
   buildingSites      BuildingSite[]
+  budgets            Budget[]
   createdAt          DateTime       @default(now())
   updatedAt          DateTime       @updatedAt
 }
@@ -53,6 +54,7 @@ model BuildingSite {
   deliveries     Delivery[]
   inventories    Inventory[]
   deliveriesUnit DeliveryUnit[]
+  budgets        Budget[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,6 +66,7 @@ model Delivery {
   buildingSiteId Int
   date           DateTime       @default("2022-12-31T00:00:00+03:00")
   units          DeliveryUnit[]
+  budget         Budget?
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
 }
@@ -91,6 +94,7 @@ model Rentable {
   description   String?
   inventories   Inventory[]
   deliveryUnits DeliveryUnit[]
+  budgetItems   BudgetItem[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 }
@@ -104,6 +108,48 @@ model Inventory {
 
   rentable   Rentable @relation(fields: [rentableId], references: [id], onDelete: Cascade, onUpdate: Cascade)
   rentableId Int
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Budget {
+  id            Int          @id @default(autoincrement())
+  status        String       @default("DRAFT") // DRAFT, SENT, APPROVED, EXPIRED
+  validityDate  DateTime
+  deliveryFee   Int         @default(0)
+  totalDiscount Int         @default(0)
+  subtotal      Int         @default(0)
+  total         Int         @default(0)
+  notes         String?
+
+  client         Client         @relation(fields: [clientId], references: [id])
+  clientId       Int
+  buildingSite   BuildingSite   @relation(fields: [buildingSiteId], references: [id])
+  buildingSiteId Int
+  items          BudgetItem[]
+  delivery       Delivery?      @relation(fields: [deliveryId], references: [id])
+  deliveryId     Int?          @unique
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model BudgetItem {
+  id          Int      @id @default(autoincrement())
+  quantity    Int
+  startDate   DateTime
+  endDate     DateTime
+  days        Int
+  unitPrice   Int
+  discount    Int      @default(0)
+  subtotal    Int
+  total       Int
+
+  budget      Budget   @relation(fields: [budgetId], references: [id], onDelete: Cascade)
+  budgetId    Int
+  rentable    Rentable @relation(fields: [rentableId], references: [id])
+  rentableId  Int
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
