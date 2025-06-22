@@ -1,4 +1,4 @@
-import { EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
@@ -77,7 +77,7 @@ export async function action({ request }: ActionFunctionArgs) {
         name: result.data.name,
         count: Number(result.data.count),
         description: result.data.description,
-        unitPrice: Number(result.data.unitPrice),
+        unitPrice: Math.round(Number(result.data.unitPrice) * 100),
       });
 
       return null;
@@ -95,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
         id: Number(id),
         count: Number(count),
         description,
-        unitPrice: Number(unitPrice),
+        unitPrice: Math.round(Number(unitPrice) * 100),
       });
 
       return null;
@@ -171,7 +171,9 @@ function RentableModal({
                     required
                     name="unitPrice"
                     type="number"
-                    defaultValue={values?.unitPrice}
+                    step="0.01"
+                    min="0"
+                    defaultValue={values?.unitPrice ? (values.unitPrice / 100).toFixed(2) : ""}
                   />
                 </InputGroup>
               </FormControl>
@@ -180,7 +182,7 @@ function RentableModal({
         </ModalBody>
 
         <ModalFooter gap="2">
-          {/* <Form method="delete">
+          <Form method="delete">
             <input type="hidden" name="id" value={values?.id} />
             <input type="hidden" name="_action" value="delete" />
             <IconButton
@@ -194,7 +196,7 @@ function RentableModal({
               icon={<DeleteIcon />}
               rounded="full"
             />
-          </Form> */}
+          </Form>
           <Button onClick={onClose} variant="outline">
             Cancelar
           </Button>
@@ -262,7 +264,12 @@ export default function Index() {
                   <Td> {rentable.name}</Td>
                   <Td> {rentable.description}</Td>
                   <Td>{rentable.count}</Td>
-                  <Td>R$ {rentable.unitPrice}</Td>
+                  <Td>
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(rentable.unitPrice / 100)}
+                  </Td>
                   <Td>
                     <Flex>
                       <IconButton

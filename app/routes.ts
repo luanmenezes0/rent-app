@@ -5,11 +5,14 @@ import { remixRoutesOptionAdapter } from "@react-router/remix-routes-option-adap
 export default remixRoutesOptionAdapter((defineRoutes) => {
   return defineRoutes((route) => {
     route("/", "routes/index.tsx", { index: true });
+    route("/api/building-sites", "routes/api/building-sites/index.ts");
     route("login", "routes/login.tsx");
     route("join", "routes/join.tsx");
     route("logout", "routes/logout.tsx");
     route("healthcheck", "routes/healthcheck.tsx");
-    route("clientslist", "routes/clientslist.tsx");
+    route("budgets/new", "routes/budgets/new.tsx");
+    route("budgets/:budgetId", "routes/budgets/$budgetId.tsx");
+    route("budgets/:budgetId/print", "routes/budgets/$budgetId.print.tsx");
     route("print-pdf", "routes/print-pdf.tsx");
     route("rentablesInventory", "routes/rentablesInventory.tsx");
     route("clients", "routes/clients/index.tsx");

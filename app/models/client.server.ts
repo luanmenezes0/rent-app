@@ -36,7 +36,20 @@ export async function getClients({
 export async function getClient(id: string) {
   return prisma.client.findUnique({
     where: { id: Number(id) },
-    include: { buildingSites: true },
+    include: { 
+      buildingSites: true,
+      budgets: {
+        include: {
+          buildingSite: true,
+          items: {
+            include: {
+              rentable: true
+            }
+          }
+        },
+        orderBy: { createdAt: "desc" }
+      }
+    },
   });
 }
 
