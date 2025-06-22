@@ -6,31 +6,44 @@ import {
   CardBody,
   CardHeader,
   Container,
+  Divider,
   Grid,
   Heading,
   HStack,
   Icon,
+  IconButton,
   SimpleGrid,
   Stat,
   StatHelpText,
   StatLabel,
   StatNumber,
-  Table,
-  TableContainer,
-  Tbody,
-  Td,
   Text,
-  Th,
-  Thead,
-  Tr,
   useColorModeValue,
   useDisclosure,
-  VisuallyHidden,
-  VStack
+  VStack,
 } from "@chakra-ui/react";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { FiFileText, FiMail, FiMapPin, FiPhone, FiTrendingUp, FiUser } from "react-icons/fi";
+import {
+  FiActivity,
+  FiAlertCircle,
+  FiBriefcase,
+  FiCalendar,
+  FiCheck,
+  FiClock,
+  FiDollarSign,
+  FiEdit3,
+  FiEye,
+  FiFileText,
+  FiMail,
+  FiMapPin,
+  FiPhone,
+  FiPlus,
+  FiPrinter,
+  FiTrendingUp,
+  FiUser,
+  FiX,
+} from "react-icons/fi";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Link, useLoaderData } from "react-router";
 import invariant from "tiny-invariant";
@@ -43,7 +56,10 @@ import { createBuildingSite } from "~/models/buildingSite.server";
 import { editClient, getClient } from "~/models/client.server";
 import { requireUserId } from "~/session.server";
 import { parseZodError, validationError } from "~/utils";
-import { getBudgetStatusColor, getBudgetStatusLabel } from "~/utils/budgetStatus";
+import {
+  getBudgetStatusColor,
+  getBudgetStatusLabel,
+} from "~/utils/budgetStatus";
 import { BuildingSiteSchema } from "~/validators/buildingSiteValidator";
 import { ClientSchema } from "~/validators/clientValidation";
 
@@ -63,27 +79,32 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     .reduce((sum, budget) => sum + budget.total, 0);
 
   const totalBudgets = client.budgets.length;
-  const approvedBudgets = client.budgets.filter((b) => b.status === "APPROVED").length;
-  const activeBuildingSites = client.buildingSites.filter((bs) => bs.status === 1).length;
+  const approvedBudgets = client.budgets.filter(
+    (b) => b.status === "APPROVED",
+  ).length;
+  const activeBuildingSites = client.buildingSites.filter(
+    (bs) => bs.status === 1,
+  ).length;
 
   // Recent activity (last 30 days)
   const recentBudgets = client.budgets.filter((b) =>
-    dayjs(b.createdAt).isAfter(dayjs().subtract(30, "day"))
+    dayjs(b.createdAt).isAfter(dayjs().subtract(30, "day")),
   );
 
   // Monthly revenue for current year
   const monthlyRevenue = Array.from({ length: 12 }, (_, month) => {
     const monthRevenue = client.budgets
-      .filter((b) => 
-        b.status === "APPROVED" && 
-        dayjs(b.createdAt).month() === month &&
-        dayjs(b.createdAt).year() === dayjs().year()
+      .filter(
+        (b) =>
+          b.status === "APPROVED" &&
+          dayjs(b.createdAt).month() === month &&
+          dayjs(b.createdAt).year() === dayjs().year(),
       )
       .reduce((sum, budget) => sum + budget.total, 0);
     return monthRevenue;
   });
 
-  return { 
+  return {
     client,
     analytics: {
       totalRevenue,
@@ -92,7 +113,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       activeBuildingSites,
       recentBudgets: recentBudgets.length,
       monthlyRevenue,
-    }
+    },
   };
 }
 
@@ -156,8 +177,21 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
 function ClientRevenueChart({ monthlyRevenue }: { monthlyRevenue: number[] }) {
   const maxRevenue = Math.max(...monthlyRevenue);
-  const months = ["Jan", "Fev", "Mar", "Abr", "Mai", "Jun", "Jul", "Ago", "Set", "Out", "Nov", "Dez"];
-  
+  const months = [
+    "Jan",
+    "Fev",
+    "Mar",
+    "Abr",
+    "Mai",
+    "Jun",
+    "Jul",
+    "Ago",
+    "Set",
+    "Out",
+    "Nov",
+    "Dez",
+  ];
+
   return (
     <VStack spacing={4} align="stretch">
       <Heading size="md">Receita Mensal ({dayjs().year()})</Heading>
@@ -167,11 +201,13 @@ function ClientRevenueChart({ monthlyRevenue }: { monthlyRevenue: number[] }) {
           return (
             <VStack key={index} spacing={1} flex={1}>
               <Text fontSize="xs" fontWeight="bold">
-                {revenue > 0 ? new Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                  notation: "compact",
-                }).format(revenue / 100) : ""}
+                {revenue > 0
+                  ? new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                      notation: "compact",
+                    }).format(revenue / 100)
+                  : ""}
               </Text>
               <Box
                 bg="blue.500"
@@ -180,7 +216,9 @@ function ClientRevenueChart({ monthlyRevenue }: { monthlyRevenue: number[] }) {
                 borderRadius="sm"
                 minH="2px"
               />
-              <Text fontSize="xs" color="gray.600">{months[index]}</Text>
+              <Text fontSize="xs" color="gray.700">
+                {months[index]}
+              </Text>
             </VStack>
           );
         })}
@@ -196,8 +234,9 @@ export default function Client() {
   const [show, setShow] = useState(false);
 
   const bgColor = useColorModeValue("white", "gray.700");
-  const borderColor = useColorModeValue("gray.200", "gray.600");
+  const borderColor = useColorModeValue("gray.200", "gray.700");
   const cardBg = useColorModeValue("gray.50", "gray.800");
+  const secondaryTextColor = useColorModeValue("gray.600", "gray.400");
 
   return (
     <>
@@ -216,10 +255,14 @@ export default function Client() {
                       {client.name}
                     </Heading>
                     {client.isLegalEntity && (
-                      <Badge colorScheme="purple" variant="subtle">Pessoa Jurídica</Badge>
+                      <Badge colorScheme="purple" variant="subtle">
+                        Pessoa Jurídica
+                      </Badge>
                     )}
                   </HStack>
-                  <Text color="gray.600" fontSize="lg">Cliente desde {dayjs(client.createdAt).format("MMMM YYYY")}</Text>
+                  <Text color={secondaryTextColor} fontSize="lg">
+                    Cliente desde {dayjs(client.createdAt).format("MMMM YYYY")}
+                  </Text>
                 </VStack>
 
                 {/* Contact Info */}
@@ -228,11 +271,13 @@ export default function Client() {
                     <HStack>
                       <Icon as={FiMapPin} color="gray.500" />
                       <Box>
-                        <Text fontSize="sm" fontWeight="bold">Endereço</Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm" fontWeight="bold">
+                          Endereço
+                        </Text>
+                        <Text fontSize="sm" color={secondaryTextColor}>
                           {client.address}, {client.neighborhood}
                         </Text>
-                        <Text fontSize="sm" color="gray.600">
+                        <Text fontSize="sm" color={secondaryTextColor}>
                           {client.city} - {client.state}
                         </Text>
                       </Box>
@@ -241,8 +286,12 @@ export default function Client() {
                     <HStack>
                       <Icon as={FiPhone} color="gray.500" />
                       <Box>
-                        <Text fontSize="sm" fontWeight="bold">Telefone</Text>
-                        <Text fontSize="sm" color="gray.600">{client.phoneNumber}</Text>
+                        <Text fontSize="sm" fontWeight="bold">
+                          Telefone
+                        </Text>
+                        <Text fontSize="sm" color={secondaryTextColor}>
+                          {client.phoneNumber}
+                        </Text>
                       </Box>
                     </HStack>
                   </VStack>
@@ -252,8 +301,12 @@ export default function Client() {
                       <HStack>
                         <Icon as={FiMail} color="gray.500" />
                         <Box>
-                          <Text fontSize="sm" fontWeight="bold">Email</Text>
-                          <Text fontSize="sm" color="gray.600">{client.email}</Text>
+                          <Text fontSize="sm" fontWeight="bold">
+                            Email
+                          </Text>
+                          <Text fontSize="sm" color={secondaryTextColor}>
+                            {client.email}
+                          </Text>
                         </Box>
                       </HStack>
                     )}
@@ -261,8 +314,12 @@ export default function Client() {
                     <HStack>
                       <Icon as={FiFileText} color="gray.500" />
                       <Box>
-                        <Text fontSize="sm" fontWeight="bold">{client.isLegalEntity ? "CNPJ" : "CPF"}</Text>
-                        <Text fontSize="sm" color="gray.600">{client.registrationNumber || "-"}</Text>
+                        <Text fontSize="sm" fontWeight="bold">
+                          {client.isLegalEntity ? "CNPJ" : "CPF"}
+                        </Text>
+                        <Text fontSize="sm" color={secondaryTextColor}>
+                          {client.registrationNumber || "-"}
+                        </Text>
                       </Box>
                     </HStack>
                   </VStack>
@@ -300,27 +357,42 @@ export default function Client() {
                         notation: "compact",
                       }).format(analytics.totalRevenue / 100)}
                     </StatNumber>
-                    <StatHelpText>{analytics.approvedBudgets} aprovados</StatHelpText>
+                    <StatHelpText>
+                      {analytics.approvedBudgets} aprovados
+                    </StatHelpText>
                   </Stat>
 
                   <Stat p={4} bg={cardBg} borderRadius="md">
                     <StatLabel>Orçamentos</StatLabel>
-                    <StatNumber fontSize="lg">{analytics.totalBudgets}</StatNumber>
-                    <StatHelpText>{analytics.recentBudgets} este mês</StatHelpText>
+                    <StatNumber fontSize="lg">
+                      {analytics.totalBudgets}
+                    </StatNumber>
+                    <StatHelpText>
+                      {analytics.recentBudgets} este mês
+                    </StatHelpText>
                   </Stat>
 
                   <Stat p={4} bg={cardBg} borderRadius="md">
                     <StatLabel>Obras Ativas</StatLabel>
-                    <StatNumber fontSize="lg">{analytics.activeBuildingSites}</StatNumber>
-                    <StatHelpText>de {client.buildingSites.length} total</StatHelpText>
+                    <StatNumber fontSize="lg">
+                      {analytics.activeBuildingSites}
+                    </StatNumber>
+                    <StatHelpText>
+                      de {client.buildingSites.length} total
+                    </StatHelpText>
                   </Stat>
 
                   <Stat p={4} bg={cardBg} borderRadius="md">
                     <StatLabel>Taxa Aprovação</StatLabel>
                     <StatNumber fontSize="lg">
-                      {analytics.totalBudgets > 0 
-                        ? Math.round((analytics.approvedBudgets / analytics.totalBudgets) * 100)
-                        : 0}%
+                      {analytics.totalBudgets > 0
+                        ? Math.round(
+                            (analytics.approvedBudgets /
+                              analytics.totalBudgets) *
+                              100,
+                          )
+                        : 0}
+                      %
                     </StatNumber>
                     <StatHelpText>
                       <Icon as={FiTrendingUp} color="green.500" />
@@ -332,66 +404,128 @@ export default function Client() {
           </CardBody>
         </Card>
 
-        {/* Revenue Chart */}
-        {analytics.monthlyRevenue.some(revenue => revenue > 0) && (
-          <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
-            <CardBody>
-              <ClientRevenueChart monthlyRevenue={analytics.monthlyRevenue} />
-            </CardBody>
-          </Card>
-        )}
-
         {/* Building Sites and Budgets */}
         <Grid templateColumns={{ base: "1fr", xl: "1fr 1fr" }} gap={8}>
           {/* Building Sites */}
           <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
             <CardHeader>
               <HStack justify="space-between">
-                <Heading size="lg">Obras</Heading>
-                <Button size="sm" variant="outline" onClick={() => setShow(true)}>
-                  Adicionar
+                <HStack>
+                  <Icon as={FiBriefcase} color="blue.500" boxSize={5} />
+                  <Heading size="lg">Obras</Heading>
+                  <Badge colorScheme="blue" variant="subtle">
+                    {client.buildingSites.length}
+                  </Badge>
+                </HStack>
+                <Button
+                  size="sm"
+                  colorScheme="blue"
+                  variant="outline"
+                  leftIcon={<Icon as={FiPlus} />}
+                  onClick={() => setShow(true)}
+                >
+                  Nova Obra
                 </Button>
               </HStack>
             </CardHeader>
             <CardBody pt={0}>
               {client.buildingSites.length > 0 ? (
-                <TableContainer>
-                  <Table size="sm">
-                    <Thead>
-                      <Tr>
-                        <Th>Nome</Th>
-                        <Th>Status</Th>
-                        <Th>
-                          <VisuallyHidden>Ações</VisuallyHidden>
-                        </Th>
-                      </Tr>
-                    </Thead>
-                    <Tbody>
-                      {client.buildingSites.map((bs) => (
-                        <Tr key={bs.id}>
-                          <Td>
-                            <VStack align="start" spacing={0}>
-                              <Text fontWeight="bold">{bs.name}</Text>
-                              <Text fontSize="xs" color="gray.600">{bs.address}</Text>
-                            </VStack>
-                          </Td>
-                          <Td>
-                            <BuildingSiteStatusLabel status={bs.status} />
-                          </Td>
-                          <Td>
-                            <Link to={`/building-sites/${bs.id}`}>
-                              Ver detalhes
-                            </Link>
-                          </Td>
-                        </Tr>
-                      ))}
-                    </Tbody>
-                  </Table>
-                </TableContainer>
+                <VStack spacing={4} align="stretch">
+                  {client.buildingSites.map((bs, index) => {
+                    const budgetsForSite = client.budgets.filter(
+                      (b) => b.buildingSiteId === bs.id,
+                    );
+                    const approvedBudgetsForSite = budgetsForSite.filter(
+                      (b) => b.status === "APPROVED",
+                    );
+                    const totalRevenueForSite = approvedBudgetsForSite.reduce(
+                      (sum, budget) => sum + budget.total,
+                      0,
+                    );
+
+                    return (
+                      <HStack
+                        key={bs.id}
+                        justify="space-between"
+                        p={4}
+                        bg={cardBg}
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor={borderColor}
+                      >
+                        <VStack align="start" spacing={1}>
+                          <HStack>
+                            <Icon as={FiMapPin} color="gray.500" boxSize={4} />
+                            <Text fontWeight="bold" fontSize="md">
+                              {bs.name}
+                            </Text>
+                          </HStack>
+                          <Text fontSize="sm" color={secondaryTextColor}>
+                            {bs.address}
+                          </Text>
+                          <HStack spacing={3}>
+                            <Text fontSize="xs" color={secondaryTextColor}>
+                              {budgetsForSite.length} orçamentos
+                            </Text>
+                            <Text fontSize="xs" color="green.500">
+                              {new Intl.NumberFormat("pt-BR", {
+                                style: "currency",
+                                currency: "BRL",
+                                notation: "compact",
+                              }).format(totalRevenueForSite / 100)}
+                            </Text>
+                          </HStack>
+                        </VStack>
+                        
+                        <VStack align="end" spacing={2}>
+                          <BuildingSiteStatusLabel status={bs.status} />
+                          <HStack spacing={2}>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              colorScheme="green"
+                              as={Link}
+                              to={`/budgets/new?clientId=${client.id}&buildingSiteId=${bs.id}`}
+                            >
+                              Criar Orçamento
+                            </Button>
+                            <IconButton
+                              size="sm"
+                              variant="outline"
+                              aria-label="Ver detalhes"
+                              icon={<Icon as={FiEye} />}
+                              as={Link}
+                              to={`/building-sites/${bs.id}`}
+                            />
+                          </HStack>
+                        </VStack>
+                      </HStack>
+                    );
+                  })}
+                </VStack>
               ) : (
-                <Text color="gray.500" textAlign="center" py={8}>
-                  Nenhuma obra cadastrada
-                </Text>
+                <VStack spacing={6} py={12}>
+                  <Icon as={FiBriefcase} boxSize={12} color="gray.400" />
+                  <VStack spacing={2}>
+                    <Text color="gray.500" fontSize="lg" fontWeight="medium">
+                      Nenhuma obra cadastrada
+                    </Text>
+                    <Text
+                      color={secondaryTextColor}
+                      fontSize="sm"
+                      textAlign="center"
+                    >
+                      Adicione uma obra para começar a criar orçamentos
+                    </Text>
+                  </VStack>
+                  <Button
+                    colorScheme="blue"
+                    leftIcon={<Icon as={FiPlus} />}
+                    onClick={() => setShow(true)}
+                  >
+                    Criar Primeira Obra
+                  </Button>
+                </VStack>
               )}
             </CardBody>
           </Card>
@@ -400,57 +534,213 @@ export default function Client() {
           <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
             <CardHeader>
               <HStack justify="space-between">
-                <Heading size="lg">Orçamentos</Heading>
-                <Button 
-                  size="sm" 
-                  variant="outline" 
+                <HStack>
+                  <Icon as={FiFileText} color="green.500" boxSize={5} />
+                  <Heading size="lg">Orçamentos</Heading>
+                  <Badge colorScheme="green" variant="subtle">
+                    {client.budgets.length}
+                  </Badge>
+                </HStack>
+                <Button
+                  size="sm"
                   colorScheme="green"
+                  variant="outline"
+                  leftIcon={<Icon as={FiPlus} />}
                   as={Link}
                   to={`/budgets/new?clientId=${client.id}`}
                 >
-                  Criar
+                  Novo Orçamento
                 </Button>
               </HStack>
             </CardHeader>
             <CardBody pt={0}>
               {client.budgets.length > 0 ? (
-                <VStack spacing={3} align="stretch">
-                  {client.budgets.slice(0, 5).map((budget) => (
-                    <HStack key={budget.id} justify="space-between" p={3} bg={cardBg} borderRadius="md">
-                      <VStack align="start" spacing={0}>
-                        <Text fontWeight="bold" fontSize="sm">{budget.buildingSite.name}</Text>
-                        <Text fontSize="xs" color="gray.600">
-                          Válido até {dayjs(budget.validityDate).format("DD/MM/YYYY")}
-                        </Text>
-                      </VStack>
-                      <VStack align="end" spacing={0}>
-                        <Badge colorScheme={getBudgetStatusColor(budget.status)} size="sm">
-                          {getBudgetStatusLabel(budget.status)}
-                        </Badge>
-                        <Text fontSize="sm" fontWeight="bold">
-                          {new Intl.NumberFormat("pt-BR", {
-                            style: "currency",
-                            currency: "BRL",
-                            notation: "compact",
-                          }).format(budget.total / 100)}
-                        </Text>
-                      </VStack>
-                    </HStack>
-                  ))}
-                  {client.budgets.length > 5 && (
-                    <Text fontSize="sm" color="gray.500" textAlign="center">
-                      +{client.budgets.length - 5} orçamentos adicionais
-                    </Text>
+                <VStack spacing={4} align="stretch">
+                  {client.budgets.slice(0, 6).map((budget, index) => {
+                    const isExpired =
+                      dayjs(budget.validityDate).isBefore(dayjs()) &&
+                      budget.status !== "APPROVED";
+                    const daysUntilExpiry = dayjs(budget.validityDate).diff(
+                      dayjs(),
+                      "day",
+                    );
+                    const isExpiringSoon =
+                      daysUntilExpiry <= 7 &&
+                      daysUntilExpiry > 0 &&
+                      budget.status !== "APPROVED";
+
+                    const getStatusIcon = (status: string) => {
+                      switch (status) {
+                        case "APPROVED":
+                          return FiCheck;
+                        case "REJECTED":
+                          return FiX;
+                        case "EXPIRED":
+                          return FiClock;
+                        case "SENT":
+                          return FiAlertCircle;
+                        default:
+                          return FiFileText;
+                      }
+                    };
+
+                    return (
+                      <HStack
+                        key={budget.id}
+                        justify="space-between"
+                        p={4}
+                        bg={cardBg}
+                        borderRadius="md"
+                        borderWidth="1px"
+                        borderColor={isExpired ? "red.200" : isExpiringSoon ? "orange.200" : borderColor}
+                        borderLeftWidth="4px"
+                        borderLeftColor={
+                          budget.status === "APPROVED" ? "green.500" :
+                          budget.status === "REJECTED" ? "red.500" :
+                          isExpired ? "red.500" :
+                          isExpiringSoon ? "orange.500" : 
+                          "blue.500"
+                        }
+                      >
+                        <VStack align="start" spacing={1}>
+                          <HStack>
+                            <Icon 
+                              as={getStatusIcon(budget.status)} 
+                              color={getBudgetStatusColor(budget.status) + ".500"} 
+                              boxSize={4} 
+                            />
+                            <Text fontWeight="bold" fontSize="md">
+                              {budget.buildingSite.name}
+                            </Text>
+                          </HStack>
+                          <Text fontSize="sm" color={secondaryTextColor}>
+                            Válido até {dayjs(budget.validityDate).format("DD/MM/YYYY")}
+                          </Text>
+                          {(isExpired || isExpiringSoon) && (
+                            <HStack>
+                              <Icon as={FiClock} color={isExpired ? "red.500" : "orange.500"} boxSize={3} />
+                              <Text fontSize="xs" color={isExpired ? "red.500" : "orange.500"} fontWeight="medium">
+                                {isExpired ? "Expirado" : `Expira em ${daysUntilExpiry} dias`}
+                              </Text>
+                            </HStack>
+                          )}
+                        </VStack>
+                        
+                        <VStack align="end" spacing={2}>
+                          <Badge 
+                            colorScheme={getBudgetStatusColor(budget.status)} 
+                            variant="subtle"
+                          >
+                            {getBudgetStatusLabel(budget.status)}
+                          </Badge>
+                          <Text fontSize="lg" fontWeight="bold" color="green.600">
+                            {new Intl.NumberFormat("pt-BR", {
+                              style: "currency",
+                              currency: "BRL",
+                              notation: "compact",
+                            }).format(budget.total / 100)}
+                          </Text>
+                          <HStack spacing={1}>
+                            {budget.status === "DRAFT" && (
+                              <IconButton
+                                size="sm"
+                                variant="outline"
+                                aria-label="Editar orçamento"
+                                icon={<Icon as={FiEdit3} />}
+                                as={Link}
+                                to={`/budgets/${budget.id}/edit`}
+                              />
+                            )}
+                            <IconButton
+                              size="sm"
+                              variant="outline"
+                              aria-label="Ver orçamento"
+                              icon={<Icon as={FiEye} />}
+                              as={Link}
+                              to={`/budgets/${budget.id}`}
+                            />
+                            {budget.status === "APPROVED" && (
+                              <IconButton
+                                size="sm"
+                                variant="outline"
+                                aria-label="Imprimir orçamento"
+                                icon={<Icon as={FiPrinter} />}
+                                as={Link}
+                                to={`/budgets/${budget.id}/print`}
+                                target="_blank"
+                              />
+                            )}
+                          </HStack>
+                        </VStack>
+                      </HStack>
+                    );
+                  })}
+
+                  {client.budgets.length > 6 && (
+                    <Card
+                      bg={cardBg}
+                      borderWidth="1px"
+                      borderColor={borderColor}
+                    >
+                      <CardBody py={4}>
+                        <VStack spacing={2}>
+                          <Text
+                            fontSize="sm"
+                            color={secondaryTextColor}
+                            textAlign="center"
+                          >
+                            +{client.budgets.length - 6} orçamentos adicionais
+                          </Text>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            as={Link}
+                            to={`/budgets?clientId=${client.id}`}
+                          >
+                            Ver Todos os Orçamentos
+                          </Button>
+                        </VStack>
+                      </CardBody>
+                    </Card>
                   )}
                 </VStack>
               ) : (
-                <Text color="gray.500" textAlign="center" py={8}>
-                  Nenhum orçamento criado
-                </Text>
+                <VStack spacing={6} py={12}>
+                  <Icon as={FiFileText} boxSize={12} color="gray.400" />
+                  <VStack spacing={2}>
+                    <Text color="gray.500" fontSize="lg" fontWeight="medium">
+                      Nenhum orçamento criado
+                    </Text>
+                    <Text
+                      color={secondaryTextColor}
+                      fontSize="sm"
+                      textAlign="center"
+                    >
+                      Crie um orçamento para começar a negociar com este cliente
+                    </Text>
+                  </VStack>
+                  <Button
+                    colorScheme="green"
+                    leftIcon={<Icon as={FiPlus} />}
+                    as={Link}
+                    to={`/budgets/new?clientId=${client.id}`}
+                  >
+                    Criar Primeiro Orçamento
+                  </Button>
+                </VStack>
               )}
             </CardBody>
           </Card>
         </Grid>
+
+        {/* Revenue Chart */}
+        {analytics.monthlyRevenue.some((revenue) => revenue > 0) && (
+          <Card bg={bgColor} borderWidth="1px" borderColor={borderColor}>
+            <CardBody>
+              <ClientRevenueChart monthlyRevenue={analytics.monthlyRevenue} />
+            </CardBody>
+          </Card>
+        )}
       </Container>
 
       {/* Modals */}
