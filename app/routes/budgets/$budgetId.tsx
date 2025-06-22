@@ -1,5 +1,7 @@
 import { AddIcon, DeleteIcon } from "@chakra-ui/icons";
 import {
+  Alert,
+  AlertIcon,
   Badge,
   Box,
   Button,
@@ -24,13 +26,20 @@ import {
   Th,
   Thead,
   Tr,
+  useToast,
   VStack,
 } from "@chakra-ui/react";
 import type { Client, Rentable } from "@prisma/client";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
-import { Form, redirect, useLoaderData, useNavigation } from "react-router";
+import {
+  Form,
+  redirect,
+  useActionData,
+  useLoaderData,
+  useNavigation,
+} from "react-router";
 
 import Header from "~/components/Header";
 import {
@@ -81,8 +90,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
   }
 
   if (action === "delete") {
+    const budget = await getBudget(params.budgetId);
     await deleteBudget(params.budgetId);
-    return redirect("/budgets");
+    return redirect(`/clients/${budget?.clientId}`);
   }
 
   const data = Object.fromEntries(formData.entries());
@@ -95,20 +105,27 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   const { validityDate, deliveryFee, notes, items } = result.data;
 
+  const rentables = await getRentables();
+
   await updateBudget(params.budgetId, {
     validityDate: new Date(validityDate),
-    deliveryFee: Number(deliveryFee),
+    deliveryFee: Math.round(Number(deliveryFee) * 100),
     notes,
     items: items.map((item) => {
-      const startDate = new Date(item.startDate);
-      const endDate = new Date(item.endDate);
+      const startDate = new Date(validityDate);
+      const endDate = new Date(startDate);
+      endDate.setDate(endDate.getDate() + Number(item.days));
+
+      const rentable = rentables.find((r) => r.id === Number(item.rentableId));
       return {
         rentableId: Number(item.rentableId),
         quantity: Number(item.quantity),
         startDate,
         endDate,
-        unitPrice: Number(item.unitPrice),
-        discount: item.discount ? Number(item.discount) : undefined,
+        unitPrice: rentable?.unitPrice || 0,
+        discount: item.discount
+          ? Math.round(Number(item.discount) * 100)
+          : undefined,
       };
     }),
   });
@@ -120,8 +137,8 @@ type BudgetItem = {
   id: string;
   rentableId: string;
   quantity: string;
-  startDate: string;
-  endDate: string;
+  days: string;
+  unitPrice: number;
   discount?: string;
 };
 
@@ -141,8 +158,9 @@ type BudgetItem = {
 
 export default function BudgetDetail() {
   const { budget, clients, rentables } = useLoaderData<typeof loader>();
-  // const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
+  const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
   const navigation = useNavigation();
+  const toast = useToast();
   const isSubmitting = navigation.state === "submitting";
 
   const [selectedClient, setSelectedClient] = useState<string>(
@@ -152,14 +170,20 @@ export default function BudgetDetail() {
     Array<{ id: number; name: string }>
   >(budget.client.buildingSites);
   const [items, setItems] = useState<BudgetItem[]>(
-    budget.items.map((item) => ({
-      id: Math.random().toString(),
-      rentableId: item.rentableId.toString(),
-      quantity: item.quantity.toString(),
-      startDate: dayjs(item.startDate).format("YYYY-MM-DD"),
-      endDate: dayjs(item.endDate).format("YYYY-MM-DD"),
-      discount: item.discount ? (item.discount / 100).toString() : undefined,
-    })),
+    budget.items.map((item) => {
+      const days = Math.ceil(
+        (new Date(item.endDate).getTime() - new Date(item.startDate).getTime()) /
+          (1000 * 60 * 60 * 24),
+      );
+      return {
+        id: Math.random().toString(),
+        rentableId: item.rentableId.toString(),
+        quantity: item.quantity.toString(),
+        days: days.toString(),
+        unitPrice: item.unitPrice,
+        discount: item.discount ? (item.discount / 100).toString() : undefined,
+      };
+    }),
   );
 
   useEffect(() => {
@@ -173,6 +197,20 @@ export default function BudgetDetail() {
     }
   }, [selectedClient, clients]);
 
+  useEffect(() => {
+    if (actionData?.fieldErrors) {
+      Object.entries(actionData.fieldErrors).forEach(([, error]) => {
+        toast({
+          title: "Erro de validação",
+          description: error,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      });
+    }
+  }, [actionData, toast]);
+
   const addItem = () => {
     setItems([
       ...items,
@@ -180,8 +218,8 @@ export default function BudgetDetail() {
         id: Math.random().toString(),
         rentableId: "",
         quantity: "1",
-        startDate: dayjs().format("YYYY-MM-DD"),
-        endDate: dayjs().add(1, "day").format("YYYY-MM-DD"),
+        days: "1",
+        unitPrice: 0,
       },
     ]);
   };
@@ -191,9 +229,32 @@ export default function BudgetDetail() {
   };
 
   const updateItem = (id: string, field: keyof BudgetItem, value: string) => {
+    if (field === "rentableId") {
+      const rentable = rentables.find(
+        (rentable) => rentable.id === Number(value),
+      );
+      setItems(
+        items.map((item) =>
+          item.id === id
+            ? {
+                ...item,
+                [field]: value,
+                unitPrice: rentable?.unitPrice || 0,
+              }
+            : item,
+        ),
+      );
+      return;
+    }
+
     setItems(
       items.map((item) =>
-        item.id === id ? { ...item, [field]: value } : item,
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+            }
+          : item,
       ),
     );
   };
@@ -292,10 +353,10 @@ export default function BudgetDetail() {
                 <Table variant="simple">
                   <Thead>
                     <Tr>
-                      <Th>Item</Th>
+                      <Th w={"200px"}>Item</Th>
                       <Th>Quantidade</Th>
-                      <Th>Data Início</Th>
-                      <Th>Data Término</Th>
+                      <Th>Dias</Th>
+                      <Th>Preço Unitário (dia)</Th>
                       <Th>Desconto</Th>
                       <Th>Subtotal</Th>
                       <Th>Total</Th>
@@ -303,17 +364,15 @@ export default function BudgetDetail() {
                     </Tr>
                   </Thead>
                   <Tbody>
-                    {items.map((item: BudgetItem) => {
+                    {items.map((item) => {
                       const rentable = rentables.find(
-                        (r) => r.id.toString() === item.rentableId,
-                      );
-                      const days = dayjs(item.endDate).diff(
-                        dayjs(item.startDate),
-                        "day",
+                        (r) => r.id === Number(item.rentableId),
                       );
                       const subtotal =
-                        rentable && item.quantity
-                          ? Number(item.quantity) * days * rentable.unitPrice
+                        rentable && item.quantity && item.days
+                          ? Number(item.quantity) *
+                            Number(item.days) *
+                            rentable.unitPrice
                           : 0;
                       const discount = item.discount
                         ? Number(item.discount) * 100
@@ -336,7 +395,7 @@ export default function BudgetDetail() {
                               isDisabled={budget.status === "APPROVED"}
                             >
                               <option value="">Selecione um item</option>
-                              {rentables.map((rentable: Rentable) => (
+                              {rentables.map((rentable) => (
                                 <option key={rentable.id} value={rentable.id}>
                                   {rentable.name}
                                 </option>
@@ -358,26 +417,35 @@ export default function BudgetDetail() {
                             </NumberInput>
                           </Td>
                           <Td>
-                            <Input
-                              type="date"
-                              name={`items[${item.id}].startDate`}
-                              value={item.startDate}
-                              onChange={(e) =>
-                                updateItem(item.id, "startDate", e.target.value)
+                            <NumberInput
+                              min={1}
+                              value={item.days}
+                              onChange={(value) =>
+                                updateItem(item.id, "days", value)
                               }
                               isDisabled={budget.status === "APPROVED"}
-                            />
+                            >
+                              <NumberInputField
+                                name={`items[${item.id}].days`}
+                              />
+                            </NumberInput>
                           </Td>
                           <Td>
-                            <Input
-                              type="date"
-                              name={`items[${item.id}].endDate`}
-                              value={item.endDate}
-                              onChange={(e) =>
-                                updateItem(item.id, "endDate", e.target.value)
-                              }
-                              isDisabled={budget.status === "APPROVED"}
-                            />
+                            <InputGroup>
+                              <InputLeftAddon>R$</InputLeftAddon>
+                              <Input
+                                type="number"
+                                name={`items[${item.id}].unitPrice`}
+                                value={
+                                  item.unitPrice
+                                    ? (item.unitPrice / 100).toFixed(2)
+                                    : ""
+                                }
+                                min="0"
+                                step="0.01"
+                                readOnly
+                              />
+                            </InputGroup>
                           </Td>
                           <Td>
                             <InputGroup>
@@ -429,6 +497,12 @@ export default function BudgetDetail() {
                 </Table>
               </TableContainer>
             </Box>
+            {actionData?.fieldErrors.items && items.length === 0 && (
+              <Alert status="error">
+                <AlertIcon />
+                Adicione pelo menos um item ao orçamento.
+              </Alert>
+            )}
 
             <HStack justify="space-between">
               <Text fontSize="lg" fontWeight="bold">
@@ -436,7 +510,23 @@ export default function BudgetDetail() {
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",
                   currency: "BRL",
-                }).format(budget.total / 100)}
+                }).format(
+                  items.reduce((sum, item) => {
+                    const rentable = rentables.find(
+                      (r) => r.id === Number(item.rentableId),
+                    );
+                    const subtotal =
+                      rentable && item.quantity && item.days
+                        ? Number(item.quantity) *
+                          Number(item.days) *
+                          rentable.unitPrice
+                        : 0;
+                    const discount = item.discount
+                      ? Number(item.discount) * 100
+                      : 0;
+                    return sum + (subtotal - discount);
+                  }, 0) / 100,
+                )}
               </Text>
 
               <HStack spacing={4}>

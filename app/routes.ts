@@ -10,7 +10,6 @@ export default remixRoutesOptionAdapter((defineRoutes) => {
     route("join", "routes/join.tsx");
     route("logout", "routes/logout.tsx");
     route("healthcheck", "routes/healthcheck.tsx");
-    route("budgets", "routes/budgets/index.tsx");
     route("budgets/new", "routes/budgets/new.tsx");
     route("budgets/:budgetId", "routes/budgets/$budgetId.tsx");
     route("print-pdf", "routes/print-pdf.tsx");

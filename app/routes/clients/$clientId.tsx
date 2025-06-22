@@ -1,7 +1,9 @@
 import {
+  Badge,
   Button,
   Container,
   Heading,
+  HStack,
   Table,
   TableCaption,
   TableContainer,
@@ -19,6 +21,7 @@ import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { Link, useLoaderData } from "react-router";
 import { useState } from "react";
 import invariant from "tiny-invariant";
+import dayjs from "dayjs";
 
 import BuildingSiteModal from "~/components/BuildingSiteModal";
 import BuildingSiteStatusLabel from "~/components/BuildingSiteStatusLabel";
@@ -54,7 +57,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
 
   switch (action) {
     case "create-bs": {
-      const result = BuildingSiteSchema.safeParse(Object.fromEntries(formData.entries()));
+      const result = BuildingSiteSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
       if (!result.success) {
         return validationError(parseZodError(result.error));
@@ -70,7 +75,9 @@ export async function action({ request, params }: ActionFunctionArgs) {
     }
 
     case "edit": {
-      const result = ClientSchema.safeParse(Object.fromEntries(formData.entries()));
+      const result = ClientSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
       if (!result.success) {
         return validationError(parseZodError(result.error));
@@ -114,9 +121,25 @@ export default function Client() {
           <Heading as="h1" size="xl">
             {client.name}
           </Heading>
-          <Button variant="outline" onClick={onOpen}>
-            Editar
-          </Button>
+          <HStack>
+            <Button variant="outline" onClick={onOpen}>
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              maxW="fit-content"
+              onClick={() => setShow(true)}
+            >
+              Adicionar Obra
+            </Button>
+            <Button
+              as={Link}
+              to={`/budgets/new?clientId=${client.id}`}
+              variant="outline"
+            >
+              Criar Orçamento
+            </Button>
+          </HStack>
         </VStack>
 
         <VStack as="dl" align="flex-start">
@@ -155,9 +178,7 @@ export default function Client() {
             </div>
           )}
         </VStack>
-        <Button maxW="fit-content" onClick={() => setShow(true)}>
-          Adicionar Obra
-        </Button>
+
         <TableContainer>
           <Table>
             <TableCaption>Obras</TableCaption>
@@ -184,7 +205,58 @@ export default function Client() {
                     <BuildingSiteStatusLabel status={bs.status} />
                   </Td>
                   <Td>
-                    <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                    <HStack spacing={2}>
+                      <Link to={`/building-sites/${bs.id}`}>Ver detalhes</Link>
+                    </HStack>
+                  </Td>
+                </Tr>
+              ))}
+            </Tbody>
+          </Table>
+        </TableContainer>
+
+        <TableContainer>
+          <Table>
+            <TableCaption>Orçamentos</TableCaption>
+            <Thead>
+              <Tr>
+                <Th>Canteiro</Th>
+                <Th>Data de Validade</Th>
+                <Th>Total</Th>
+                <Th>Status</Th>
+                <Th>
+                  <VisuallyHidden>Ações</VisuallyHidden>
+                </Th>
+              </Tr>
+            </Thead>
+            <Tbody>
+              {client.budgets.map((budget) => (
+                <Tr key={budget.id}>
+                  <Td>{budget.buildingSite.name}</Td>
+                  <Td>{dayjs(budget.validityDate).format("DD/MM/YYYY")}</Td>
+                  <Td>
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(budget.total / 100)}
+                  </Td>
+                  <Td>
+                    <Badge
+                      colorScheme={
+                        budget.status === "DRAFT"
+                          ? "gray"
+                          : budget.status === "SENT"
+                            ? "blue"
+                            : budget.status === "APPROVED"
+                              ? "green"
+                              : "red"
+                      }
+                    >
+                      {budget.status}
+                    </Badge>
+                  </Td>
+                  <Td>
+                    <Link to={`/budgets/${budget.id}`}>Ver detalhes</Link>
                   </Td>
                 </Tr>
               ))}

@@ -67,9 +67,6 @@ export default function Header() {
           <Link as={NavLink} to="/clients">
             Clientes
           </Link>
-          <Link as={NavLink} to="/budgets">
-            Orçamentos
-          </Link>
           <Link as={NavLink} to="/building-sites">
             Obras
           </Link>
@@ -149,9 +146,6 @@ export default function Header() {
             </Link>
             <Link as={NavLink} to="/clients">
               Clientes
-            </Link>
-            <Link as={NavLink} to="/budgets">
-              Orçamentos
             </Link>
             <Link as={NavLink} to="/building-sites">
               Obras
