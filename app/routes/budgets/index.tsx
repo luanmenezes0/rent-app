@@ -22,6 +22,7 @@ import Header from "~/components/Header";
 import type { Budget } from "~/models/budget.server";
 import { deleteBudget, getBudgets } from "~/models/budget.server";
 import { requireUserId } from "~/session.server";
+import { getBudgetStatusLabel, getBudgetStatusColor } from "~/utils/budgetStatus";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -43,12 +44,6 @@ export async function action({ request }: ActionFunctionArgs) {
   return null;
 }
 
-const statusColors: Record<string, string> = {
-  DRAFT: "gray",
-  SENT: "blue",
-  APPROVED: "green",
-  EXPIRED: "red",
-};
 
 type BudgetWithRelations = Budget & {
   client: { name: string };
@@ -96,8 +91,8 @@ export default function Budgets() {
                     }).format(budget.total / 100)}
                   </Td>
                   <Td>
-                    <Badge colorScheme={statusColors[budget.status]}>
-                      {budget.status}
+                    <Badge colorScheme={getBudgetStatusColor(budget.status)}>
+                      {getBudgetStatusLabel(budget.status)}
                     </Badge>
                   </Td>
                   <Td>

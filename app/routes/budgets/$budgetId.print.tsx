@@ -21,6 +21,7 @@ import invariant from "tiny-invariant";
 
 import { getBudget } from "~/models/budget.server";
 import { requireUserId } from "~/session.server";
+import { getBudgetStatusLabel } from "~/utils/budgetStatus";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -306,7 +307,7 @@ export default function BudgetPrint() {
                 Este orçamento é válido até {dayjs(budget.validityDate).format("DD/MM/YYYY")}
               </Text>
               <Text fontSize="xs" color="gray.500" textAlign="center">
-                Orçamento aprovado em {dayjs(budget.updatedAt).format("DD/MM/YYYY")}
+                Status: {getBudgetStatusLabel(budget.status)} - Atualizado em {dayjs(budget.updatedAt).format("DD/MM/YYYY")}
               </Text>
             </VStack>
           </Box>

@@ -33,6 +33,7 @@ import { requireUserId } from "~/session.server";
 import { BuildingSiteSchema } from "~/validators/buildingSiteValidator";
 import { ClientSchema } from "~/validators/clientValidation";
 import { parseZodError, validationError } from "~/utils";
+import { getBudgetStatusLabel, getBudgetStatusColor } from "~/utils/budgetStatus";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -241,35 +242,13 @@ export default function Client() {
                     }).format(budget.total / 100)}
                   </Td>
                   <Td>
-                    <Badge
-                      colorScheme={
-                        budget.status === "DRAFT"
-                          ? "gray"
-                          : budget.status === "SENT"
-                            ? "blue"
-                            : budget.status === "APPROVED"
-                              ? "green"
-                              : "red"
-                      }
-                    >
-                      {budget.status}
+                    <Badge colorScheme={getBudgetStatusColor(budget.status)}>
+                      {getBudgetStatusLabel(budget.status)}
                     </Badge>
                   </Td>
                   <Td>
                     <HStack spacing={2}>
                       <Link to={`/budgets/${budget.id}`}>Ver detalhes</Link>
-                      {budget.status === "APPROVED" && (
-                        <Button
-                          as="a"
-                          href={`/print-pdf?budgetId=${budget.id}`}
-                          target="_blank"
-                          size="sm"
-                          colorScheme="blue"
-                          variant="outline"
-                        >
-                          Imprimir
-                        </Button>
-                      )}
                     </HStack>
                   </Td>
                 </Tr>
