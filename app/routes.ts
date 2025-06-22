@@ -12,6 +12,7 @@ export default remixRoutesOptionAdapter((defineRoutes) => {
     route("healthcheck", "routes/healthcheck.tsx");
     route("budgets/new", "routes/budgets/new.tsx");
     route("budgets/:budgetId", "routes/budgets/$budgetId.tsx");
+    route("budgets/:budgetId/print", "routes/budgets/$budgetId.print.tsx");
     route("print-pdf", "routes/print-pdf.tsx");
     route("rentablesInventory", "routes/rentablesInventory.tsx");
     route("clients", "routes/clients/index.tsx");

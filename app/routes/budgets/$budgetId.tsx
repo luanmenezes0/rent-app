@@ -572,6 +572,28 @@ export default function BudgetDetail() {
                     </Button>
                   </>
                 )}
+                {budget.status === "APPROVED" && (
+                  <>
+                    <Button
+                      as="a"
+                      href={`/budgets/${budget.id}/print`}
+                      target="_blank"
+                      colorScheme="blue"
+                      variant="ghost"
+                    >
+                      Visualizar Impressão
+                    </Button>
+                    <Button
+                      as="a"
+                      href={`/print-pdf?budgetId=${budget.id}`}
+                      target="_blank"
+                      colorScheme="blue"
+                      variant="outline"
+                    >
+                      Imprimir PDF
+                    </Button>
+                  </>
+                )}
               </HStack>
             </HStack>
           </VStack>

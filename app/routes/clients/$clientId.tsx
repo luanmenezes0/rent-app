@@ -256,7 +256,21 @@ export default function Client() {
                     </Badge>
                   </Td>
                   <Td>
-                    <Link to={`/budgets/${budget.id}`}>Ver detalhes</Link>
+                    <HStack spacing={2}>
+                      <Link to={`/budgets/${budget.id}`}>Ver detalhes</Link>
+                      {budget.status === "APPROVED" && (
+                        <Button
+                          as="a"
+                          href={`/print-pdf?budgetId=${budget.id}`}
+                          target="_blank"
+                          size="sm"
+                          colorScheme="blue"
+                          variant="outline"
+                        >
+                          Imprimir
+                        </Button>
+                      )}
+                    </HStack>
                   </Td>
                 </Tr>
               ))}
