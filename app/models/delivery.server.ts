@@ -2,11 +2,24 @@ import type { Delivery, DeliveryUnit } from "@prisma/client";
 
 import { prisma } from "~/db.server";
 
-export async function getDeliveries() {
-  return prisma.delivery.findMany({
-    include: { buildingSite: true, units: { include: { rentable: true } } },
-    orderBy: { createdAt: "desc" },
-  });
+export async function getDeliveries(options?: { take?: number; skip?: number }) {
+  const { take = 50, skip = 0 } = options || {};
+  
+  const [deliveries, totalCount] = await Promise.all([
+    prisma.delivery.findMany({
+      include: { buildingSite: true, units: { include: { rentable: true } } },
+      orderBy: { createdAt: "desc" },
+      take,
+      skip,
+    }),
+    prisma.delivery.count(),
+  ]);
+
+  return {
+    deliveries,
+    totalCount,
+    hasMore: skip + take < totalCount,
+  };
 }
 
 export async function getDeliveriesByBuildingId(buildingSiteId: string) {

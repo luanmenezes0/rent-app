@@ -24,7 +24,7 @@ export default [
       ],
     },
   },
-  { ignores: ["cypress/.eslintrc.js", "build", "public"] },
+  { ignores: ["cypress/.eslintrc.js", "build", "public", ".react-router"] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginCypress.configs.recommended,
   pluginJs.configs.recommended,

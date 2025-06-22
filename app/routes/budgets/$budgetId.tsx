@@ -51,6 +51,7 @@ import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { parseZodError, unflattenObject, validationError } from "~/utils";
 import { BudgetSchema } from "~/validators/budgetValidator";
+import { getBudgetStatusLabel, getBudgetStatusColor } from "~/utils/budgetStatus";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -235,8 +236,8 @@ export default function BudgetDetail() {
             Orçamento #{budget.id}
           </Heading>
           <Text fontSize="lg">Cliente: {budget.client?.name}</Text>
-          <Badge colorScheme={budget.status === "APPROVED" ? "green" : "gray"}>
-            {budget.status}
+          <Badge colorScheme={getBudgetStatusColor(budget.status)}>
+            {getBudgetStatusLabel(budget.status)}
           </Badge>
         </HStack>
 
