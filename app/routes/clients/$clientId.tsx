@@ -6,7 +6,6 @@ import {
   CardBody,
   CardHeader,
   Container,
-  Divider,
   Grid,
   Heading,
   HStack,
@@ -25,13 +24,10 @@ import {
 import dayjs from "dayjs";
 import { useState } from "react";
 import {
-  FiActivity,
   FiAlertCircle,
   FiBriefcase,
-  FiCalendar,
   FiCheck,
   FiClock,
-  FiDollarSign,
   FiEdit3,
   FiEye,
   FiFileText,
@@ -431,7 +427,7 @@ export default function Client() {
             <CardBody pt={0}>
               {client.buildingSites.length > 0 ? (
                 <VStack spacing={4} align="stretch">
-                  {client.buildingSites.map((bs, index) => {
+                  {client.buildingSites.map((bs) => {
                     const budgetsForSite = client.budgets.filter(
                       (b) => b.buildingSiteId === bs.id,
                     );
@@ -476,7 +472,7 @@ export default function Client() {
                             </Text>
                           </HStack>
                         </VStack>
-                        
+
                         <VStack align="end" spacing={2}>
                           <BuildingSiteStatusLabel status={bs.status} />
                           <HStack spacing={2}>
@@ -556,7 +552,7 @@ export default function Client() {
             <CardBody pt={0}>
               {client.budgets.length > 0 ? (
                 <VStack spacing={4} align="stretch">
-                  {client.budgets.slice(0, 6).map((budget, index) => {
+                  {client.budgets.slice(0, 6).map((budget) => {
                     const isExpired =
                       dayjs(budget.validityDate).isBefore(dayjs()) &&
                       budget.status !== "APPROVED";
@@ -592,48 +588,75 @@ export default function Client() {
                         bg={cardBg}
                         borderRadius="md"
                         borderWidth="1px"
-                        borderColor={isExpired ? "red.200" : isExpiringSoon ? "orange.200" : borderColor}
+                        borderColor={
+                          isExpired
+                            ? "red.200"
+                            : isExpiringSoon
+                              ? "orange.200"
+                              : borderColor
+                        }
                         borderLeftWidth="4px"
                         borderLeftColor={
-                          budget.status === "APPROVED" ? "green.500" :
-                          budget.status === "REJECTED" ? "red.500" :
-                          isExpired ? "red.500" :
-                          isExpiringSoon ? "orange.500" : 
-                          "blue.500"
+                          budget.status === "APPROVED"
+                            ? "green.500"
+                            : budget.status === "REJECTED"
+                              ? "red.500"
+                              : isExpired
+                                ? "red.500"
+                                : isExpiringSoon
+                                  ? "orange.500"
+                                  : "blue.500"
                         }
                       >
                         <VStack align="start" spacing={1}>
                           <HStack>
-                            <Icon 
-                              as={getStatusIcon(budget.status)} 
-                              color={getBudgetStatusColor(budget.status) + ".500"} 
-                              boxSize={4} 
+                            <Icon
+                              as={getStatusIcon(budget.status)}
+                              color={
+                                getBudgetStatusColor(budget.status) + ".500"
+                              }
+                              boxSize={4}
                             />
                             <Text fontWeight="bold" fontSize="md">
                               {budget.buildingSite.name}
                             </Text>
                           </HStack>
                           <Text fontSize="sm" color={secondaryTextColor}>
-                            Válido até {dayjs(budget.validityDate).format("DD/MM/YYYY")}
+                            Válido até{" "}
+                            {dayjs(budget.validityDate).format("DD/MM/YYYY")}
                           </Text>
                           {(isExpired || isExpiringSoon) && (
                             <HStack>
-                              <Icon as={FiClock} color={isExpired ? "red.500" : "orange.500"} boxSize={3} />
-                              <Text fontSize="xs" color={isExpired ? "red.500" : "orange.500"} fontWeight="medium">
-                                {isExpired ? "Expirado" : `Expira em ${daysUntilExpiry} dias`}
+                              <Icon
+                                as={FiClock}
+                                color={isExpired ? "red.500" : "orange.500"}
+                                boxSize={3}
+                              />
+                              <Text
+                                fontSize="xs"
+                                color={isExpired ? "red.500" : "orange.500"}
+                                fontWeight="medium"
+                              >
+                                {isExpired
+                                  ? "Expirado"
+                                  : `Expira em ${daysUntilExpiry} dias`}
                               </Text>
                             </HStack>
                           )}
                         </VStack>
-                        
+
                         <VStack align="end" spacing={2}>
-                          <Badge 
-                            colorScheme={getBudgetStatusColor(budget.status)} 
+                          <Badge
+                            colorScheme={getBudgetStatusColor(budget.status)}
                             variant="subtle"
                           >
                             {getBudgetStatusLabel(budget.status)}
                           </Badge>
-                          <Text fontSize="lg" fontWeight="bold" color="green.600">
+                          <Text
+                            fontSize="lg"
+                            fontWeight="bold"
+                            color="green.600"
+                          >
                             {new Intl.NumberFormat("pt-BR", {
                               style: "currency",
                               currency: "BRL",
