@@ -1,6 +1,7 @@
-import { useMatches } from "@remix-run/react";
 import { useMemo } from "react";
+import { data, useMatches } from "react-router";
 
+import { ZodError } from "zod";
 import type { User } from "~/models/user.server";
 
 const DEFAULT_REDIRECT = "/";
@@ -98,3 +99,80 @@ export const BuildingSiteStatusLabels: Record<number, string> = {
 };
 
 export const userRoles = { USER: "USER", ADMIN: "ADMIN" } as const;
+
+export function validationError(errors: Record<string, string>) {
+  return data(
+    {
+      fieldErrors: errors,
+    },
+    {
+      status: 422,
+      headers: {
+        "Content-Type": "application/json; utf-8",
+      },
+    },
+  );
+}
+
+export function parseZodError<T>(error: ZodError<T>): Record<string, string> {
+  return error.issues.reduce(
+    (acc, issue) => {
+      acc[issue.path.join(".")] = issue.message;
+      return acc;
+    },
+    {} as Record<string, string>,
+  );
+}
+
+/**
+ * A generic type for objects where keys are strings and values can be of any type.
+ * This is used for the input and intermediate objects.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AnyObject = { [key: string]: any };
+
+/**
+ * A more specific type for the temporary object used to group array items by their unique ID.
+ * The key is the unique ID (as a string), and the value is the object being built.
+ */
+type TempArrayItems = { [id: string]: AnyObject };
+
+/**
+ * Unflattens an object with bracket-notation keys into a new object with a nested array.
+ * This function is type-safe and generic.
+ *
+ * @param {AnyObject} flatObject The flat object to process.
+ * Example: { 'items[1].name': 'Book', 'items[2].name': 'Pen' }
+ * @param {string} arrayKey The base key for the array property to be created (e.g., 'items').
+ * @returns {AnyObject} A new object with the specified key holding the reconstructed array.
+ */
+export function unflattenObject(flatObject: AnyObject, arrayKey: string): AnyObject {
+  const result: AnyObject = {};
+  const tempArrayItems: TempArrayItems = {};
+
+  // Regular expression to capture the unique ID and the property name.
+  // Example for 'items': /items\[(.*?)\]\.(.*)/
+  const regex = new RegExp(`^${arrayKey}\\[(.*?)\\]\\.(.*)`);
+
+  for (const key in flatObject) {
+    const match = key.match(regex);
+
+    if (match) {
+      const id = match[1]; // The unique identifier inside the brackets
+      const property = match[2]; // The property name after the dot
+
+      if (!tempArrayItems[id]) {
+        tempArrayItems[id] = {};
+      }
+      tempArrayItems[id][property] = flatObject[key];
+    } else {
+      // Copy over keys that are not part of the array
+      result[key] = flatObject[key];
+    }
+  }
+
+  // Convert the temporary object of items into a final array
+  result[arrayKey] = Object.values(tempArrayItems);
+
+  return result;
+}

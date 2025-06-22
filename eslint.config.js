@@ -3,10 +3,16 @@ import pluginJs from "@eslint/js";
 import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import pluginCypress from "eslint-plugin-cypress/flat";
+import stylistic from "@stylistic/eslint-plugin";
 
 export default [
   {
     files: ["**/*.{js,mjs,cjs,ts,jsx,tsx}"],
+  },
+  {
+    plugins: {
+      "@stylistic": stylistic,
+    },
   },
   {
     rules: {
@@ -18,7 +24,7 @@ export default [
       ],
     },
   },
-  { ignores: ["cypress/.eslintrc.js", "build", "public"] },
+  { ignores: ["cypress/.eslintrc.js", "build", "public", ".react-router"] },
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
   pluginCypress.configs.recommended,
   pluginJs.configs.recommended,

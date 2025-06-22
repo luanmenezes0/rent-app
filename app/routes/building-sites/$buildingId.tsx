@@ -16,12 +16,15 @@ import {
   useColorModeValue,
   useDisclosure,
 } from "@chakra-ui/react";
-import type { ActionFunctionArgs, LoaderFunctionArgs } from "@remix-run/node";
-import { json, redirect } from "@remix-run/node";
-import { Link as RemixLink, useFetcher, useLoaderData } from "@remix-run/react";
 import dayjs from "dayjs";
 import { useState } from "react";
-import { validationError } from "remix-validated-form";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
+import {
+  Link as RemixLink,
+  redirect,
+  useFetcher,
+  useLoaderData,
+} from "react-router";
 import invariant from "tiny-invariant";
 
 import { MyAlertDialog } from "~/components/AlertDialog";
@@ -42,10 +45,9 @@ import {
 } from "~/models/delivery.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
-import { useUser } from "~/utils";
-import { buildingSiteValidator } from "~/validators/buildingSiteValidator";
-
-import { DeliveyModal } from "../../components/DeliveyModal";
+import { parseZodError, useUser, validationError } from "~/utils";
+import { BuildingSiteSchema } from "~/validators/buildingSiteValidator";
+import { DeliveyModal } from "../../components/DeliveryModal";
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -70,11 +72,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })),
   };
 
-  return json({
+  return {
     buildingSite: buildingSiteWithFormatedDate,
     inventory,
     rentables,
-  });
+  };
 }
 
 export async function action({ request }: ActionFunctionArgs) {
@@ -85,10 +87,12 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (action) {
     case "edit-bs": {
-      const result = await buildingSiteValidator.validate(formData);
+      const result = BuildingSiteSchema.safeParse(
+        Object.fromEntries(formData.entries()),
+      );
 
-      if (result.error) {
-        return validationError(result.error);
+      if (!result.success) {
+        return validationError(parseZodError(result.error));
       }
 
       await editBuildingSite({
@@ -122,9 +126,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!units.length) {
         return validationError({
-          fieldErrors: {
-            count: "É necessário informar a quantidade de pelo menos um item",
-          },
+          count: "É necessário informar a quantidade de pelo menos um item",
         });
       }
 
@@ -155,9 +157,7 @@ export async function action({ request }: ActionFunctionArgs) {
 
       if (!units.length) {
         return validationError({
-          fieldErrors: {
-            count: "É necessário informar a quantidade de pelo menos um item",
-          },
+          count: "É necessário informar a quantidade de pelo menos um item",
         });
       }
 

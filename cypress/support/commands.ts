@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-namespace */
+/// <reference types="cypress" />
 import { faker } from "@faker-js/faker";
 
 declare global {
@@ -44,7 +45,7 @@ declare global {
 }
 
 function login({
-  email = faker.internet.email(undefined, undefined, "example.com"),
+  email = faker.internet.email({ provider: "example.com" }),
 }: {
   email?: string;
 } = {}) {

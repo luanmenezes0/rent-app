@@ -19,15 +19,14 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { Delivery, DeliveryUnit } from "@prisma/client";
-import { Form, useActionData, useNavigation } from "@remix-run/react";
-import { SerializeFrom } from "@remix-run/server-runtime";
 import dayjs from "dayjs";
-import { useEffect, useState } from "react";
 import customParseFormat from "dayjs/plugin/customParseFormat.js";
-
-dayjs.extend(customParseFormat);
+import { useEffect, useState } from "react";
+import { Form, useActionData, useNavigation } from "react-router";
 
 import type { Rentable } from "~/models/inventory.server";
+
+dayjs.extend(customParseFormat);
 
 function SelectArea({
   rentableId,
@@ -66,12 +65,13 @@ interface DeliveryModalProps {
   onClose: () => void;
   buildingSiteId: number;
   editionMode?: boolean;
-  values?: SerializeFrom<Delivery> & {
-    units: (SerializeFrom<DeliveryUnit> & {
-      rentable: SerializeFrom<Rentable>;
+  values?: Omit<Delivery, "date"> & {
+    units: (DeliveryUnit & {
+      rentable: Rentable;
     })[];
+    date: string;
   };
-  rentables: SerializeFrom<Rentable>[];
+  rentables: Rentable[];
 }
 
 export function DeliveyModal({
@@ -87,13 +87,13 @@ export function DeliveyModal({
 
   const navigation = useNavigation();
 
-  const isSubmitting = navigation.state === "loading";
+  const isAdding = navigation.state === "submitting";
 
   useEffect(() => {
-    if (actionData === null && isSubmitting) {
+    if (actionData === null && !isAdding) {
       onClose();
     }
-  }, [actionData, isSubmitting, onClose]);
+  }, [actionData, isAdding, onClose]);
 
   let mappedRentables = [];
 

@@ -1,4 +1,4 @@
-import { EditIcon } from "@chakra-ui/icons";
+import { DeleteIcon, EditIcon } from "@chakra-ui/icons";
 import {
   Button,
   Container,
@@ -34,14 +34,9 @@ import {
   useActionData,
   useLoaderData,
   useNavigation,
-} from "@remix-run/react";
-import type {
-  ActionFunctionArgs,
-  LoaderFunctionArgs,
-  SerializeFrom,
-} from "@remix-run/server-runtime";
+} from "react-router";
+import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
 import { useEffect, useState } from "react";
-import { validationError } from "remix-validated-form";
 
 import Header from "~/components/Header";
 import type { Rentable } from "~/models/inventory.server";
@@ -52,7 +47,8 @@ import {
   getRentables,
 } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
-import { rentableValidator } from "~/validators/rentableValidator";
+import { RentableSchema } from "~/validators/rentableValidator";
+import { parseZodError, validationError } from "~/utils";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   await requireUserId(request);
@@ -71,17 +67,17 @@ export async function action({ request }: ActionFunctionArgs) {
 
   switch (action) {
     case "create": {
-      const result = await rentableValidator.validate(formData);
+      const result = RentableSchema.safeParse(Object.fromEntries(formData.entries()));
 
-      if (result.error) {
-        return validationError(result.error);
+      if (!result.success) {
+        return validationError(parseZodError(result.error));
       }
 
       await createRentable({
         name: result.data.name,
         count: Number(result.data.count),
         description: result.data.description,
-        unitPrice: Number(result.data.unitPrice),
+        unitPrice: Math.round(Number(result.data.unitPrice) * 100),
       });
 
       return null;
@@ -99,7 +95,7 @@ export async function action({ request }: ActionFunctionArgs) {
         id: Number(id),
         count: Number(count),
         description,
-        unitPrice: Number(unitPrice),
+        unitPrice: Math.round(Number(unitPrice) * 100),
       });
 
       return null;
@@ -125,7 +121,7 @@ function RentableModal({
 }: {
   onClose: () => void;
   editionMode?: boolean;
-  values: SerializeFrom<Rentable> | null;
+  values: Rentable | null;
 }) {
   return (
     <Modal size="md" isOpen onClose={onClose}>
@@ -175,7 +171,9 @@ function RentableModal({
                     required
                     name="unitPrice"
                     type="number"
-                    defaultValue={values?.unitPrice}
+                    step="0.01"
+                    min="0"
+                    defaultValue={values?.unitPrice ? (values.unitPrice / 100).toFixed(2) : ""}
                   />
                 </InputGroup>
               </FormControl>
@@ -184,7 +182,7 @@ function RentableModal({
         </ModalBody>
 
         <ModalFooter gap="2">
-          {/* <Form method="delete">
+          <Form method="delete">
             <input type="hidden" name="id" value={values?.id} />
             <input type="hidden" name="_action" value="delete" />
             <IconButton
@@ -198,7 +196,7 @@ function RentableModal({
               icon={<DeleteIcon />}
               rounded="full"
             />
-          </Form> */}
+          </Form>
           <Button onClick={onClose} variant="outline">
             Cancelar
           </Button>
@@ -224,9 +222,7 @@ export default function Index() {
   const navigation = useNavigation();
 
   const { isOpen, onOpen, onClose } = useDisclosure();
-  const [editData, setEditData] = useState<SerializeFrom<Rentable> | null>(
-    null,
-  );
+  const [editData, setEditData] = useState<Rentable | null>(null);
 
   const isAdding = navigation.state === "submitting";
 
@@ -268,7 +264,12 @@ export default function Index() {
                   <Td> {rentable.name}</Td>
                   <Td> {rentable.description}</Td>
                   <Td>{rentable.count}</Td>
-                  <Td>R$ {rentable.unitPrice}</Td>
+                  <Td>
+                    {new Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(rentable.unitPrice / 100)}
+                  </Td>
                   <Td>
                     <Flex>
                       <IconButton

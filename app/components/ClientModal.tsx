@@ -17,14 +17,13 @@ import {
   VStack,
 } from "@chakra-ui/react";
 import type { Client } from "@prisma/client";
-import { useFetcher } from "@remix-run/react";
-import { SerializeFrom } from "@remix-run/server-runtime";
+import { useFetcher } from "react-router";
 import { useEffect, useState } from "react";
 
 interface ClientModalProps {
   onClose: () => void;
   editionMode?: boolean;
-  values?: SerializeFrom<Client>;
+  values?: Client;
 }
 
 export function ClientModal(props: ClientModalProps) {

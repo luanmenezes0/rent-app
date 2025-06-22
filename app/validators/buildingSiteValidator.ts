@@ -1,4 +1,3 @@
-import { withZod } from "@remix-validated-form/with-zod";
 import * as z from "zod";
 
 export const BuildingSiteSchema = z.object({
@@ -8,5 +7,3 @@ export const BuildingSiteSchema = z.object({
   clientId: z.string(),
   status: z.string().optional(),
 });
-
-export const buildingSiteValidator = withZod(BuildingSiteSchema);

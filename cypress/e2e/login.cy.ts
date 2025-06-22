@@ -1,4 +1,4 @@
-import { faker } from "@faker-js/faker";
+import { faker} from "@faker-js/faker";
 import bcrypt from "bcryptjs";
 
 describe("Login", () => {
@@ -9,7 +9,7 @@ describe("Login", () => {
   // eslint-disable-next-line cypress/no-async-tests
   it("should allow you to register and login", async () => {
     const loginForm = {
-      email: `${faker.internet.userName()}@example.com`,
+      email: `${faker.internet.username()}@example.com`,
       password: faker.internet.password(),
     };
 
