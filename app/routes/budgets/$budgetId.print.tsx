@@ -45,10 +45,33 @@ export default function BudgetPrint() {
         margin: 1cm;
         size: A4;
       }
-      body {
-        -webkit-print-color-adjust: exact;
-        color-adjust: exact;
-      }
+
+    }
+
+    body {
+      -webkit-print-color-adjust: exact;
+      color-adjust: exact;
+      background: white !important;
+      color: black !important;
+    }
+    * {
+      background: transparent !important;
+      color: black !important;
+      box-shadow: none !important;
+    }
+    .print-header {
+      color: #2563eb !important;
+    }
+    .print-subheader {
+      color: #64748b !important;
+    }
+    .print-table-header {
+      background: #f8fafc !important;
+      color: #1e293b !important;
+    }
+    .print-total-section {
+      background: #f8fafc !important;
+      color: #1e293b !important;
     }
     @media screen {
       body {
@@ -73,24 +96,24 @@ export default function BudgetPrint() {
         <VStack spacing={6} align="stretch" mb={8}>
           <HStack justify="space-between" align="start">
             <VStack align="start" spacing={1}>
-              <Text fontWeight="bold" fontSize="md" color="blue.600">
+              <Text fontWeight="bold" fontSize="md" className="print-header">
                 Naldo Locações
               </Text>
-              <Heading size="lg" color="blue.600">
+              <Heading size="lg" className="print-header">
                 ORÇAMENTO
               </Heading>
-              <Text fontSize="lg" color="gray.600">
+              <Text fontSize="lg" className="print-subheader">
                 #{budget.id.toString().padStart(6, "0")}
               </Text>
             </VStack>
             <VStack align="end" spacing={1}>
-              <Text fontWeight="bold" fontSize="sm" color="gray.600">
+              <Text fontWeight="bold" fontSize="sm" className="print-subheader">
                 DATA DE EMISSÃO
               </Text>
               <Text fontSize="md">
                 {dayjs(budget.createdAt).format("DD/MM/YYYY")}
               </Text>
-              <Text fontWeight="bold" fontSize="sm" color="gray.600" mt={2}>
+              <Text fontWeight="bold" fontSize="sm" className="print-subheader" mt={2}>
                 VALIDADE
               </Text>
               <Text fontSize="md">
@@ -99,32 +122,32 @@ export default function BudgetPrint() {
             </VStack>
           </HStack>
 
-          <Divider borderColor="blue.200" borderWidth="2px" />
+          <Divider borderColor="gray.300" borderWidth="2px" />
 
           {/* Client and Building Site Info */}
           <Grid templateColumns="1fr 1fr" gap={8}>
             <Box>
-              <Text fontWeight="bold" fontSize="sm" color="blue.600" mb={2}>
+              <Text fontWeight="bold" fontSize="sm" className="print-header" mb={2}>
                 CLIENTE
               </Text>
               <VStack align="start" spacing={1}>
                 <Text fontWeight="bold" fontSize="lg">
                   {budget.client.name}
                 </Text>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" className="print-subheader">
                   {budget.client.address}
                 </Text>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" className="print-subheader">
                   {budget.client.neighborhood}, {budget.client.city} -{" "}
                   {budget.client.state}
                 </Text>
                 {budget.client.phoneNumber && (
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" className="print-subheader">
                     Tel: {budget.client.phoneNumber}
                   </Text>
                 )}
                 {budget.client.registrationNumber && (
-                  <Text fontSize="sm" color="gray.600">
+                  <Text fontSize="sm" className="print-subheader">
                     {budget.client.isLegalEntity ? "CNPJ" : "CPF"}:{" "}
                     {budget.client.registrationNumber}
                   </Text>
@@ -133,14 +156,14 @@ export default function BudgetPrint() {
             </Box>
 
             <Box>
-              <Text fontWeight="bold" fontSize="sm" color="blue.600" mb={2}>
+              <Text fontWeight="bold" fontSize="sm" className="print-header" mb={2}>
                 OBRA/CANTEIRO
               </Text>
               <VStack align="start" spacing={1}>
                 <Text fontWeight="bold" fontSize="lg">
                   {budget.buildingSite.name}
                 </Text>
-                <Text fontSize="sm" color="gray.600">
+                <Text fontSize="sm" className="print-subheader">
                   {budget.buildingSite.address}
                 </Text>
               </VStack>
@@ -150,34 +173,34 @@ export default function BudgetPrint() {
 
         {/* Items Table */}
         <VStack spacing={4} align="stretch">
-          <Text fontWeight="bold" fontSize="md" color="blue.600">
+          <Text fontWeight="bold" fontSize="md" className="print-header">
             ITENS DO ORÇAMENTO
           </Text>
 
           <Table variant="simple" size="sm">
-            <Thead bg="blue.50">
+            <Thead className="print-table-header">
               <Tr>
-                <Th fontSize="xs" color="blue.700" py={3}>
+                <Th fontSize="xs" py={3}>
                   ITEM
                 </Th>
-                <Th fontSize="xs" color="blue.700" py={3} textAlign="center">
+                <Th fontSize="xs" py={3} textAlign="center">
                   QTD
                 </Th>
-                <Th fontSize="xs" color="blue.700" py={3} textAlign="center">
+                <Th fontSize="xs" py={3} textAlign="center">
                   DIAS
                 </Th>
-                <Th fontSize="xs" color="blue.700" py={3} textAlign="right">
+                <Th fontSize="xs" py={3} textAlign="right">
                   PREÇO UNIT.
                 </Th>
-                <Th fontSize="xs" color="blue.700" py={3} textAlign="right">
+                <Th fontSize="xs" py={3} textAlign="right">
                   SUBTOTAL
                 </Th>
                 {budget.items.some((item) => item.discount > 0) && (
-                  <Th fontSize="xs" color="blue.700" py={3} textAlign="right">
+                  <Th fontSize="xs" py={3} textAlign="right">
                     DESCONTO
                   </Th>
                 )}
-                <Th fontSize="xs" color="blue.700" py={3} textAlign="right">
+                <Th fontSize="xs" py={3} textAlign="right">
                   TOTAL
                 </Th>
               </Tr>
@@ -211,7 +234,7 @@ export default function BudgetPrint() {
                       }).format(subtotal / 100)}
                     </Td>
                     {budget.items.some((item) => item.discount > 0) && (
-                      <Td fontSize="sm" py={3} textAlign="right" color="red.500">
+                      <Td fontSize="sm" py={3} textAlign="right" color="red.600">
                         {item.discount > 0
                           ? `-${new Intl.NumberFormat("pt-BR", {
                               style: "currency",
@@ -246,8 +269,8 @@ export default function BudgetPrint() {
 
             {budget.totalDiscount > 0 && (
               <HStack w="300px" justify="space-between">
-                <Text fontSize="sm" color="red.500">Total de descontos:</Text>
-                <Text fontSize="sm" fontWeight="bold" color="red.500">
+                <Text fontSize="sm" color="red.600">Total de descontos:</Text>
+                <Text fontSize="sm" fontWeight="bold" color="red.600">
                   -{new Intl.NumberFormat("pt-BR", {
                     style: "currency",
                     currency: "BRL",
@@ -271,15 +294,15 @@ export default function BudgetPrint() {
             <HStack
               w="300px"
               justify="space-between"
-              bg="blue.50"
+              className="print-total-section"
               px={4}
               py={3}
               borderRadius="md"
             >
-              <Text fontSize="lg" fontWeight="bold" color="blue.700">
+              <Text fontSize="lg" fontWeight="bold">
                 TOTAL GERAL:
               </Text>
-              <Text fontSize="lg" fontWeight="bold" color="blue.700">
+              <Text fontSize="lg" fontWeight="bold">
                 {new Intl.NumberFormat("pt-BR", {
                   style: "currency",
                   currency: "BRL",
@@ -291,10 +314,10 @@ export default function BudgetPrint() {
           {/* Notes */}
           {budget.notes && (
             <Box mt={6}>
-              <Text fontWeight="bold" fontSize="sm" color="blue.600" mb={2}>
+              <Text fontWeight="bold" fontSize="sm" className="print-header" mb={2}>
                 OBSERVAÇÕES
               </Text>
-              <Text fontSize="sm" color="gray.700" p={3} bg="gray.50" borderRadius="md">
+              <Text fontSize="sm" p={3} bg="gray.50" borderRadius="md">
                 {budget.notes}
               </Text>
             </Box>
@@ -303,10 +326,10 @@ export default function BudgetPrint() {
           {/* Footer */}
           <Box mt={8} pt={4} borderTop="1px" borderColor="gray.200">
             <VStack spacing={2}>
-              <Text fontSize="xs" color="gray.500" textAlign="center">
+              <Text fontSize="xs" className="print-subheader" textAlign="center">
                 Este orçamento é válido até {dayjs(budget.validityDate).format("DD/MM/YYYY")}
               </Text>
-              <Text fontSize="xs" color="gray.500" textAlign="center">
+              <Text fontSize="xs" className="print-subheader" textAlign="center">
                 Status: {getBudgetStatusLabel(budget.status)} - Atualizado em {dayjs(budget.updatedAt).format("DD/MM/YYYY")}
               </Text>
             </VStack>
