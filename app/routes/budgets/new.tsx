@@ -192,8 +192,6 @@ export default function NewBudget() {
     );
   };
 
-  console.log(actionData);
-
   useEffect(() => {
     if (actionData?.fieldErrors) {
       Object.entries(actionData.fieldErrors).forEach(([, error]) => {

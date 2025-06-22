@@ -117,6 +117,7 @@ export async function updateBudget(
       quantity: number;
       startDate: Date;
       endDate: Date;
+      unitPrice: number;
       discount?: number;
     }>;
   },
@@ -133,13 +134,6 @@ export async function updateBudget(
   if (budget.status === "APPROVED") {
     throw new Error("Cannot update an approved budget");
   }
-
-  const updateData: Partial<Budget> = {
-    status: data.status,
-    validityDate: data.validityDate,
-    deliveryFee: data.deliveryFee,
-    notes: data.notes,
-  };
 
   if (data.items) {
     // Delete existing items
@@ -175,17 +169,41 @@ export async function updateBudget(
     const total =
       subtotal - totalDiscount + (data.deliveryFee || budget.deliveryFee);
 
-    updateData.subtotal = subtotal;
-    updateData.totalDiscount = totalDiscount;
-    updateData.total = total;
-    updateData.items = {
-      create: items,
-    };
+    return prisma.budget.update({
+      where: { id: Number(id) },
+      data: {
+        status: data.status,
+        validityDate: data.validityDate,
+        deliveryFee: data.deliveryFee,
+        notes: data.notes,
+        subtotal,
+        totalDiscount,
+        total,
+        items: {
+          create: items,
+        },
+      },
+      include: {
+        client: true,
+        buildingSite: true,
+        items: {
+          include: {
+            rentable: true,
+          },
+        },
+      },
+    });
   }
 
+  // If no items update, just update the budget fields
   return prisma.budget.update({
     where: { id: Number(id) },
-    data: updateData,
+    data: {
+      status: data.status,
+      validityDate: data.validityDate,
+      deliveryFee: data.deliveryFee,
+      notes: data.notes,
+    },
     include: {
       client: true,
       buildingSite: true,

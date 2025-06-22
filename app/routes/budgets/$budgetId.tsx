@@ -29,7 +29,6 @@ import {
   useToast,
   VStack,
 } from "@chakra-ui/react";
-import type { Client, Rentable } from "@prisma/client";
 import dayjs from "dayjs";
 import { useEffect, useState } from "react";
 import type { ActionFunctionArgs, LoaderFunctionArgs } from "react-router";
@@ -48,7 +47,6 @@ import {
   getBudget,
   updateBudget,
 } from "~/models/budget.server";
-import { getClients } from "~/models/client.server";
 import { getRentables } from "~/models/inventory.server";
 import { requireUserId } from "~/session.server";
 import { parseZodError, unflattenObject, validationError } from "~/utils";
@@ -61,9 +59,8 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Error("Budget ID is required");
   }
 
-  const [budget, clients, rentables] = await Promise.all([
+  const [budget, rentables] = await Promise.all([
     getBudget(params.budgetId),
-    getClients({}),
     getRentables(),
   ]);
 
@@ -71,7 +68,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     throw new Error("Budget not found");
   }
 
-  return { budget, clients: clients.data, rentables };
+  return { budget, rentables };
 }
 
 export async function action({ request, params }: ActionFunctionArgs) {
@@ -142,37 +139,18 @@ type BudgetItem = {
   discount?: string;
 };
 
-// type BudgetWithRelations = Budget & {
-//   client: Client & {
-//     buildingSites: Array<{ id: number; name: string }>;
-//   };
-//   items: Array<{
-//     id: number;
-//     rentableId: number;
-//     quantity: number;
-//     startDate: Date;
-//     endDate: Date;
-//     discount: number;
-//   }>;
-// };
-
 export default function BudgetDetail() {
-  const { budget, clients, rentables } = useLoaderData<typeof loader>();
+  const { budget, rentables } = useLoaderData<typeof loader>();
   const actionData = useActionData<{ fieldErrors: Record<string, string> }>();
   const navigation = useNavigation();
   const toast = useToast();
   const isSubmitting = navigation.state === "submitting";
 
-  const [selectedClient, setSelectedClient] = useState<string>(
-    budget.clientId.toString(),
-  );
-  const [buildingSites, setBuildingSites] = useState<
-    Array<{ id: number; name: string }>
-  >(budget.client.buildingSites);
   const [items, setItems] = useState<BudgetItem[]>(
     budget.items.map((item) => {
       const days = Math.ceil(
-        (new Date(item.endDate).getTime() - new Date(item.startDate).getTime()) /
+        (new Date(item.endDate).getTime() -
+          new Date(item.startDate).getTime()) /
           (1000 * 60 * 60 * 24),
       );
       return {
@@ -185,17 +163,6 @@ export default function BudgetDetail() {
       };
     }),
   );
-
-  useEffect(() => {
-    if (selectedClient) {
-      const client = clients.find((c) => c.id.toString() === selectedClient);
-      if (client && client.buildingSites) {
-        setBuildingSites(client.buildingSites);
-      }
-    } else {
-      setBuildingSites([]);
-    }
-  }, [selectedClient, clients]);
 
   useEffect(() => {
     if (actionData?.fieldErrors) {
@@ -267,6 +234,7 @@ export default function BudgetDetail() {
           <Heading as="h1" size="2xl">
             Orçamento #{budget.id}
           </Heading>
+          <Text fontSize="lg">Cliente: {budget.client?.name}</Text>
           <Badge colorScheme={budget.status === "APPROVED" ? "green" : "gray"}>
             {budget.status}
           </Badge>
@@ -276,23 +244,6 @@ export default function BudgetDetail() {
           <VStack spacing={8} align="stretch">
             <Grid templateColumns="repeat(2, 1fr)" gap={8}>
               <FormControl isRequired>
-                <FormLabel>Cliente</FormLabel>
-                <Select
-                  name="clientId"
-                  value={selectedClient}
-                  onChange={(e) => setSelectedClient(e.target.value)}
-                  isDisabled={budget.status === "APPROVED"}
-                >
-                  <option value="">Selecione um cliente</option>
-                  {clients.map((client: Client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </Select>
-              </FormControl>
-
-              <FormControl isRequired>
                 <FormLabel>Canteiro</FormLabel>
                 <Select
                   name="buildingSiteId"
@@ -300,11 +251,13 @@ export default function BudgetDetail() {
                   isDisabled={budget.status === "APPROVED"}
                 >
                   <option value="">Selecione um canteiro</option>
-                  {buildingSites.map((site) => (
-                    <option key={site.id} value={site.id}>
-                      {site.name}
-                    </option>
-                  ))}
+
+                  <option
+                    key={budget.buildingSite.id}
+                    value={budget.buildingSite.id}
+                  >
+                    {budget.buildingSite.name}
+                  </option>
                 </Select>
               </FormControl>
 
